@@ -39,7 +39,28 @@ def test_depth_limit_is_inclusive() -> None:
     ok = json.dumps(_nested(JSON_MAX_DEPTH))
     too_deep = json.dumps(_nested(JSON_MAX_DEPTH + 1))
     assert check_value(json.loads(ok)) is None
+    assert parse_record_text(ok)[1] is None
     assert parse_record_text(too_deep) == (None, "too_deep")
+
+
+def test_many_shallow_brackets_are_accepted() -> None:
+    siblings = json.dumps({"items": [{"n": i} for i in range(100)]})
+    in_strings = json.dumps({"cmd": "[[[[{{{{" * 20})
+    assert parse_record_text(siblings)[1] is None
+    assert parse_record_text(in_strings)[1] is None
+
+
+def test_deep_branch_among_shallow_siblings_is_rejected() -> None:
+    record = {"items": [{"n": i} for i in range(50)], "deep": _nested(JSON_MAX_DEPTH)}
+    assert parse_record_text(json.dumps(record)) == (None, "too_deep")
+
+
+def test_top_level_duplicate_key() -> None:
+    assert parse_record_text('{"a": 1, "a": 1}') == (None, "duplicate_key")
+
+
+def test_duplicate_key_inside_array() -> None:
+    assert parse_record_text('{"a": [{"b": 1, "b": 2}]}') == (None, "duplicate_key")
 
 
 def test_extreme_nesting_does_not_crash() -> None:
