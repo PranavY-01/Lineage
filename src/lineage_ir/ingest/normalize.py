@@ -11,7 +11,7 @@ from lineage_ir.config import SYSMON_CHANNEL, SYSMON_PROVIDER
 from lineage_ir.ingest.field_aliases import TIME_CREATED_CANDIDATES, normalize_key, resolve_system
 from lineage_ir.ingest.shapes import detect_shape
 from lineage_ir.ingest.timeparse import NaiveTimestamp, parse_iso, parse_utc_time
-from lineage_ir.models import Event, SourceRef
+from lineage_ir.models import ActivityKind, Event, SourceRef
 
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 _ZERO_GUID = "00000000-0000-0000-0000-000000000000"
@@ -275,6 +275,89 @@ def normalize_record(record: object, file: str, file_sha256: str, index: int) ->
         source=SourceRef(file=file, file_sha256=file_sha256, index=index, record_id=record_id),
     )
     return Normalized(event, tuple(unknown), bad_guids)
+
+
+WMI_EVENT_IDS = frozenset({19, 20, 21})
+
+_ACTIVITY_KINDS: dict[int, ActivityKind] = {
+    3: "network",
+    5: "terminate",
+    7: "image_load",
+    8: "remote_thread",
+    10: "process_access",
+    11: "file_create",
+    12: "registry",
+    13: "registry",
+    14: "registry",
+    15: "file_stream",
+    17: "pipe",
+    18: "pipe",
+    19: "wmi",
+    20: "wmi",
+    21: "wmi",
+    22: "dns",
+    23: "file_delete",
+    26: "file_delete",
+}
+
+
+def activity_kind(event_id: int) -> ActivityKind:
+    """Activity category for a non-creation event ID; unlisted IDs are ``other``."""
+    return _ACTIVITY_KINDS.get(event_id, "other")
+
+
+def _endpoint(ip: str, port: str, protocol: str) -> str:
+    host = f"[{ip}]" if ":" in ip else ip
+    return f"{host}:{port}/{protocol}" if protocol else f"{host}:{port}"
+
+
+def activity_summary(event: Event, role: Literal["actor", "target"] = "actor") -> str:
+    """Short, unescaped one-line description of a non-creation event (§5.4)."""
+    f = event.fields
+    kind = activity_kind(event.event_id)
+    if kind == "network":
+        protocol = f.get("protocol", "")
+        if f.get("initiated", "").lower() == "false":
+            peer = _endpoint(f.get("source_ip", "?"), f.get("source_port", "?"), protocol)
+            return f"← {peer}"
+        text = "→ " + _endpoint(
+            f.get("destination_ip", "?"), f.get("destination_port", "?"), protocol
+        )
+        hostname = f.get("destination_hostname", "")
+        return f"{text} ({hostname})" if hostname and hostname != "-" else text
+    if kind == "dns":
+        return f"resolved {f.get('query_name', '?')}"
+    if kind == "file_create":
+        return f"wrote {f.get('target_filename', '?')}"
+    if kind == "file_delete":
+        return f"deleted {f.get('target_filename', '?')}"
+    if kind == "file_stream":
+        return f"stream {f.get('target_filename', '?')}"
+    if kind == "registry":
+        target = f.get("target_object", "?")
+        if event.event_id == 14:
+            return f"renamed {target} → {f.get('new_name', '?')}"
+        if event.event_id == 13:
+            return f"set {target} = {f.get('details', '')}"
+        return f"{f.get('event_type', 'registry')} {target}"
+    if kind in ("process_access", "remote_thread"):
+        verb = "accessed" if kind == "process_access" else "remote thread into"
+        access = f" ({f['granted_access']})" if "granted_access" in f else ""
+        if role == "target":
+            passive = "accessed by" if kind == "process_access" else "remote thread from"
+            return f"{passive} {f.get('source_image', '?')}{access}"
+        return f"{verb} {f.get('target_image', '?')}{access}"
+    if kind == "pipe":
+        verb = "created pipe" if event.event_id == 17 else "connected pipe"
+        return f"{verb} {f.get('pipe_name', '?')}"
+    if kind == "image_load":
+        return f"loaded {f.get('image_loaded', '?')}"
+    if kind == "terminate":
+        return "terminated"
+    if kind == "wmi":
+        name = f.get("name") or f.get("consumer") or f.get("filter") or "?"
+        return f"wmi {f.get('event_type', 'event')} {name}"
+    return f"event {event.event_id}"
 
 
 def content_digest(event: Event) -> str:

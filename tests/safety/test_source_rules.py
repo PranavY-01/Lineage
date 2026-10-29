@@ -124,3 +124,16 @@ def test_imports_follow_layer_direction(path: Path) -> None:
             assert LAYERS.index(target) >= own, f"{_rel(path)} imports {name}"
         if target in {"render", "outputs"}:
             assert _package(path) == "cli", f"{_rel(path)} imports {name}"
+
+
+@pytest.mark.parametrize("path", [p for p in MODULES if _package(p) == "graph"], ids=_rel)
+def test_graph_code_is_not_recursive(path: Path) -> None:
+    for func in ast.walk(_tree(path)):
+        if not isinstance(func, ast.FunctionDef):
+            continue
+        calls = {
+            node.func.id
+            for node in ast.walk(func)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        assert func.name not in calls, f"{_rel(path)}: {func.name} calls itself"

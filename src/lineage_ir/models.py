@@ -36,6 +36,63 @@ class Event(FrozenModel):
     source: SourceRef
 
 
+# §5.4 plus the approved "file_stream" (event 15) and "other" (generic Sysmon IDs) kinds.
+ActivityKind = Literal[
+    "network",
+    "dns",
+    "file_create",
+    "file_delete",
+    "file_stream",
+    "registry",
+    "process_access",
+    "remote_thread",
+    "pipe",
+    "wmi",
+    "image_load",
+    "terminate",
+    "other",
+]
+GhostReason = Literal["parent_reference", "activity_reference", "access_reference"]
+
+
+class Activity(FrozenModel):
+    """A non-creation event attached to a process node."""
+
+    kind: ActivityKind
+    event_id: int
+    ts_us: int
+    role: Literal["actor", "target"]
+    summary: str
+    fields: dict[str, str]
+    source: SourceRef
+
+
+class ProcessNode(FrozenModel):
+    """One process instance on one host, created by event 1 or reconstructed as a ghost."""
+
+    host: str
+    guid: str
+    pid: int | None
+    image: str | None
+    image_name: str | None
+    command_line: str | None
+    decoded_command: str | None
+    decode_note: str | None
+    user: str | None
+    integrity_level: str | None
+    hashes: dict[str, str]
+    current_directory: str | None
+    logon_id: str | None
+    start_us: int | None
+    end_us: int | None
+    parent_guid: str | None
+    children: tuple[str, ...]
+    is_ghost: bool
+    ghost_reason: GhostReason | None
+    create_record: SourceRef | None
+    activity: tuple[Activity, ...]
+
+
 InputFormat = Literal["evtx", "json", "jsonl"]
 
 
