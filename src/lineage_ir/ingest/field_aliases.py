@@ -48,6 +48,8 @@ FLAT_SYSTEM_KEYS = frozenset(
 EVENT_ID_KEYS = ("EventID", "EventId", "event_id")
 
 _EVENTDATA_MAP = {
+    # Sysmon configuration tag; normalized so it is not reported as unknown, never rule evidence.
+    "RuleName": "rule_name",
     "UtcTime": "utc_time",
     "ProcessGuid": "process_guid",
     "ProcessId": "pid",

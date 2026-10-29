@@ -9,6 +9,22 @@ Real-dataset recon (P0) results are not available yet. Until they are, the field
 record shapes and envelope follow the specification defaults; every value that depends on
 real data is listed under Assumptions.
 
+## Approved spec amendments
+
+Approved by the project owner on 2026-10-29. These are binding and take precedence over the
+specification text they amend.
+
+1. **LF line endings (§3.4, §12.3).** The repository carries `.gitattributes` with
+   `* text=auto eol=lf` and `*.evtx binary`; ruff formats with `line-ending = "lf"`. Code and
+   tests that write reports, golden files or other output write LF explicitly (bytes, or
+   `newline="\n"`), and JSON printed to stdout is written as bytes.
+2. **`validate` exits 4 when the record cap is reached (§10.5).** Reading stopped before the
+   end of the input, so not every record was checked.
+3. **`RuleName` → `rule_name` (§6.4, §8.3, §8.4).** Added to the EventData map and therefore to
+   the allowed rule field names. No bundled rule may use it, and it never counts as a finding
+   or as technique evidence (enforced by a test over the bundled rules in P3). Other keys that
+   real data shows to be always present are proposed in a phase plan, never added ad hoc.
+
 ## Decisions and deviations
 
 ### P1 · Skeleton and ingest
@@ -53,8 +69,8 @@ real data is listed under Assumptions.
 - **Input errors.** A missing path, a directory, more than 64 inputs or an over-size file is
   a usage error (exit 2). A file that exists but cannot be read is exit 3.
 - **`validate` exit code.** 4 when any record is invalid, no Sysmon event survived, or the
-  record cap stopped reading (not every record was checked). Conflicting duplicates are
-  reported as a coverage reason but do not change the `validate` exit code (§10.5 table).
+  record cap stopped reading (amendment 2). Conflicting duplicates are reported as a coverage
+  reason but do not change the `validate` exit code (§10.5 table).
 - **Readiness states.** `ready`, `partial` (some required IDs present) or `missing`.
   "Credential access" needs 10 or 1, so either one makes it ready; the missing ID is still
   listed.
@@ -116,5 +132,3 @@ Not started (P7).
 - EVTX reading is covered only by a mocked parser and an unopenable-file test until an EVTX
   fixture is available.
 - JSON documents (not JSONL) are loaded into memory whole.
-- The `RuleName` EventData key, present in every Sysmon event, is not in the §6.4 map and is
-  therefore listed by `validate` as an unknown key.

@@ -40,7 +40,6 @@ def test_shape_fixture_values(fixtures_dir: Path) -> None:
     assert set(result.unknown_keys) == {
         "DestinationIsIpv6",
         "FileVersion",
-        "RuleName",
         "SourceIsIpv6",
     }
 

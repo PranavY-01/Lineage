@@ -1,6 +1,12 @@
 import pytest
 
-from lineage_ir.ingest.field_aliases import lookup, normalize_key, resolve_system, to_snake
+from lineage_ir.ingest.field_aliases import (
+    NORMALIZED_KEYS,
+    lookup,
+    normalize_key,
+    resolve_system,
+    to_snake,
+)
 
 
 def test_lookup_literal_key_wins_over_nested_path() -> None:
@@ -48,16 +54,21 @@ def test_shape_a_extras_only_for_shape_a() -> None:
         ("TargetProcessId", "target_pid"),
         ("UtcTime", "utc_time"),
         ("IsExecutable", "is_executable"),
+        ("RuleName", "rule_name"),
+        ("rulename", "rule_name"),
     ],
 )
 def test_known_keys_map_case_insensitively(key: str, expected: str) -> None:
     assert normalize_key(key) == (expected, True)
 
 
+def test_rule_name_is_an_allowed_field_name() -> None:
+    assert "rule_name" in NORMALIZED_KEYS
+
+
 @pytest.mark.parametrize(
     ("key", "expected"),
     [
-        ("RuleName", "rule_name"),
         ("FileVersion", "file_version"),
         ("SourceIsIpv6", "source_is_ipv6"),
         ("NewThreadId", "new_thread_id"),
