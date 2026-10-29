@@ -1,0 +1,1 @@
+"""PowerShell encoded-command decoding."""

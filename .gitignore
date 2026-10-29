@@ -1,0 +1,24 @@
+# Local datasets and generated output
+data/
+out/
+*.evtx
+!tests/fixtures/evtx/*.evtx
+
+# Environments
+.venv/
+venv/
+
+# Python build and cache
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.egg-info/
+
+# Tool caches and coverage
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/

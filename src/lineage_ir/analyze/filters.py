@@ -1,0 +1,1 @@
+"""Detection and display filters."""
