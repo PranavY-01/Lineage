@@ -42,6 +42,30 @@ specification text they amend.
    - Invariant 5 reads: every activity record with a valid acting GUID is attached to exactly
      one actor node (plus one target node for events 8 and 10); every other record is in
      `unattached_events` or `wmi_events`. A test checks that no event is lost.
+6. **Slim image-load storage (§5.3, §5.4, §6.5, §7.1).** Event 7 is held at ingest as a slim
+   `ImageLoadRecord` and on nodes as a frozen `ImageLoad` (`ts_us`, `image_loaded`, `signed`,
+   `SourceRef`). `image_load` is removed from `Activity.kind`. `ProcessNode` gains
+   `image_load_count` (exact) and `image_loads` (the first 50 by `ts_us`, then `record_id`,
+   then content hash, so a shuffle cannot change which 50). Everything else behaves as before:
+   an event 7 with an unknown GUID creates an `activity_reference` ghost; an event 7 with no
+   valid GUID increments `unattached_events`, and each host keeps only the first 50 of them;
+   event 7 counts in `event_ids_seen` and in events examined for coverage. Event 7 without a
+   record ID is deduplicated on its slim content. `inspect` shows up to 50 per kind with the
+   total (§11.2). A test checks that the graph equals a full-Event build on every graph fixture
+   and on a generated mix containing event 7.
+7. **Deterministic duplicate and tie resolution (§6.8, §7.1, §14.3).** A conflicting duplicate
+   keeps the earliest `ts_us`, then the smallest content hash, and is still counted in
+   `duplicate_conflicts`; both records are reported in the errors list by file and index only,
+   never content. The §6.8 global sort is (host, `ts_us`, `record_id` or 0, content hash,
+   input file order, index), with the hash computed only when the earlier keys tie. Conflicting
+   event 1 creations (§7.1) use the same earliest-then-smallest-hash rule. `duplicates.jsonl` is
+   in the shuffle test again, and `ties.jsonl` covers timestamp ties without record IDs.
+8. **Ingest speedups (§6.1, §6.8).** (a) Records with a record ID are hashed only on a key
+   collision or a sort tie; records without one are always hashed because the hash is their
+   dedupe key. (b) JSONL and EVTX records are checked in a single parse: parser hooks reject
+   duplicate keys and NaN/Infinity, `RecursionError` is caught, and the depth walk runs only
+   when the text holds more opening brackets than the nesting limit. Each §6.1 record rule has
+   a test that fails when the rule is removed (checked by removing each rule in turn).
 
 ## Decisions and deviations
 
@@ -112,8 +136,8 @@ specification text they amend.
   conflicting repeat, or a null GUID) never seeds a parent ghost (§7.1 "of every node").
 - **Repeated creations.** An event 1 for an existing GUID with identical fields is counted as
   `duplicate_creations` (informational); different fields count as `creation_conflicts` and
-  feed the `duplicate_conflicts` reason. The first in global order is kept, which is the
-  earliest by time, then record order.
+  feed the `duplicate_conflicts` reason. The earliest by time, then the smallest content
+  hash, is kept (amendment 7).
 - **Ghost reason.** A GUID referenced several ways takes the reason and seeded fields of its
   first reference in global order.
 - **Cycles are broken once, at build time**, not during later walks: nodes are visited in GUID
@@ -124,13 +148,19 @@ specification text they amend.
 - **Activity summary** is built by `ingest/normalize.py` (`activity_summary`), as §5.4 places it
   at normalize time, and is called when the activity is attached. Targets of events 8 and 10
   get a passive wording ("accessed by …").
-- **Activity storage.** Activities are built with `model_construct` from already validated
-  events and share the event's `fields` mapping instead of copying it.
+- **High-volume records.** Activities and retained image loads are built with
+  `construct_trusted` from values normalization already typed: no re-validation, the event's
+  `fields` mapping is shared rather than copied, and every instance of a class shares one
+  pydantic fields-set (frozen models; pydantic copies the set before any update). A retained
+  image load costs about 590 bytes instead of 1,020.
+- **Content hash of event 7** is taken over its slim form whether it arrives as a full Event or
+  as an `ImageLoadRecord`, so both paths deduplicate and order identically.
+- **Conflict errors** use kind `duplicate_conflict`, the dropped record as subject
+  (`file:index`) and the kept record's location in the message.
 - **Display collapse** is a pure function over a children list and a `keep` set (hot nodes plus
   any focus set); `hot_only_children` also returns the hidden count for `--hot-only`.
-- **Shuffle invariance** is tested with 20 seeds on `ghosts`, `zero_guid`, `bad_guid`, `cycle`
-  and `multi_host`. `duplicates.jsonl` is checked for invariants but not shuffled, because §6.8
-  keeps the first conflicting copy by input order (open question to the owner).
+- **Shuffle invariance** is tested with 20 seeds on `ghosts`, `zero_guid`, `bad_guid`, `cycle`,
+  `multi_host`, `duplicates` and `ties` (amendment 7).
 
 ## Assumptions
 
@@ -178,9 +208,30 @@ Python 3.12.0.
 | Graph build | 18.6 s | 4,203 MiB | 4,623 MiB |
 
 Measured per event (20,000 event 7 records): about 3,300 bytes as a full `Event`, against
-about 90 bytes for a slim (time, path, record, index) tuple plus a shared path string. Peak
-memory is well above the 2 GB target; a lighter storage form for image loads is awaiting the
-owner's decision.
+about 90 bytes for a slim (time, path, record, index) tuple plus a shared path string.
+
+**P2 re-measure, 2026-10-30, after amendments 6–8.** Same machine and the same 80% event 7
+file. Each mode was run twice, interleaved. Peak private memory was 1,580 MiB (1.66 GB) in
+every run; it was 4,623 MiB (4.85 GB) before slim image loads.
+
+| Mode | Ingest (runs 1, 2) | Graph (runs 1, 2) | Total mean |
+| --- | --- | --- | --- |
+| Neither speedup | 106.3 s, 102.2 s | 20.2 s, 17.6 s | 123.2 s |
+| Lazy content hash (3a) | 92.0 s, 63.7 s | 14.6 s, 18.0 s | 94.2 s |
+| 3a plus single-parse JSON checks (3b) | 56.7 s, 78.4 s | 17.8 s, 17.9 s | 85.4 s |
+
+Run-to-run variation on this laptop is up to about 30% for ingest, so the gains for each step are
+approximate; together they bring the mean down from 123 s to 85 s.
+
+**Realistic mix, 1,000,000 records:** 140,000 event 1, 300,000 event 7, and 140,000 each of
+events 3, 11, 13 and 22; 140,000 processes; one host. Two runs: ingest 78.9 s and 79.3 s, graph
+22.5 s and 22.3 s, total about 101.5 s. Peak private memory was 3,259 MiB (3.42 GB) in both
+runs. A full `Event` costs 2,795 bytes, measured over 20,000 records that are not event 7,
+including the normalize outcome wrapper.
+
+**Projection at the default `--max-records` (5,000,000) with this mix:** peak memory scales
+roughly linearly with record count, so about 16,300 MiB (17.1 GB). That is above the 8 GB
+ceiling; a fix is awaiting the owner's decision. No default was changed.
 
 ## ATT&CK verification
 
