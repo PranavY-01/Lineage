@@ -16,8 +16,8 @@ def guid(tag: int) -> str:
 
 
 def build(write_jsonl: Any, rows: list[dict[str, Any]], **kwargs: Any) -> ProcessGraph:
-    events = read_inputs([write_jsonl(rows)]).events
-    return build_graphs(events, **kwargs)[HOST]
+    result = read_inputs([write_jsonl(rows)])
+    return build_graphs(result.events, result.image_loads, **kwargs)[HOST]
 
 
 def create(make_record: Any, rid: int, t: str, tag: int, parent: int | None = None, **f: Any):
@@ -104,7 +104,6 @@ def test_event5_sets_end_time_first_wins(write_jsonl: Any, make_record: Any) -> 
     ("event_id", "kind"),
     [
         (3, "network"),
-        (7, "image_load"),
         (11, "file_create"),
         (12, "registry"),
         (13, "registry"),
@@ -251,3 +250,69 @@ def test_hosts_are_separate_graphs(fixtures_dir: Path) -> None:
     assert graphs["ws-15.corp.example"].nodes[shared].image_name == "powershell.exe"
     assert graphs["ws-15.corp.example"].nodes[shared].end_us is not None
     assert graphs["ws-14.corp.example"].nodes[shared].end_us is None
+
+
+def _load(make_record: Any, rid: int | None, second: int, tag: int | str, dll: str) -> dict:
+    process = tag if isinstance(tag, str) else "{" + guid(tag) + "}"
+    return make_record(
+        7,
+        rid,
+        f"2026-10-12 10:01:{second:02d}.000",
+        ProcessGuid=process,
+        ProcessId="77",
+        Image="C:\\Tools\\loader.exe",
+        User="CORP\\svc",
+        ImageLoaded=f"C:\\Windows\\System32\\{dll}",
+        Signed="true",
+    )
+
+
+def test_image_loads_are_counted_and_capped(write_jsonl: Any, make_record: Any) -> None:
+    rows = [create(make_record, 1, "00.000", 1)]
+    rows += [_load(make_record, 100 + i, i % 60, 1, f"lib{i:03d}.dll") for i in range(70)]
+    node = build(write_jsonl, rows).nodes[guid(1)]
+    assert node.image_load_count == 70
+    assert len(node.image_loads) == 50
+    assert node.activity == ()
+    order = [(load.ts_us, load.source.record_id) for load in node.image_loads]
+    assert order == sorted(order)
+    assert node.image_loads[0].image_loaded == "C:\\Windows\\System32\\lib000.dll"
+    assert node.image_loads[0].signed == "true"
+
+
+def test_image_load_from_unknown_process_creates_ghost(write_jsonl: Any, make_record: Any) -> None:
+    graph = build(write_jsonl, [_load(make_record, 1, 0, 9, "a.dll")])
+    ghost = graph.nodes[guid(9)]
+    assert ghost.is_ghost and ghost.ghost_reason == "activity_reference"
+    assert (ghost.image_name, ghost.pid, ghost.user) == ("loader.exe", 77, "CORP\\svc")
+    assert ghost.image_load_count == 1
+    assert graph.counters.ghosts == {"activity_reference": 1}
+
+
+def test_image_loads_without_guid_are_counted_unattached(
+    write_jsonl: Any, make_record: Any
+) -> None:
+    rows = [_load(make_record, 10 + i, i, "{bad}", f"x{i}.dll") for i in range(55)]
+    rows.append(_load(make_record, 99, 59, "{00000000-0000-0000-0000-000000000000}", "z.dll"))
+    graph = build(write_jsonl, rows)
+    assert graph.nodes == {}
+    assert graph.counters.unattached_events == 56
+    assert len(graph.unattached_image_loads) == 50
+    assert graph.unattached_events == ()
+
+
+def test_image_loads_count_in_event_ids_seen(write_jsonl: Any, make_record: Any) -> None:
+    rows = [create(make_record, 1, "00.000", 1), _load(make_record, 2, 1, 1, "a.dll")]
+    result = read_inputs([write_jsonl(rows)])
+    assert result.event_ids_seen == {"1": 1, "7": 1}
+    assert result.event_count == 2
+    assert len(result.events) == 1 and len(result.image_loads) == 1
+
+
+def test_image_load_dedupe_without_record_id(write_jsonl: Any, make_record: Any) -> None:
+    same = _load(make_record, None, 5, 1, "a.dll")
+    other = _load(make_record, None, 5, 1, "b.dll")
+    result = read_inputs([write_jsonl([same, dict(same), other])])
+    assert len(result.image_loads) == 2
+    assert result.counters.duplicates_dropped == 1
+    assert result.counters.duplicate_conflicts == 0

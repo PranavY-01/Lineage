@@ -17,7 +17,13 @@ from lineage_ir.config import (
     MIB,
 )
 from lineage_ir.errors import InputError, UsageError
-from lineage_ir.ingest.normalize import Invalid, Irrelevant, dedupe_and_sort, normalize_record
+from lineage_ir.ingest.normalize import (
+    Invalid,
+    Irrelevant,
+    Item,
+    dedupe_and_sort,
+    normalize_record,
+)
 from lineage_ir.ingest.windows.evtx_reader import read_evtx
 from lineage_ir.ingest.windows.json_reader import (
     UTF8_BOM,
@@ -27,7 +33,8 @@ from lineage_ir.ingest.windows.json_reader import (
     read_jsonl,
 )
 from lineage_ir.models import (
-    Event,
+    IMAGE_LOAD_EVENT_ID,
+    ErrorEntry,
     IngestCounters,
     IngestResult,
     InputFile,
@@ -158,9 +165,20 @@ def _records(item: _Resolved) -> Iterator[RawItem]:
     return read_jsonl(item.path)
 
 
-def _span(events: Iterable[Event]) -> TimeSpan | None:
-    stamps = [e.ts_us for e in events]
+def _span(items: Iterable[Item]) -> TimeSpan | None:
+    stamps = [e.ts_us for e in items]
     return TimeSpan(start_us=min(stamps), end_us=max(stamps)) if stamps else None
+
+
+def _conflict_error(kept: tuple[str, int], dropped: tuple[str, int]) -> ErrorEntry:
+    return ErrorEntry(
+        kind="duplicate_conflict",
+        subject=f"{dropped[0]}:{dropped[1]}",
+        message=(
+            f"dropped; conflicts with kept record {kept[0]}:{kept[1]} "
+            "(same host, channel and record ID or content key, different content)"
+        ),
+    )
 
 
 def read_inputs(paths: Sequence[Path], options: IngestOptions | None = None) -> IngestResult:
@@ -176,7 +194,7 @@ def read_inputs(paths: Sequence[Path], options: IngestOptions | None = None) -> 
     samples: list[InvalidRecord] = []
     bad_guid = out_of_order = 0
     cap_reached = False
-    accepted: list[tuple[int, Event]] = []
+    accepted: list[tuple[int, Item]] = []
     hosts_seen: set[str] = set()
 
     for file_order, item in enumerate(resolved):
@@ -222,11 +240,15 @@ def read_inputs(paths: Sequence[Path], options: IngestOptions | None = None) -> 
         f"--host {host}: no events for this host" for host in sorted(host_filter - hosts_seen)
     )
     deduped = dedupe_and_sort(accepted)
+    del accepted
     events = deduped.events
+    everything = (*events, *deduped.image_loads)
     event_ids = Counter(e.event_id for e in events)
+    if deduped.image_loads:
+        event_ids[IMAGE_LOAD_EVENT_ID] = len(deduped.image_loads)
 
     reasons: set[str] = set()
-    if not events:
+    if not everything:
         reasons.add("no_events")
     if invalid:
         reasons.add("invalid_records")
@@ -250,13 +272,15 @@ def read_inputs(paths: Sequence[Path], options: IngestOptions | None = None) -> 
     return IngestResult(
         inputs=tuple(r.info for r in resolved),
         events=events,
+        image_loads=deduped.image_loads,
         counters=counters,
         event_ids_seen={str(k): event_ids[k] for k in sorted(event_ids)},
-        hosts=tuple(sorted({e.host for e in events})),
-        span=_span(events),
+        hosts=tuple(sorted({e.host for e in everything})),
+        span=_span(everything),
         unknown_keys=dict(sorted(unknown_keys.items())),
         invalid_samples=tuple(samples),
         record_cap_reached=cap_reached,
         reasons=tuple(sorted(reasons)),
         warnings=tuple(warnings),
+        errors=tuple(_conflict_error(kept, dropped) for kept, dropped in deduped.conflicts),
     )

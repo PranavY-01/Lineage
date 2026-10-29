@@ -3,6 +3,7 @@ import random
 from pathlib import Path
 from typing import Any
 
+from lineage_ir.ingest.normalize import content_digest
 from lineage_ir.ingest.reader import read_inputs
 
 SHAPES = ("shape_a.jsonl", "shape_b.jsonl", "shape_c.jsonl")
@@ -52,7 +53,7 @@ def test_all_shapes_together_dedupe_to_one_copy(fixtures_dir: Path) -> None:
     assert {e.source.file for e in result.events} == {"shape_a.jsonl"}
 
 
-def test_duplicates_fixture(fixtures_dir: Path) -> None:
+def test_duplicates_fixture(fixtures_dir: Path, tmp_path: Path) -> None:
     result = read_inputs([fixtures_dir / "duplicates.jsonl"])
     counters = result.counters
     assert counters.records_total == 7
@@ -60,8 +61,32 @@ def test_duplicates_fixture(fixtures_dir: Path) -> None:
     assert counters.duplicate_conflicts == 1
     assert len(result.events) == 4
     assert result.reasons == ("duplicate_conflicts",)
+
+    # Records 2 and 3 share a record ID with different content and the same time: the
+    # copy with the smaller content hash is kept, and both locations are reported.
+    lines = (fixtures_dir / "duplicates.jsonl").read_text(encoding="utf-8").splitlines()
+    copies = []
+    for index in (2, 3):
+        single = tmp_path / f"line{index}.jsonl"
+        single.write_text(lines[index] + "\n", encoding="utf-8", newline="\n")
+        event = read_inputs([single]).events[0]
+        copies.append((content_digest(event), index, event))
+    kept_digest, kept_index, kept = min(copies)
+    dropped_index = ({2, 3} - {kept_index}).pop()
     network = [e for e in result.events if e.event_id == 3]
-    assert network[0].fields["destination_port"] == "80"
+    assert network[0].fields["destination_port"] == kept.fields["destination_port"]
+    assert network[0].source.index == kept_index
+    assert [e.model_dump() for e in result.errors] == [
+        {
+            "kind": "duplicate_conflict",
+            "subject": f"duplicates.jsonl:{dropped_index}",
+            "message": (
+                f"dropped; conflicts with kept record duplicates.jsonl:{kept_index} "
+                "(same host, channel and record ID or content key, different content)"
+            ),
+        }
+    ]
+    assert kept_digest == content_digest(network[0])
 
 
 def test_broken_fixture_counts_every_reason(fixtures_dir: Path) -> None:

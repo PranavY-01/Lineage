@@ -48,11 +48,97 @@ ActivityKind = Literal[
     "remote_thread",
     "pipe",
     "wmi",
-    "image_load",
     "terminate",
     "other",
 ]
 GhostReason = Literal["parent_reference", "activity_reference", "access_reference"]
+
+IMAGE_LOAD_EVENT_ID = 7
+IMAGE_LOADS_KEPT = 50
+
+
+class ImageLoad(FrozenModel):
+    """One retained event 7 on a node; image loads are stored in this slim form only."""
+
+    ts_us: int
+    image_loaded: str | None
+    signed: str | None
+    source: SourceRef
+
+
+class ImageLoadRecord:
+    """Slim, immutable ingest form of an event 7: routing fields plus provenance.
+
+    A plain slotted class instead of an Event keeps millions of image loads affordable;
+    an ImageLoad with a full SourceRef is built only for the loads a node retains.
+    """
+
+    __slots__ = (
+        "host",
+        "channel",
+        "record_id",
+        "ts_us",
+        "process_guid",
+        "pid",
+        "image",
+        "user",
+        "image_loaded",
+        "signed",
+        "file",
+        "file_sha256",
+        "index",
+    )
+    event_id = IMAGE_LOAD_EVENT_ID
+
+    host: str
+    channel: str
+    record_id: int | None
+    ts_us: int
+    process_guid: str | None
+    pid: int | None
+    image: str | None
+    user: str | None
+    image_loaded: str | None
+    signed: str | None
+    file: str
+    file_sha256: str
+    index: int
+
+    def __init__(self, **values: object) -> None:
+        for name in self.__slots__:
+            object.__setattr__(self, name, values[name])
+
+    def __setattr__(self, name: str, value: object) -> None:
+        raise AttributeError(f"{type(self).__name__} is immutable")
+
+    def content(self) -> list[object]:
+        """The identity of the record without its provenance."""
+        return [
+            self.host,
+            self.channel,
+            self.record_id,
+            self.ts_us,
+            self.process_guid,
+            self.pid,
+            self.image,
+            self.user,
+            self.image_loaded,
+            self.signed,
+        ]
+
+    @property
+    def source(self) -> SourceRef:
+        return SourceRef(
+            file=self.file, file_sha256=self.file_sha256, index=self.index, record_id=self.record_id
+        )
+
+    def to_image_load(self) -> ImageLoad:
+        return ImageLoad(
+            ts_us=self.ts_us,
+            image_loaded=self.image_loaded,
+            signed=self.signed,
+            source=self.source,
+        )
 
 
 class Activity(FrozenModel):
@@ -91,6 +177,16 @@ class ProcessNode(FrozenModel):
     ghost_reason: GhostReason | None
     create_record: SourceRef | None
     activity: tuple[Activity, ...]
+    image_load_count: int
+    image_loads: tuple[ImageLoad, ...]
+
+
+class ErrorEntry(FrozenModel):
+    """A non-fatal problem; names files, indexes and reason codes, never record content."""
+
+    kind: str
+    subject: str
+    message: str
 
 
 InputFormat = Literal["evtx", "json", "jsonl"]
@@ -136,10 +232,16 @@ class TimeSpan(FrozenModel):
 
 
 class IngestResult(FrozenModel):
-    """Deduplicated, sorted events plus everything ingest could not use."""
+    """Deduplicated, sorted events plus everything ingest could not use.
+
+    Event 7 records are kept apart in ``image_loads`` (same global order as ``events``).
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     inputs: tuple[InputFile, ...]
     events: tuple[Event, ...]
+    image_loads: tuple[ImageLoadRecord, ...]
     counters: IngestCounters
     event_ids_seen: dict[str, int]
     hosts: tuple[str, ...]
@@ -149,6 +251,12 @@ class IngestResult(FrozenModel):
     record_cap_reached: bool
     reasons: tuple[str, ...]
     warnings: tuple[str, ...]
+    errors: tuple[ErrorEntry, ...]
+
+    @property
+    def event_count(self) -> int:
+        """Sysmon events kept after deduplication, image loads included."""
+        return len(self.events) + len(self.image_loads)
 
 
 class Readiness(FrozenModel):

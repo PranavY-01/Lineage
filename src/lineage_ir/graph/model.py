@@ -1,6 +1,6 @@
 """Process graph container: one frozen graph per host (§7)."""
 
-from lineage_ir.models import Event, FrozenModel, ProcessNode
+from lineage_ir.models import Event, FrozenModel, ImageLoad, ProcessNode
 
 
 class BrokenEdge(FrozenModel):
@@ -28,5 +28,6 @@ class ProcessGraph(FrozenModel):
     roots: tuple[str, ...]
     wmi_events: tuple[Event, ...]
     unattached_events: tuple[Event, ...]
+    unattached_image_loads: tuple[ImageLoad, ...]
     broken_edges: tuple[BrokenEdge, ...]
     counters: GraphCounters

@@ -1,22 +1,33 @@
 """Three-pass process graph build (§7.1): creations, ghosts, then edges and activity."""
 
-from collections import Counter
-from collections.abc import Callable, Iterable, Sequence
+from collections import Counter, defaultdict
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
-from itertools import groupby
 from typing import Literal
 
 from lineage_ir.graph.model import BrokenEdge, GraphCounters, ProcessGraph
 from lineage_ir.ingest.normalize import (
     WMI_EVENT_IDS,
+    DigestCache,
     activity_kind,
     activity_summary,
     canonical_guid,
+    image_load_record,
     image_name,
     parse_hashes,
     parse_pid,
 )
-from lineage_ir.models import Activity, Event, GhostReason, ProcessNode, SourceRef
+from lineage_ir.models import (
+    IMAGE_LOAD_EVENT_ID,
+    IMAGE_LOADS_KEPT,
+    Activity,
+    Event,
+    GhostReason,
+    ImageLoad,
+    ImageLoadRecord,
+    ProcessNode,
+    SourceRef,
+)
 
 # Returns (decoded_command, decode_note) for a command line and image name.
 Decoder = Callable[[str | None, str | None], tuple[str | None, str | None]]
@@ -45,9 +56,10 @@ class _Draft:
     end_us: int | None = None
     parent_guid: str | None = None
     ghost_reason: GhostReason | None = None
-    create_record: SourceRef | None = None
-    create_fields: dict[str, str] | None = None
+    create_event: Event | None = None
     activity: list[Activity] = field(default_factory=list)
+    image_load_count: int = 0
+    image_loads: list[ImageLoad] = field(default_factory=list)
     children: list[str] = field(default_factory=list)
 
 
@@ -69,22 +81,30 @@ def _creation_draft(event: Event, guid: str) -> _Draft:
         logon_id=f.get("logon_id"),
         start_us=event.ts_us,
         parent_guid=_guid(event, "parent_process_guid"),
-        create_record=event.source,
-        create_fields=f,
+        create_event=event,
     )
 
 
 def _ghost(
-    guid: str, reason: GhostReason, image: str | None, pid: str | None, **extra: str | None
+    guid: str, reason: GhostReason, image: str | None, pid: int | None, **extra: str | None
 ) -> _Draft:
-    return _Draft(guid=guid, ghost_reason=reason, image=image, pid=parse_pid(pid), **extra)
+    return _Draft(guid=guid, ghost_reason=reason, image=image, pid=pid, **extra)
 
 
-def _references(event: Event) -> Iterable[tuple[str, _Draft]]:
-    """GUIDs an event refers to, each with the ghost it would seed (§7.1 pass 2)."""
-    f = event.fields
-    if event.event_id == 1:
-        parent = _guid(event, "parent_process_guid")
+def _references(item: Event | ImageLoadRecord) -> Iterable[tuple[str, _Draft]]:
+    """GUIDs a record refers to, each with the ghost it would seed (§7.1 pass 2)."""
+    if isinstance(item, ImageLoadRecord):
+        if item.process_guid:
+            yield (
+                item.process_guid,
+                _ghost(
+                    item.process_guid, "activity_reference", item.image, item.pid, user=item.user
+                ),
+            )
+        return
+    f = item.fields
+    if item.event_id == 1:
+        parent = _guid(item, "parent_process_guid")
         if parent:
             yield (
                 parent,
@@ -92,27 +112,25 @@ def _references(event: Event) -> Iterable[tuple[str, _Draft]]:
                     parent,
                     "parent_reference",
                     f.get("parent_image"),
-                    f.get("parent_pid"),
+                    parse_pid(f.get("parent_pid")),
                     command_line=f.get("parent_command_line"),
                     user=f.get("parent_user"),
                 ),
             )
-    elif event.event_id in _ACCESS_EVENT_IDS:
+    elif item.event_id in _ACCESS_EVENT_IDS:
         for side in ("source", "target"):
-            guid = _guid(event, f"{side}_process_guid")
+            guid = _guid(item, f"{side}_process_guid")
             if guid:
-                yield (
-                    guid,
-                    _ghost(guid, "access_reference", f.get(f"{side}_image"), f.get(f"{side}_pid")),
-                )
-    elif event.event_id not in WMI_EVENT_IDS and event.process_guid:
+                pid = parse_pid(f.get(f"{side}_pid"))
+                yield guid, _ghost(guid, "access_reference", f.get(f"{side}_image"), pid)
+    elif item.event_id not in WMI_EVENT_IDS and item.process_guid:
         yield (
-            event.process_guid,
+            item.process_guid,
             _ghost(
-                event.process_guid,
+                item.process_guid,
                 "activity_reference",
-                event.image,
-                event.fields.get("pid"),
+                item.image,
+                parse_pid(f.get("pid")),
                 user=f.get("user"),
             ),
         )
@@ -129,6 +147,24 @@ def _activity(event: Event, role: Literal["actor", "target"]) -> Activity:
         fields=event.fields,
         source=event.source,
     )
+
+
+def _in_order(
+    events: Sequence[Event], loads: Sequence[ImageLoadRecord], digest: DigestCache
+) -> Iterator[Event | ImageLoadRecord]:
+    """Merge two globally ordered streams of one host into one global order (§6.8)."""
+    i = j = 0
+    while i < len(events) and j < len(loads):
+        a, b = events[i], loads[j]
+        key_a, key_b = (a.ts_us, a.record_id or 0), (b.ts_us, b.record_id or 0)
+        if key_a < key_b or (key_a == key_b and digest(a) < digest(b)):
+            yield a
+            i += 1
+        else:
+            yield b
+            j += 1
+    yield from events[i:]
+    yield from loads[j:]
 
 
 def _break_cycles(drafts: dict[str, _Draft]) -> list[BrokenEdge]:
@@ -157,15 +193,32 @@ def _child_key(draft: _Draft) -> tuple[bool, int, str]:
 
 
 def build_host_graph(
-    host: str, events: Sequence[Event], decode: Decoder = _no_decode
+    host: str,
+    events: Sequence[Event],
+    image_loads: Sequence[ImageLoadRecord] = (),
+    decode: Decoder = _no_decode,
 ) -> ProcessGraph:
-    """Build one host's graph from its events in global sort order."""
+    """Build one host's graph from its events and image loads, each in global sort order.
+
+    A full Event 7 among ``events`` is handled exactly like an ImageLoadRecord.
+    """
+    if any(e.event_id == IMAGE_LOAD_EVENT_ID for e in events):
+        if image_loads:
+            raise ValueError("pass image loads either as events or as image_loads, not both")
+        image_loads = [image_load_record(e) for e in events if e.event_id == IMAGE_LOAD_EVENT_ID]
+        events = [e for e in events if e.event_id != IMAGE_LOAD_EVENT_ID]
+
+    digest = DigestCache()
     drafts: dict[str, _Draft] = {}
     unattached: list[Event] = []
+    unattached_loads: list[ImageLoad] = []
+    unattached_load_count = 0
     wmi: list[Event] = []
     conflicts = duplicates = 0
 
-    # Pass 1: creations. Events arrive sorted, so the first creation is the earliest.
+    # Pass 1: creations. A repeat with different fields is a conflict; the earliest by
+    # ts_us, then the smallest content hash, is kept (§7.1 as amended).
+    creators: dict[str, Event] = {}
     for event in events:
         if event.event_id != 1:
             continue
@@ -173,22 +226,27 @@ def build_host_graph(
         if guid is None:
             unattached.append(event)
             continue
-        existing = drafts.get(guid)
-        if existing is None:
+        current = creators.get(guid)
+        if current is None:
+            creators[guid] = event
             drafts[guid] = _creation_draft(event, guid)
-        elif existing.create_fields == event.fields:
+            continue
+        if current.fields == event.fields:
             duplicates += 1
-        else:
-            conflicts += 1
+            continue
+        conflicts += 1
+        if (event.ts_us, digest(event)) < (current.ts_us, digest(current)):
+            creators[guid] = event
+            drafts[guid] = _creation_draft(event, guid)
 
     # Pass 2: one ghost per referenced but uncreated GUID, seeded by its first reference.
     ghosts: Counter[str] = Counter()
-    for event in events:
-        if event.event_id == 1:
-            creator = drafts.get(event.process_guid or "")
-            if creator is None or creator.create_record is not event.source:
+    for item in _in_order(events, image_loads, digest):
+        if isinstance(item, Event) and item.event_id == 1:
+            creator = drafts.get(item.process_guid or "")
+            if creator is None or creator.create_event is not item:
                 continue  # only nodes contribute parent references
-        for guid, ghost in _references(event):
+        for guid, ghost in _references(item):
             if guid not in drafts:
                 drafts[guid] = ghost
                 ghosts[ghost.ghost_reason or ""] += 1
@@ -219,6 +277,18 @@ def build_host_graph(
         if event.event_id == 5 and node.end_us is None:
             node.end_us = event.ts_us
 
+    # Image loads: exact counts, first IMAGE_LOADS_KEPT kept in global order.
+    for load in image_loads:
+        if load.process_guid is None:
+            unattached_load_count += 1
+            if len(unattached_loads) < IMAGE_LOADS_KEPT:
+                unattached_loads.append(load.to_image_load())
+            continue
+        node = drafts[load.process_guid]
+        node.image_load_count += 1
+        if len(node.image_loads) < IMAGE_LOADS_KEPT:
+            node.image_loads.append(load.to_image_load())
+
     broken = _break_cycles(drafts)
 
     # Edges, after loops are broken.
@@ -232,6 +302,7 @@ def build_host_graph(
         name = image_name(draft.image)
         decoded, note = decode(draft.command_line, name)
         children = sorted(draft.children, key=lambda g: _child_key(drafts[g]))
+        record: SourceRef | None = draft.create_event.source if draft.create_event else None
         nodes[guid] = ProcessNode(
             host=host,
             guid=guid,
@@ -250,10 +321,12 @@ def build_host_graph(
             end_us=draft.end_us,
             parent_guid=draft.parent_guid,
             children=tuple(children),
-            is_ghost=draft.create_record is None,
+            is_ghost=record is None,
             ghost_reason=draft.ghost_reason,
-            create_record=draft.create_record,
+            create_record=record,
             activity=tuple(draft.activity),
+            image_load_count=draft.image_load_count,
+            image_loads=tuple(draft.image_loads),
         )
 
     roots = sorted(
@@ -266,20 +339,32 @@ def build_host_graph(
         roots=tuple(d.guid for d in roots),
         wmi_events=tuple(wmi),
         unattached_events=tuple(unattached),
+        unattached_image_loads=tuple(unattached_loads),
         broken_edges=tuple(broken),
         counters=GraphCounters(
             ghosts=dict(sorted(ghosts.items())),
             creation_conflicts=conflicts,
             duplicate_creations=duplicates,
             cycles_broken=len(broken),
-            unattached_events=len(unattached),
+            unattached_events=len(unattached) + unattached_load_count,
         ),
     )
 
 
-def build_graphs(events: Sequence[Event], decode: Decoder = _no_decode) -> dict[str, ProcessGraph]:
-    """One independent graph per host; events must be in the global sort order (§6.8)."""
+def build_graphs(
+    events: Sequence[Event],
+    image_loads: Sequence[ImageLoadRecord] = (),
+    decode: Decoder = _no_decode,
+) -> dict[str, ProcessGraph]:
+    """One independent graph per host; inputs must be in the global sort order (§6.8)."""
+    by_host_events: defaultdict[str, list[Event]] = defaultdict(list)
+    by_host_loads: defaultdict[str, list[ImageLoadRecord]] = defaultdict(list)
+    for event in events:
+        by_host_events[event.host].append(event)
+    for load in image_loads:
+        by_host_loads[load.host].append(load)
+    hosts = sorted(set(by_host_events) | set(by_host_loads))
     return {
-        host: build_host_graph(host, list(group), decode)
-        for host, group in groupby(events, key=lambda e: e.host)
+        host: build_host_graph(host, by_host_events[host], by_host_loads[host], decode)
+        for host in hosts
     }

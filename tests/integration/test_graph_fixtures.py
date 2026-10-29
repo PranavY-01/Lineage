@@ -1,5 +1,6 @@
 """Graph fixtures, invariants (§7.6), shuffle invariance and scale (§14.3 item 1)."""
 
+import functools
 import json
 import random
 from collections import Counter
@@ -11,32 +12,52 @@ import pytest
 from lineage_ir.graph.builder import build_graphs
 from lineage_ir.graph.model import ProcessGraph
 from lineage_ir.graph.traverse import ancestors, descendants
-from lineage_ir.ingest.normalize import WMI_EVENT_IDS, canonical_guid
+from lineage_ir.ingest import reader
+from lineage_ir.ingest.normalize import WMI_EVENT_IDS, canonical_guid, normalize_record
 from lineage_ir.ingest.reader import read_inputs
-from lineage_ir.models import Event
+from lineage_ir.models import IMAGE_LOADS_KEPT, Event, IngestResult
 
 HOST = "ws-14.corp.example"
-GRAPH_FIXTURES = ("ghosts", "zero_guid", "bad_guid", "cycle", "multi_host", "duplicates")
-# duplicates.jsonl holds a conflicting duplicate, which §6.8 resolves by input order, so a
-# shuffle legitimately changes which copy survives; it is checked for invariants only.
-SHUFFLE_FIXTURES = tuple(name for name in GRAPH_FIXTURES if name != "duplicates")
+GRAPH_FIXTURES = (
+    "ghosts",
+    "zero_guid",
+    "bad_guid",
+    "cycle",
+    "multi_host",
+    "duplicates",
+    "ties",
+)
 
 
 def guid(tag: int) -> str:
     return f"6c1e0a2b-7d3f-4e5a-9b8c-{tag:012x}"
 
 
-def load(path: Path) -> tuple[tuple[Event, ...], dict[str, ProcessGraph]]:
-    events = read_inputs([path]).events
-    return events, build_graphs(events)
+def load(path: Path) -> tuple[IngestResult, dict[str, ProcessGraph]]:
+    result = read_inputs([path])
+    return result, build_graphs(result.events, result.image_loads)
 
 
 def _valid(event: Event, key: str) -> str | None:
     return canonical_guid(event.fields.get(key))[0]
 
 
-def assert_invariants(events: tuple[Event, ...], graphs: dict[str, ProcessGraph]) -> None:
+def assert_invariants(result: IngestResult, graphs: dict[str, ProcessGraph]) -> None:
     """§7.6 invariants 1, 2 and 5 (as amended): every event is accounted for exactly once."""
+    events = result.events
+    attached_loads = unattached_loads = 0
+    for graph in graphs.values():
+        unattached_loads += graph.counters.unattached_events - len(graph.unattached_events)
+        assert len(graph.unattached_image_loads) == min(
+            graph.counters.unattached_events - len(graph.unattached_events), IMAGE_LOADS_KEPT
+        )
+        for node in graph.nodes.values():
+            attached_loads += node.image_load_count
+            assert len(node.image_loads) == min(node.image_load_count, IMAGE_LOADS_KEPT)
+    with_guid = sum(1 for load in result.image_loads if load.process_guid is not None)
+    assert attached_loads == with_guid
+    assert unattached_loads == len(result.image_loads) - with_guid
+
     actor: Counter[tuple[str, int]] = Counter()
     target: Counter[tuple[str, int]] = Counter()
     created: Counter[tuple[str, int]] = Counter()
@@ -88,8 +109,8 @@ def assert_invariants(events: tuple[Event, ...], graphs: dict[str, ProcessGraph]
 
 @pytest.mark.parametrize("name", GRAPH_FIXTURES)
 def test_invariants_hold_on_fixtures(fixtures_dir: Path, name: str) -> None:
-    events, graphs = load(fixtures_dir / f"{name}.jsonl")
-    assert_invariants(events, graphs)
+    result, graphs = load(fixtures_dir / f"{name}.jsonl")
+    assert_invariants(result, graphs)
 
 
 def test_ghost_reasons_and_seeding(fixtures_dir: Path) -> None:
@@ -159,9 +180,9 @@ def test_zero_guids(fixtures_dir: Path) -> None:
 
 
 def test_bad_guids(fixtures_dir: Path) -> None:
-    result = read_inputs([fixtures_dir / "bad_guid.jsonl"])
+    result, graphs = load(fixtures_dir / "bad_guid.jsonl")
     assert result.counters.bad_guid == 6
-    graph = build_graphs(result.events)[HOST]
+    graph = graphs[HOST]
     assert list(graph.nodes) == [guid(0xB1)]
     assert graph.nodes[guid(0xB1)].parent_guid is None
     assert graph.counters.ghosts == {}
@@ -200,7 +221,7 @@ def _graph_dump(graphs: dict[str, ProcessGraph]) -> Any:
     return _comparable({h: g.model_dump() for h, g in graphs.items()})
 
 
-@pytest.mark.parametrize("name", SHUFFLE_FIXTURES)
+@pytest.mark.parametrize("name", GRAPH_FIXTURES)
 def test_shuffle_invariance(fixtures_dir: Path, tmp_path: Path, name: str) -> None:
     lines = (fixtures_dir / f"{name}.jsonl").read_text(encoding="utf-8").splitlines()
     baseline = _graph_dump(load(fixtures_dir / f"{name}.jsonl")[1])
@@ -209,9 +230,132 @@ def test_shuffle_invariance(fixtures_dir: Path, tmp_path: Path, name: str) -> No
         random.Random(seed).shuffle(shuffled)
         path = tmp_path / f"{name}-{seed}.jsonl"
         path.write_text("\n".join(shuffled) + "\n", encoding="utf-8", newline="\n")
-        events, graphs = load(path)
+        result, graphs = load(path)
         assert _graph_dump(graphs) == baseline
-        assert_invariants(events, graphs)
+        assert_invariants(result, graphs)
+
+
+def test_ties_resolve_by_content_hash(fixtures_dir: Path) -> None:
+    result, graphs = load(fixtures_dir / "ties.jsonl")
+    graph = graphs[HOST]
+    assert result.counters.duplicates_dropped == 1
+    assert graph.counters.creation_conflicts == 1
+    # Same time, no record IDs: siblings order by start time then GUID.
+    assert graph.nodes[guid(0x10)].children == (guid(0x11), guid(0x12), guid(0x13), guid(0x14))
+    # The conflicting creation kept is the one with the smaller content hash.
+    assert graph.nodes[guid(0x14)].command_line == _smaller_hash_command(result, guid(0x14))
+    # A ghost first referenced by two records at the same instant takes the hash-first one.
+    ghost = graph.nodes[guid(0x99)]
+    assert ghost.ghost_reason == "activity_reference"
+    assert ghost.user in {"CORP\\first", "CORP\\second"}
+    assert graph.nodes[guid(0x11)].image_load_count == 3
+
+
+def _smaller_hash_command(result: IngestResult, process: str) -> str | None:
+    from lineage_ir.ingest.normalize import content_digest
+
+    creations = [e for e in result.events if e.event_id == 1 and e.process_guid == process]
+    assert len(creations) == 2
+    return min(creations, key=content_digest).fields.get("command_line")
+
+
+def _full_event_load(monkeypatch: pytest.MonkeyPatch, path: Path) -> dict[str, ProcessGraph]:
+    """Reference build: event 7 kept as full Events all the way into the graph builder."""
+    with monkeypatch.context() as patch:
+        patch.setattr(
+            reader, "normalize_record", functools.partial(normalize_record, slim_image_loads=False)
+        )
+        result = read_inputs([path])
+    assert result.image_loads == ()
+    return build_graphs(result.events)
+
+
+def _image_load_mix(path: Path) -> Path:
+    """Processes, ghosts, unattached records and many event 7s, with deliberate ties."""
+    rng = random.Random(7)
+    rows: list[dict[str, Any]] = []
+    channel = "Microsoft-Windows-Sysmon/Operational"
+
+    def row(event_id: int, second: int, rid: int | None, **fields: str) -> None:
+        record: dict[str, Any] = {
+            "EventID": event_id,
+            "Hostname": rng.choice([HOST, "ws-15.corp.example"]),
+            "Channel": channel,
+            "UtcTime": f"2026-10-12 11:{second // 60:02d}:{second % 60:02d}.000",
+        }
+        if rid is not None:
+            record["RecordNumber"] = rid
+        record.update(fields)
+        rows.append(record)
+
+    rid = 0
+    for tag in range(1, 31):
+        rid += 1
+        parent = rng.choice([None, *range(1, tag)]) if tag > 1 else None
+        fields = {
+            "ProcessGuid": "{" + guid(tag) + "}",
+            "ProcessId": str(tag),
+            "Image": f"C:\\Tools\\p{tag % 5}.exe",
+            "User": "CORP\\jdoe",
+        }
+        if parent:
+            fields["ParentProcessGuid"] = "{" + guid(parent) + "}"
+        row(1, tag, rid, **fields)
+    for n in range(1500):
+        # 31-40 are never created; 0 has no valid GUID; process 1 is busy enough to pass
+        # the 50 retained loads.
+        tag = rng.choice([*range(1, 41), *[0] * 10, *[1] * 15])
+        process = "{" + guid(tag) + "}" if tag else rng.choice(["{bad}", "-"])
+        second = rng.randrange(0, 60)
+        rid_value = None if n % 3 == 0 else 1000 + n
+        if n % 5 == 0:
+            row(
+                3,
+                second,
+                rid_value,
+                ProcessGuid=process,
+                Image=f"C:\\Tools\\q{tag}.exe",
+                ProcessId=str(500 + tag),
+                User=f"CORP\\u{n % 4}",
+                Protocol="tcp",
+                Initiated="true",
+                DestinationIp=f"203.0.113.{n % 200}",
+                DestinationPort="443",
+            )
+        else:
+            row(
+                7,
+                second,
+                rid_value,
+                ProcessGuid=process,
+                Image=f"C:\\Tools\\q{tag}.exe",
+                ProcessId=str(500 + tag),
+                User=f"CORP\\u{n % 4}",
+                ImageLoaded=f"C:\\Windows\\System32\\m{n % 90}.dll",
+                Signed="true",
+            )
+    out = path / "image_mix.jsonl"
+    out.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+    return out
+
+
+@pytest.mark.parametrize("name", [*GRAPH_FIXTURES, "image_mix"])
+def test_slim_image_loads_match_full_event_build(
+    fixtures_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str
+) -> None:
+    path = _image_load_mix(tmp_path) if name == "image_mix" else fixtures_dir / f"{name}.jsonl"
+    slim_result, slim = load(path)
+    full = _full_event_load(monkeypatch, path)
+    assert {h: g.model_dump() for h, g in slim.items()} == {
+        h: g.model_dump() for h, g in full.items()
+    }
+    if name == "image_mix":
+        assert len(slim_result.image_loads) > 1000
+        assert any(g.counters.unattached_events > 50 for g in slim.values())
+        assert any(n.image_load_count > 50 for g in slim.values() for n in g.nodes.values())
+        assert any(
+            n.is_ghost and n.image_load_count for g in slim.values() for n in g.nodes.values()
+        )
 
 
 def _create(rid: int, tag: int, parent: int | None, second: int) -> dict[str, Any]:
@@ -235,13 +379,13 @@ def test_deep_chain_does_not_recurse(tmp_path: Path) -> None:
     rows = [_create(i + 1, i + 1, i if i else None, i) for i in range(depth)]
     path = tmp_path / "deep_chain.jsonl"
     path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
-    events, graphs = load(path)
+    result, graphs = load(path)
     graph = graphs[HOST]
     assert len(graph.nodes) == depth
     chain = ancestors(graph, guid(depth))
     assert len(chain) == depth - 1 and chain[0] == guid(depth - 1) and chain[-1] == guid(1)
     assert len(descendants(graph, guid(1))) == depth - 1
-    assert_invariants(events, graphs)
+    assert_invariants(result, graphs)
 
 
 def test_wide_fanout(tmp_path: Path) -> None:

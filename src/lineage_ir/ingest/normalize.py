@@ -3,6 +3,7 @@
 import hashlib
 import json
 import re
+import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -11,7 +12,13 @@ from lineage_ir.config import SYSMON_CHANNEL, SYSMON_PROVIDER
 from lineage_ir.ingest.field_aliases import TIME_CREATED_CANDIDATES, normalize_key, resolve_system
 from lineage_ir.ingest.shapes import detect_shape
 from lineage_ir.ingest.timeparse import NaiveTimestamp, parse_iso, parse_utc_time
-from lineage_ir.models import ActivityKind, Event, SourceRef
+from lineage_ir.models import (
+    IMAGE_LOAD_EVENT_ID,
+    ActivityKind,
+    Event,
+    ImageLoadRecord,
+    SourceRef,
+)
 
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 _ZERO_GUID = "00000000-0000-0000-0000-000000000000"
@@ -42,6 +49,15 @@ class Normalized:
 
 
 @dataclass(frozen=True, slots=True)
+class NormalizedImageLoad:
+    """A Sysmon event 7 in its slim form."""
+
+    event: ImageLoadRecord
+    unknown_keys: tuple[str, ...]
+    bad_guids: int
+
+
+@dataclass(frozen=True, slots=True)
 class Irrelevant:
     """A record from a channel other than Sysmon."""
 
@@ -55,7 +71,7 @@ class Invalid:
     reason: str
 
 
-Outcome = Normalized | Irrelevant | Invalid
+Outcome = Normalized | NormalizedImageLoad | Irrelevant | Invalid
 
 
 def canonical_guid(value: str | None) -> tuple[str | None, bool]:
@@ -212,8 +228,23 @@ def _event_data(raw: Mapping[str, Any]) -> tuple[dict[str, str], list[str]]:
     return fields, unknown
 
 
-def normalize_record(record: object, file: str, file_sha256: str, index: int) -> Outcome:
-    """Classify one raw record and, for Sysmon records, build its Event."""
+def _interned(value: str | None) -> str | None:
+    return None if value is None else sys.intern(value)
+
+
+def normalize_record(
+    record: object,
+    file: str,
+    file_sha256: str,
+    index: int,
+    *,
+    slim_image_loads: bool = True,
+) -> Outcome:
+    """Classify one raw record and, for Sysmon records, build its Event.
+
+    Event 7 becomes a slim ImageLoadRecord unless ``slim_image_loads`` is false, which
+    exists so tests can compare the slim path with a full-Event build.
+    """
     shaped = detect_shape(record)
     if shaped is None:
         return Invalid("unknown_shape")
@@ -260,9 +291,28 @@ def normalize_record(record: object, file: str, file_sha256: str, index: int) ->
 
     host_value = _to_text(resolve_system(shaped.system, "host", shape_a=shape_a)[0])
     record_id = _record_id(resolve_system(shaped.system, "record_id", shape_a=shape_a)[0])
+    host = (host_value or "unknown").strip().lower()
+
+    if event_id == IMAGE_LOAD_EVENT_ID and slim_image_loads:
+        load = ImageLoadRecord(
+            host=sys.intern(host),
+            channel=sys.intern(channel or SYSMON_CHANNEL),
+            record_id=record_id,
+            ts_us=ts_us,
+            process_guid=_interned(canonical_guid(fields.get("process_guid"))[0]),
+            pid=parse_pid(fields.get("pid")),
+            image=_interned(fields.get("image") or None),
+            user=_interned(fields.get("user")),
+            image_loaded=_interned(fields.get("image_loaded")),
+            signed=_interned(fields.get("signed")),
+            file=file,
+            file_sha256=file_sha256,
+            index=index,
+        )
+        return NormalizedImageLoad(load, tuple(unknown), bad_guids)
 
     event = Event(
-        host=(host_value or "unknown").strip().lower(),
+        host=host,
         channel=channel or SYSMON_CHANNEL,
         event_id=event_id,
         ts_us=ts_us,
@@ -282,7 +332,6 @@ WMI_EVENT_IDS = frozenset({19, 20, 21})
 _ACTIVITY_KINDS: dict[int, ActivityKind] = {
     3: "network",
     5: "terminate",
-    7: "image_load",
     8: "remote_thread",
     10: "process_access",
     11: "file_create",
@@ -350,8 +399,6 @@ def activity_summary(event: Event, role: Literal["actor", "target"] = "actor") -
     if kind == "pipe":
         verb = "created pipe" if event.event_id == 17 else "connected pipe"
         return f"{verb} {f.get('pipe_name', '?')}"
-    if kind == "image_load":
-        return f"loaded {f.get('image_loaded', '?')}"
     if kind == "terminate":
         return "terminated"
     if kind == "wmi":
@@ -360,51 +407,143 @@ def activity_summary(event: Event, role: Literal["actor", "target"] = "actor") -
     return f"event {event.event_id}"
 
 
-def content_digest(event: Event) -> str:
-    """SHA-256 of the canonical JSON of an event without its provenance."""
-    payload = event.model_dump(mode="json", exclude={"source"})
+def _sha256_json(payload: object) -> str:
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(blob.encode("ascii")).hexdigest()
 
 
+def image_load_record(event: Event) -> ImageLoadRecord:
+    """The slim form of a full event 7 (used when a full Event reaches the graph)."""
+    return ImageLoadRecord(
+        host=event.host,
+        channel=event.channel,
+        record_id=event.record_id,
+        ts_us=event.ts_us,
+        process_guid=event.process_guid,
+        pid=event.pid,
+        image=event.image,
+        user=event.fields.get("user"),
+        image_loaded=event.fields.get("image_loaded"),
+        signed=event.fields.get("signed"),
+        file=event.source.file,
+        file_sha256=event.source.file_sha256,
+        index=event.source.index,
+    )
+
+
+Item = Event | ImageLoadRecord
+
+
+def content_digest(item: Item) -> str:
+    """SHA-256 of a record's canonical content without its provenance.
+
+    Event 7 is hashed in its slim form whether it arrives as an Event or an ImageLoadRecord,
+    so both paths deduplicate and order image loads identically.
+    """
+    if isinstance(item, Event) and item.event_id == IMAGE_LOAD_EVENT_ID:
+        item = image_load_record(item)
+    if isinstance(item, ImageLoadRecord):
+        return _sha256_json(["image_load", *item.content()])
+    return _sha256_json(item.model_dump(mode="json", exclude={"source"}))
+
+
+def _location(item: Item) -> tuple[str, int]:
+    if isinstance(item, ImageLoadRecord):
+        return item.file, item.index
+    return item.source.file, item.source.index
+
+
+class DigestCache:
+    """Content hashes computed on demand and remembered per record object."""
+
+    def __init__(self) -> None:
+        self._cache: dict[int, str] = {}
+        self._keep: list[Item] = []
+
+    def __call__(self, item: Item) -> str:
+        key = id(item)
+        digest = self._cache.get(key)
+        if digest is None:
+            digest = self._cache[key] = content_digest(item)
+            self._keep.append(item)  # keeps id() unique while the cache is alive
+        return digest
+
+
+def global_order(items: list[tuple[int, Item]], digest: DigestCache) -> list[Item]:
+    """Sort by (host, ts_us, record_id or 0, content hash, input file order, index) (§6.8).
+
+    The content hash is computed only for records whose first three keys tie.
+    """
+    items.sort(key=lambda p: (p[1].host, p[1].ts_us, p[1].record_id or 0, p[0], _location(p[1])[1]))
+    ordered: list[Item] = []
+    start = 0
+    while start < len(items):
+        head = items[start][1]
+        key = (head.host, head.ts_us, head.record_id or 0)
+        end = start + 1
+        while end < len(items):
+            other = items[end][1]
+            if (other.host, other.ts_us, other.record_id or 0) != key:
+                break
+            end += 1
+        run = items[start:end]
+        if len(run) > 1:
+            run.sort(key=lambda p: (digest(p[1]), p[0], _location(p[1])[1]))
+        ordered.extend(item for _, item in run)
+        start = end
+    return ordered
+
+
 @dataclass(frozen=True, slots=True)
 class Deduped:
-    """Events in global order plus dedupe counters."""
+    """Events and image loads in global order, dedupe counters and conflict locations."""
 
     events: tuple[Event, ...]
+    image_loads: tuple[ImageLoadRecord, ...]
     duplicates_dropped: int
     duplicate_conflicts: int
+    conflicts: tuple[tuple[tuple[str, int], tuple[str, int]], ...]
 
 
-def dedupe_and_sort(events_in_input_order: Iterable[tuple[int, Event]]) -> Deduped:
-    """Drop duplicates (first by input order wins) and sort globally (§6.8).
+def dedupe_and_sort(items_in_input_order: Iterable[tuple[int, Item]]) -> Deduped:
+    """Drop duplicates and sort globally (§6.8, as amended).
 
-    Each item is ``(input_file_order, event)``; items must arrive in input order.
+    Each item is ``(input_file_order, record)`` and items arrive in input order. Records with
+    a record ID are keyed by (host, channel, record ID) and hashed only on a key collision;
+    records without one are keyed by their content hash. Identical copies keep the first
+    seen; conflicting copies keep the earliest ``ts_us``, then the smallest content hash.
+    Each conflict is reported as ((kept file, index), (dropped file, index)).
     """
-    seen: dict[tuple[str, ...], str] = {}
-    kept: list[tuple[tuple[str, int, int, int, int], Event]] = []
-    dropped = conflicts = 0
-    for file_order, event in events_in_input_order:
-        digest = content_digest(event)
-        if event.record_id is not None:
-            key: tuple[str, ...] = (event.host, event.channel, str(event.record_id))
+    digest = DigestCache()
+    kept: dict[tuple[object, ...], tuple[int, Item]] = {}
+    dropped = 0
+    conflicts: list[tuple[tuple[str, int], tuple[str, int]]] = []
+    for file_order, item in items_in_input_order:
+        if item.record_id is not None:
+            key: tuple[object, ...] = (item.host, item.channel, item.record_id)
         else:
-            key = ("digest", digest)
-        previous = seen.get(key)
-        if previous is not None:
-            if previous == digest:
-                dropped += 1
-            else:
-                conflicts += 1
+            key = ("digest", digest(item))
+        previous = kept.get(key)
+        if previous is None:
+            kept[key] = (file_order, item)
             continue
-        seen[key] = digest
-        sort_key = (
-            event.host,
-            event.ts_us,
-            event.record_id or 0,
-            file_order,
-            event.source.index,
-        )
-        kept.append((sort_key, event))
-    kept.sort(key=lambda item: item[0])
-    return Deduped(tuple(e for _, e in kept), dropped, conflicts)
+        old = previous[1]
+        if digest(old) == digest(item):
+            dropped += 1
+            continue
+        if (item.ts_us, digest(item)) < (old.ts_us, digest(old)):
+            kept[key] = (file_order, item)
+            conflicts.append((_location(item), _location(old)))
+        else:
+            conflicts.append((_location(old), _location(item)))
+
+    survivors = list(kept.values())
+    events = [p for p in survivors if isinstance(p[1], Event)]
+    loads = [p for p in survivors if isinstance(p[1], ImageLoadRecord)]
+    return Deduped(
+        events=tuple(global_order(events, digest)),  # type: ignore[arg-type]
+        image_loads=tuple(global_order(loads, digest)),  # type: ignore[arg-type]
+        duplicates_dropped=dropped,
+        duplicate_conflicts=len(conflicts),
+        conflicts=tuple(conflicts),
+    )
