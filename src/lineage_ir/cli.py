@@ -133,7 +133,9 @@ def validate(
         _fail_internal(verbose, no_color)
 
     if output_format is OutputFormat.json:
-        typer.echo(report_json.dumps(report_json.validate_document(result)), nl=False)
+        # Bytes bypass newline translation, so the document keeps LF on every platform.
+        document = report_json.dumps(report_json.validate_document(result))
+        typer.echo(document.encode("ascii"), nl=False)
     else:
         terminal.render_validate(terminal.make_console(no_color=no_color), result, max_errors)
     raise typer.Exit(result.exit_code)

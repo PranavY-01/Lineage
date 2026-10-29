@@ -63,7 +63,7 @@ def test_hostile_values_in_text_view_are_escaped(tmp_path: Path) -> None:
         "Evil\x1b]0;title\x07Key": "v",
     }
     path = tmp_path / "hostile.jsonl"
-    path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(record) + "\n", encoding="utf-8", newline="\n")
     result = CliRunner().invoke(cli.app, ["validate", str(path), "--no-color"])
     assert result.exit_code == 0
     assert "\x1b" not in result.output

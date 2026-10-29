@@ -66,6 +66,7 @@ def test_validate_no_sysmon_exit_4(tmp_path: Path) -> None:
     path.write_text(
         json.dumps({"EventID": 4624, "Channel": "Security", "Hostname": "h"}) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
     proc = run("validate", path)
     assert proc.returncode == 4
@@ -81,7 +82,7 @@ def test_validate_utf16_exit_3() -> None:
 
 def test_validate_not_json_exit_3(tmp_path: Path) -> None:
     path = tmp_path / "notes.txt"
-    path.write_text("hello\n", encoding="utf-8")
+    path.write_text("hello\n", encoding="utf-8", newline="\n")
     proc = run("validate", path, "--format", "json")
     assert proc.returncode == 3
     assert proc.stdout == ""
@@ -127,6 +128,19 @@ def test_validate_json_prints_only_json() -> None:
     assert document["reasons"] == ["duplicate_conflicts"]
     assert document["status"] == "valid"
     assert proc.stdout.isascii()
+
+
+def test_validate_json_uses_lf_line_endings() -> None:
+    proc = subprocess.run(
+        [sys.executable, "-m", "lineage_ir", "validate", str(FIXTURES / "duplicates.jsonl")]
+        + ["--format", "json"],
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert proc.stdout.endswith(b"}\n")
+    assert b"\r" not in proc.stdout
 
 
 def test_validate_record_cap_exit_4() -> None:

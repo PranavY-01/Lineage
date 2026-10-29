@@ -94,7 +94,9 @@ def test_jsonl_long_final_line_without_newline(tmp_path: Path) -> None:
 
 def test_json_array_document(tmp_path: Path) -> None:
     path = tmp_path / "in.json"
-    path.write_text('[\n {"a": 1},\n {"a": NaN},\n {"b": 1, "b": 2},\n 5\n]\n', encoding="utf-8")
+    path.write_text(
+        '[\n {"a": 1},\n {"a": NaN},\n {"b": 1, "b": 2},\n 5\n]\n', encoding="utf-8", newline="\n"
+    )
     items = list(read_json_document(path))
     assert [(i.index, i.record, i.reason) for i in items] == [
         (0, {"a": 1}, None),
@@ -112,6 +114,6 @@ def test_json_single_object_document(tmp_path: Path) -> None:
 
 def test_json_document_syntax_error_is_unusable(tmp_path: Path) -> None:
     path = tmp_path / "in.json"
-    path.write_text('[{"a": 1}, {"a": ]', encoding="utf-8")
+    path.write_text('[{"a": 1}, {"a": ]', encoding="utf-8", newline="\n")
     with pytest.raises(InputError):
         list(read_json_document(path))
