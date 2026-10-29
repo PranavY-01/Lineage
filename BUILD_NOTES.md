@@ -24,6 +24,24 @@ specification text they amend.
    the allowed rule field names. No bundled rule may use it, and it never counts as a finding
    or as technique evidence (enforced by a test over the bundled rules in P3). Other keys that
    real data shows to be always present are proposed in a phase plan, never added ad hoc.
+4. **Activity kinds `file_stream` and `other` (§5.4, §6.5).** Event 15 is `file_stream`; any
+   Sysmon ID without a listed kind that has an acting GUID is `other`. Event 15 is never mapped
+   to `file_create`. Only event 11 is `file_create`: `file_stream` and `other` never feed GR-004,
+   scope `files_created`, story steps or PER-004. Both kinds go into the report JSON Schema in
+   P5. Every event counts in `event_ids_seen` whatever its kind.
+5. **Events with no acting process (§7.1, §7.6, §8.8, §10.1).**
+   - Each host graph keeps `unattached_events`, separate from `wmi_events`. Events 19–21 go only
+     to `wmi_events` and are not counted as unattached.
+   - No ghost is ever created for a null, zero or malformed GUID.
+   - Events 8 and 10 attach to whichever side has a valid GUID, with that side's role; with
+     neither, the event is unattached.
+   - An event 1 with a null or invalid `process_guid` creates no node and is unattached.
+   - Rules still evaluate unattached events (detection indexes events, not nodes); a hit
+     attaches to `host:<host>` and increments `unattached_findings` (§8.8). P3 adds a test.
+   - Coverage gains the informational counter `unattached_events` (never a reason).
+   - Invariant 5 reads: every activity record with a valid acting GUID is attached to exactly
+     one actor node (plus one target node for events 8 and 10); every other record is in
+     `unattached_events` or `wmi_events`. A test checks that no event is lost.
 
 ## Decisions and deviations
 
@@ -88,6 +106,32 @@ specification text they amend.
   passes the decode function into the graph builder so graph code never imports `analyze`
   (§4.2.6).
 
+### P2 · Process graph
+
+- **Parent references come only from nodes.** An event 1 that created no node (identical or
+  conflicting repeat, or a null GUID) never seeds a parent ghost (§7.1 "of every node").
+- **Repeated creations.** An event 1 for an existing GUID with identical fields is counted as
+  `duplicate_creations` (informational); different fields count as `creation_conflicts` and
+  feed the `duplicate_conflicts` reason. The first in global order is kept, which is the
+  earliest by time, then record order.
+- **Ghost reason.** A GUID referenced several ways takes the reason and seeded fields of its
+  first reference in global order.
+- **Cycles are broken once, at build time**, not during later walks: nodes are visited in GUID
+  order and the parent edge where a walk revisits its own path is removed and recorded in
+  `broken_edges`. This keeps the result independent of input order and lets every later walk
+  assume an acyclic graph; `ancestors` keeps a revisit guard anyway.
+- **Child order** is (ghost last, start time, GUID); host roots use the same order.
+- **Activity summary** is built by `ingest/normalize.py` (`activity_summary`), as §5.4 places it
+  at normalize time, and is called when the activity is attached. Targets of events 8 and 10
+  get a passive wording ("accessed by …").
+- **Activity storage.** Activities are built with `model_construct` from already validated
+  events and share the event's `fields` mapping instead of copying it.
+- **Display collapse** is a pure function over a children list and a `keep` set (hot nodes plus
+  any focus set); `hot_only_children` also returns the hidden count for `--hot-only`.
+- **Shuffle invariance** is tested with 20 seeds on `ghosts`, `zero_guid`, `bad_guid`, `cycle`
+  and `multi_host`. `duplicates.jsonl` is checked for invariants but not shuffled, because §6.8
+  keeps the first conflicting copy by input order (open question to the owner).
+
 ## Assumptions
 
 - `ASSUMPTION` Build backend is `hatchling` (§3.3 asks for the AuthWatch backend; not yet
@@ -121,7 +165,22 @@ Exact release versions are recorded at P7.
 
 ## Benchmarks
 
-Not run yet (`scripts/bench.py`, §14.4, is a P7 deliverable).
+Full benchmark (`scripts/bench.py`, §14.4) is a P7 deliverable.
+
+**P2 watch item, 2026-10-29: ingest and graph build only.** Synthetic JSONL, 1,000,000 records
+(530 MiB): 50,000 event 1, 800,000 event 7, 50,000 event 3, 40,000 event 11, 30,000 event 13,
+20,000 event 22, 10,000 event 5; one host. Intel Core Ultra 7 255HX, 15.4 GiB RAM, Windows 11,
+Python 3.12.0.
+
+| Stage | Wall time | Working set after | Peak private |
+| --- | --- | --- | --- |
+| Ingest (read, normalize, dedupe, sort) | 86.4 s | 3,422 MiB | 3,796 MiB |
+| Graph build | 18.6 s | 4,203 MiB | 4,623 MiB |
+
+Measured per event (20,000 event 7 records): about 3,300 bytes as a full `Event`, against
+about 90 bytes for a slim (time, path, record, index) tuple plus a shared path string. Peak
+memory is well above the 2 GB target; a lighter storage form for image loads is awaiting the
+owner's decision.
 
 ## ATT&CK verification
 

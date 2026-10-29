@@ -12,3 +12,6 @@ All notable changes to this project are documented here. The format follows
 - Ingest of Sysmon EVTX, JSON and JSONL with format sniffing, SHA-256 hashing, size, line,
   depth and record caps, three record shapes, normalization, deduplication and ordering.
 - `lineage validate` with text and JSON output.
+- Per-host process graph: nodes from process creation, ghost nodes with recorded reasons,
+  activity attached to acting and target processes, parent-loop breaking, iterative walks and
+  the display collapse rule.
