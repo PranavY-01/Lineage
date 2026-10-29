@@ -1,6 +1,6 @@
 """Pydantic models that carry all state between stages (§5)."""
 
-from typing import Literal
+from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
@@ -9,6 +9,21 @@ class FrozenModel(BaseModel):
     """Strict, immutable base: unknown fields are rejected."""
 
     model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
+
+
+_SHARED_FIELD_SETS: dict[type[BaseModel], set[str]] = {}
+M = TypeVar("M", bound=BaseModel)
+
+
+def construct_trusted(cls: type[M], /, **values: Any) -> M:
+    """Build a model from values that normalization already typed, without re-validating.
+
+    Used only for high-volume records (activities, image loads). All instances of a class
+    share one fields-set, which roughly halves the per-object cost; the models are frozen,
+    and pydantic copies the set before any update.
+    """
+    shared = _SHARED_FIELD_SETS.setdefault(cls, set(cls.model_fields))
+    return cls.model_construct(shared, **values)
 
 
 class SourceRef(FrozenModel):
@@ -128,12 +143,17 @@ class ImageLoadRecord:
 
     @property
     def source(self) -> SourceRef:
-        return SourceRef(
-            file=self.file, file_sha256=self.file_sha256, index=self.index, record_id=self.record_id
+        return construct_trusted(
+            SourceRef,
+            file=self.file,
+            file_sha256=self.file_sha256,
+            index=self.index,
+            record_id=self.record_id,
         )
 
     def to_image_load(self) -> ImageLoad:
-        return ImageLoad(
+        return construct_trusted(
+            ImageLoad,
             ts_us=self.ts_us,
             image_loaded=self.image_loaded,
             signed=self.signed,

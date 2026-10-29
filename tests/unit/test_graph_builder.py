@@ -316,3 +316,17 @@ def test_image_load_dedupe_without_record_id(write_jsonl: Any, make_record: Any)
     assert len(result.image_loads) == 2
     assert result.counters.duplicates_dropped == 1
     assert result.counters.duplicate_conflicts == 0
+
+
+def test_trusted_models_share_fields_set_but_copy_safely() -> None:
+    from lineage_ir.models import ImageLoad, SourceRef, construct_trusted
+
+    source = construct_trusted(SourceRef, file="f", file_sha256="0", index=1, record_id=None)
+    first = construct_trusted(ImageLoad, ts_us=1, image_loaded=None, signed=None, source=source)
+    second = construct_trusted(ImageLoad, ts_us=2, image_loaded="x", signed="true", source=source)
+    assert first.model_fields_set is second.model_fields_set
+    changed = first.model_copy(update={"ts_us": 5})
+    assert changed.ts_us == 5 and first.ts_us == 1
+    assert second.model_fields_set == {"ts_us", "image_loaded", "signed", "source"}
+    with pytest.raises(ValueError):
+        first.ts_us = 9  # type: ignore[misc]

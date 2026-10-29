@@ -27,6 +27,7 @@ from lineage_ir.models import (
     ImageLoadRecord,
     ProcessNode,
     SourceRef,
+    construct_trusted,
 )
 
 # Returns (decoded_command, decode_note) for a command line and image name.
@@ -138,7 +139,8 @@ def _references(item: Event | ImageLoadRecord) -> Iterable[tuple[str, _Draft]]:
 
 def _activity(event: Event, role: Literal["actor", "target"]) -> Activity:
     # Built from an already validated Event; sharing its fields avoids a copy per record.
-    return Activity.model_construct(
+    return construct_trusted(
+        Activity,
         kind=activity_kind(event.event_id),
         event_id=event.event_id,
         ts_us=event.ts_us,
