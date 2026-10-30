@@ -18,6 +18,9 @@ All notable changes to this project are documented here. The format follows
 - Detection: 20 YAML rules with a validating loader, field resolution with virtual fields,
   PowerShell encoded-command decoding, graph heuristics GR-001 to GR-004, findings
   aggregated per rule, host and process, and `lineage rules`.
+- Analysis: anchors, storylines with roots, steps, gaps and scope, ranking, focus and
+  time filters, coverage with reason codes and rule evaluability, status and exit code,
+  and the `run_analysis` library entry point.
 
 ### Changed
 
