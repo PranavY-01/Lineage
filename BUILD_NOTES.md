@@ -24,6 +24,79 @@ specification text they amend.
    the allowed rule field names. No bundled rule may use it, and it never counts as a finding
    or as technique evidence (enforced by a test over the bundled rules in P3). Other keys that
    real data shows to be always present are proposed in a phase plan, never added ad hoc.
+4. **Activity kinds `file_stream` and `other` (§5.4, §6.5).** Event 15 is `file_stream`; any
+   Sysmon ID without a listed kind that has an acting GUID is `other`. Event 15 is never mapped
+   to `file_create`. Only event 11 is `file_create`: `file_stream` and `other` never feed GR-004,
+   scope `files_created`, story steps or PER-004. Both kinds go into the report JSON Schema in
+   P5. Every event counts in `event_ids_seen` whatever its kind.
+5. **Events with no acting process (§7.1, §7.6, §8.8, §10.1).**
+   - Each host graph keeps `unattached_events`, separate from `wmi_events`. Events 19–21 go only
+     to `wmi_events` and are not counted as unattached.
+   - No ghost is ever created for a null, zero or malformed GUID.
+   - Events 8 and 10 attach to whichever side has a valid GUID, with that side's role; with
+     neither, the event is unattached.
+   - An event 1 with a null or invalid `process_guid` creates no node and is unattached.
+   - Rules still evaluate unattached events (detection indexes events, not nodes); a hit
+     attaches to `host:<host>` and increments `unattached_findings` (§8.8). P3 adds a test.
+   - Coverage gains the informational counter `unattached_events` (never a reason).
+   - Invariant 5 reads: every activity record with a valid acting GUID is attached to exactly
+     one actor node (plus one target node for events 8 and 10); every other record is in
+     `unattached_events` or `wmi_events`. A test checks that no event is lost.
+6. **Slim image-load storage (§5.3, §5.4, §6.5, §7.1).** Event 7 is held at ingest as a slim
+   `ImageLoadRecord` and on nodes as a frozen `ImageLoad` (`ts_us`, `image_loaded`, `signed`,
+   `SourceRef`). `image_load` is removed from `Activity.kind`. `ProcessNode` gains
+   `image_load_count` (exact) and `image_loads` (the first 50 by `ts_us`, then `record_id`,
+   then content hash, so a shuffle cannot change which 50). Everything else behaves as before:
+   an event 7 with an unknown GUID creates an `activity_reference` ghost; an event 7 with no
+   valid GUID increments `unattached_events`, and each host keeps only the first 50 of them;
+   event 7 counts in `event_ids_seen` and in events examined for coverage. Event 7 without a
+   record ID is deduplicated on its slim content. `inspect` shows up to 50 per kind with the
+   total (§11.2). A test checks that the graph equals a full-Event build on every graph fixture
+   and on a generated mix containing event 7.
+7. **Deterministic duplicate and tie resolution (§6.8, §7.1, §14.3).** A conflicting duplicate
+   keeps the earliest `ts_us`, then the smallest content hash, and is still counted in
+   `duplicate_conflicts`; both records are reported in the errors list by file and index only,
+   never content. The §6.8 global sort is (host, `ts_us`, `record_id` or 0, content hash,
+   input file order, index), with the hash computed only when the earlier keys tie. Conflicting
+   event 1 creations (§7.1) use the same earliest-then-smallest-hash rule. `duplicates.jsonl` is
+   in the shuffle test again, and `ties.jsonl` covers timestamp ties without record IDs.
+8. **Ingest speedups (§6.1, §6.8).** (a) Records with a record ID are hashed only on a key
+   collision or a sort tie; records without one are always hashed because the hash is their
+   dedupe key. (b) JSONL and EVTX records are checked in a single parse: parser hooks reject
+   duplicate keys and NaN/Infinity, `RecursionError` is caught, and the depth walk runs only
+   when the text holds more opening brackets than the nesting limit. Each §6.1 record rule has
+   a test that fails when the rule is removed (checked by removing each rule in turn).
+
+Amendments 9–11 were approved on 2026-10-30.
+
+9. **Compact Event storage (§5.2, §6.5).**
+   - Events and their `SourceRef` are built without re-validation, from values normalize has
+     just validated, through `models.trusted_event`. Only `ingest/normalize.py` calls it;
+     `construct_trusted` stays limited to `models.py` and `graph/builder.py`, and
+     `model_construct` to `models.py`. A source test enforces all three.
+   - A test checks that every Event built this way equals the same Event built through full
+     pydantic validation (JSON text of `model_dump`), on every JSONL fixture and a generated
+     mix, both record by record and through the whole ingest.
+   - Shared field maps and strings are immutable by convention. A test takes deep copies of
+     all events before the downstream pipeline runs and checks that they still equal the
+     originals afterwards. Later phases add their stages to that test.
+   - Strings are reused through per-run dict pools, never `sys.intern`, and only for host,
+     channel, field names, image paths, users and hashes. Each pool keeps at most 100,000
+     distinct values; past the cap a string is stored as it is.
+   - Report output is unchanged; golden, determinism and shuffle tests pass without edits.
+10. **Memory target and default record cap (§11, §14.4).**
+    - The §14.4 memory target for the realistic mix is 2.5 GB at 1,000,000 records. The binding
+      memory guarantee is the default-cap rule: the default `--max-records` is the largest of
+      1, 2, 3 or 5 million records whose projected realistic-mix peak is 6.0 GB or less.
+    - With the measurements below, the default is 2,000,000 (measured peak 4.94 GB). The allowed
+      range stays 1 to 50,000,000.
+    - When the cap stops reading, the text view states the cap and says it can be raised with
+      `--max-records`.
+11. **No spill-to-disk in v1.0, and no further performance rounds.** A disk-backed store is
+    rejected for v1.0 (§13.2: no files except requested outputs; temporary-file attack surface;
+    out of proportion to the target log sizes) and is listed under Roadmap. Phases P3 to P5 do
+    not take on memory or speed work unless a test fails or the 6 GB rule is violated; anything
+    else goes under Known gaps.
 
 ## Decisions and deviations
 
@@ -88,6 +161,46 @@ specification text they amend.
   passes the decode function into the graph builder so graph code never imports `analyze`
   (§4.2.6).
 
+### P2 · Process graph
+
+- **Parent references come only from nodes.** An event 1 that created no node (identical or
+  conflicting repeat, or a null GUID) never seeds a parent ghost (§7.1 "of every node").
+- **Repeated creations.** An event 1 for an existing GUID with identical fields is counted as
+  `duplicate_creations` (informational); different fields count as `creation_conflicts` and
+  feed the `duplicate_conflicts` reason. The earliest by time, then the smallest content
+  hash, is kept (amendment 7).
+- **Ghost reason.** A GUID referenced several ways takes the reason and seeded fields of its
+  first reference in global order.
+- **Cycles are broken once, at build time**, not during later walks: nodes are visited in GUID
+  order and the parent edge where a walk revisits its own path is removed and recorded in
+  `broken_edges`. This keeps the result independent of input order and lets every later walk
+  assume an acyclic graph; `ancestors` keeps a revisit guard anyway.
+- **Child order** is (ghost last, start time, GUID); host roots use the same order.
+- **Activity summary** is built by `ingest/normalize.py` (`activity_summary`), as §5.4 places it
+  at normalize time, and is called when the activity is attached. Targets of events 8 and 10
+  get a passive wording ("accessed by …").
+- **High-volume records.** Activities and retained image loads are built with
+  `construct_trusted` from values normalization already typed: no re-validation, the event's
+  `fields` mapping is shared rather than copied, and every instance of a class shares one
+  pydantic fields-set (frozen models; pydantic copies the set before any update). A retained
+  image load costs about 590 bytes instead of 1,020. Events follow the same pattern through
+  `models.trusted_event` (amendment 9).
+- **String pools.** `read_inputs` creates one `StringPools` per run and passes it to every
+  `normalize_record` call. A field's value is pooled only when the field is one of `image`,
+  `parent_image`, `source_image`, `target_image`, `image_loaded`, `user`, `parent_user`,
+  `source_user`, `target_user` or `hashes`; every field name is pooled. The typed
+  `process_guid` and `image` reuse the strings already in `fields` instead of copies. GUIDs and
+  the event 7 `signed` value are no longer interned, since amendment 9 limits reuse to the
+  listed fields.
+- **Content hash of event 7** is taken over its slim form whether it arrives as a full Event or
+  as an `ImageLoadRecord`, so both paths deduplicate and order identically.
+- **Conflict errors** use kind `duplicate_conflict`, the dropped record as subject
+  (`file:index`) and the kept record's location in the message.
+- **Display collapse** is a pure function over a children list and a `keep` set (hot nodes plus
+  any focus set); `hot_only_children` also returns the hidden count for `--hot-only`.
+- **Shuffle invariance** is tested with 20 seeds on `ghosts`, `zero_guid`, `bad_guid`, `cycle`,
+  `multi_host`, `duplicates` and `ties` (amendment 7).
+
 ## Assumptions
 
 - `ASSUMPTION` Build backend is `hatchling` (§3.3 asks for the AuthWatch backend; not yet
@@ -121,7 +234,76 @@ Exact release versions are recorded at P7.
 
 ## Benchmarks
 
-Not run yet (`scripts/bench.py`, §14.4, is a P7 deliverable).
+Full benchmark (`scripts/bench.py`, §14.4) is a P7 deliverable.
+
+**P2 watch item, 2026-10-29: ingest and graph build only.** Synthetic JSONL, 1,000,000 records
+(530 MiB): 50,000 event 1, 800,000 event 7, 50,000 event 3, 40,000 event 11, 30,000 event 13,
+20,000 event 22, 10,000 event 5; one host. Intel Core Ultra 7 255HX, 15.4 GiB RAM, Windows 11,
+Python 3.12.0.
+
+| Stage | Wall time | Working set after | Peak private |
+| --- | --- | --- | --- |
+| Ingest (read, normalize, dedupe, sort) | 86.4 s | 3,422 MiB | 3,796 MiB |
+| Graph build | 18.6 s | 4,203 MiB | 4,623 MiB |
+
+Measured per event (20,000 event 7 records): about 3,300 bytes as a full `Event`, against
+about 90 bytes for a slim (time, path, record, index) tuple plus a shared path string.
+
+**P2 re-measure, 2026-10-30, after amendments 6–8.** Same machine and the same 80% event 7
+file. Each mode was run twice, interleaved. Peak private memory was 1,580 MiB (1.66 GB) in
+every run; it was 4,623 MiB (4.85 GB) before slim image loads.
+
+| Mode | Ingest (runs 1, 2) | Graph (runs 1, 2) | Total mean |
+| --- | --- | --- | --- |
+| Neither speedup | 106.3 s, 102.2 s | 20.2 s, 17.6 s | 123.2 s |
+| Lazy content hash (3a) | 92.0 s, 63.7 s | 14.6 s, 18.0 s | 94.2 s |
+| 3a plus single-parse JSON checks (3b) | 56.7 s, 78.4 s | 17.8 s, 17.9 s | 85.4 s |
+
+Run-to-run variation on this laptop is up to about 30% for ingest, so the gains for each step are
+approximate; together they bring the mean down from 123 s to 85 s.
+
+**Realistic mix, 1,000,000 records:** 140,000 event 1, 300,000 event 7, and 140,000 each of
+events 3, 11, 13 and 22; 140,000 processes; one host. Two runs: ingest 78.9 s and 79.3 s, graph
+22.5 s and 22.3 s, total about 101.5 s. Peak private memory was 3,259 MiB (3.42 GB) in both
+runs. A full `Event` costs 2,795 bytes, measured over 20,000 records that are not event 7,
+including the normalize outcome wrapper.
+
+Projected at the then-default `--max-records` of 5,000,000: about 16,300 MiB (17.1 GB), above
+the 8 GB ceiling. This led to amendments 9 and 10.
+
+**P2 final measurement, 2026-10-30, after amendments 9 and 10.** Same machine. Memory is peak
+private bytes; GB is decimal.
+
+Realistic mix (the generator scales every count, so 2M has 280,000 processes):
+
+| Records | Ingest (runs 1, 2) | Graph (runs 1, 2) | Total (runs 1, 2) | Peak |
+| --- | --- | --- | --- | --- |
+| 1,000,000 | 67.0 s, 77.8 s | 29.1 s, 31.1 s | 96.1 s, 108.9 s | 2,366 MiB (2.48 GB) |
+| 2,000,000 | 204.1 s, 141.9 s | 78.7 s, 84.1 s | 282.9 s, 226.1 s | 4,711 MiB (4.94 GB) |
+
+- Peak memory doubles almost exactly: 2M is 1.99 times 1M, within the 10% linearity check.
+  The step from 1M to 2M is 2,345 MiB per million records, used for the projection below.
+- A full `Event` costs 1,519 bytes on both files, measured over 20,000 records that are not
+  event 7, parsed inside the traced window, with shared pools and the outcome wrapper. It was
+  2,795 bytes measured the same way before amendment 9.
+- Projected peaks: 3,000,000 records about 7,056 MiB (7.40 GB) and 5,000,000 about 11,700 MiB
+  (12.3 GB), both above 6.0 GB. The default `--max-records` is therefore 2,000,000.
+
+80% event 7 file, each mode twice, interleaved. Peak memory was 1,411 to 1,412 MiB (1.48 GB) in
+every run.
+
+| Mode | Ingest (runs 1, 2) | Graph (runs 1, 2) | Total mean |
+| --- | --- | --- | --- |
+| Neither speedup | 41.6 s, 39.8 s | 12.3 s, 12.4 s | 53.0 s |
+| Lazy content hash (8a) | 38.8 s, 36.6 s | 9.8 s, 12.1 s | 48.7 s |
+| 8a plus single-parse JSON checks (8b) | 34.9 s, 35.5 s | 12.1 s, 11.1 s | 46.8 s |
+
+These times are well below the earlier runs in every mode. Fewer allocations after amendment 9
+explain part of the drop and machine load the rest; these runs cannot separate the two.
+
+**README limitation (to publish in the README at P7):** peak memory grows by about 2.3 GiB
+(2.5 GB) per million records for a mix like the one above; at the default cap of 2,000,000
+records the measured peak is 4.9 GB. Raising `--max-records` needs memory in proportion.
 
 ## ATT&CK verification
 
@@ -132,3 +314,15 @@ Not started (P7).
 - EVTX reading is covered only by a mocked parser and an unopenable-file test until an EVTX
   fixture is available.
 - JSON documents (not JSONL) are loaded into memory whole.
+- Graph build time grows faster than record count: 29–31 s at 1M realistic records against
+  79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
+  under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
+- Peak memory is about 2.3 GiB per million records (README limitation under Benchmarks).
+
+## Roadmap
+
+Beyond v1.0, not planned for any current phase.
+
+- Streaming or spill-to-disk for very large logs. Rejected for v1.0 by the owner: it conflicts
+  with §13.2 (no files except requested outputs), adds a temporary-file attack surface, and is
+  out of proportion to the log sizes this tool targets.

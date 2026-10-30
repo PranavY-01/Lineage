@@ -7,9 +7,13 @@ MIB = 1024 * 1024
 MAX_INPUTS = 64
 DEFAULT_MAX_FILE_SIZE_MB = 2048
 MAX_FILE_SIZE_MB_RANGE = (1, 65_536)
-DEFAULT_MAX_RECORDS = 5_000_000
+# Largest step whose projected peak for a realistic mix stays at or under 6 GB (BUILD_NOTES).
+DEFAULT_MAX_RECORDS = 2_000_000
 MAX_RECORDS_RANGE = (1, 50_000_000)
 DEFAULT_MAX_ERRORS = 50
+
+# Distinct values each per-run string pool keeps; later values are stored as they are.
+STRING_POOL_CAP = 100_000
 
 JSON_LINE_CAP_BYTES = 1 * MIB
 JSON_MAX_DEPTH = 32

@@ -74,16 +74,55 @@ def check_value(value: Any) -> str | None:
     return None
 
 
+class _Rejected(Exception):
+    """Raised from a parser hook to stop at the first unsafe construct."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
+def _strict_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result = dict(pairs)
+    if len(result) != len(pairs):
+        raise _Rejected("duplicate_key")
+    return result
+
+
+def _strict_constant(_name: str) -> Any:
+    raise _Rejected("bad_json")
+
+
+def _deeper_than_limit(value: Any) -> bool:
+    stack: list[tuple[Any, int]] = [(value, 1)]
+    while stack:
+        item, depth = stack.pop()
+        if isinstance(item, dict | list):
+            if depth > JSON_MAX_DEPTH:
+                return True
+            children = item.values() if isinstance(item, dict) else item
+            stack.extend((child, depth + 1) for child in children)
+    return False
+
+
 def parse_record_text(text: str) -> tuple[Any, str | None]:
-    """Parse one record's JSON text; return (record, None) or (None, reason)."""
+    """Parse one record's JSON text; return (record, None) or (None, reason).
+
+    Duplicate keys and NaN/Infinity are rejected by parser hooks during the single parse.
+    Nesting can only exceed the limit when the text holds more opening brackets than the
+    limit (brackets inside strings only over-count), so the depth walk runs only then.
+    """
     try:
-        value = _loads(text)
+        value = json.loads(text, object_pairs_hook=_strict_pairs, parse_constant=_strict_constant)
+    except _Rejected as rejected:
+        return None, rejected.reason
     except RecursionError:
         return None, "too_deep"
     except ValueError:
         return None, "bad_json"
-    reason = check_value(value)
-    return (None, reason) if reason else (value, None)
+    if text.count("{") + text.count("[") > JSON_MAX_DEPTH and _deeper_than_limit(value):
+        return None, "too_deep"
+    return value, None
 
 
 def is_jsonl(first_line: bytes) -> bool:

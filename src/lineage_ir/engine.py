@@ -44,7 +44,9 @@ def readiness(event_ids_seen: dict[str, int]) -> tuple[Readiness, ...]:
 
 def validate_exit_code(ingest: IngestResult) -> int:
     """0 when every record was read and valid and Sysmon events exist, else 4 (§10.5)."""
-    clean = ingest.counters.invalid == 0 and bool(ingest.events) and not ingest.record_cap_reached
+    clean = (
+        ingest.counters.invalid == 0 and ingest.event_count > 0 and not ingest.record_cap_reached
+    )
     return 0 if clean else 4
 
 

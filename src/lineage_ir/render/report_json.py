@@ -57,7 +57,7 @@ def validate_document(result: ValidateResult) -> dict[str, Any]:
             "bad_guid": counters.bad_guid,
             "out_of_order": counters.out_of_order,
         },
-        "events": len(ingest.events),
+        "events": ingest.event_count,
         "event_ids_seen": ingest.event_ids_seen,
         "event_ids_missing": list(result.event_ids_missing),
         "readiness": [
@@ -76,4 +76,5 @@ def validate_document(result: ValidateResult) -> dict[str, Any]:
         "record_cap_reached": ingest.record_cap_reached,
         "reasons": list(ingest.reasons),
         "warnings": list(ingest.warnings),
+        "errors": [e.model_dump(mode="json") for e in ingest.errors],
     }
