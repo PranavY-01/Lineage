@@ -136,8 +136,9 @@ Amendment 15 records the owner's answers to the P4 plan, given on 2026-10-30.
     - The P4 gate uses `phish_chain.jsonl` as the oracle while P0 data is missing. Its expected
       storylines were written by hand from the fixture and §8.6 and §9.1–9.3 before the
       analysis code, committed as `tests/fixtures/expected/phish_chain.storylines.json`, and are
-      never edited to match output; a disagreement is reported. The real hero check is PENDING
-      P0 data.
+      never edited to match output; a disagreement is reported. The owner writes an oracle
+      too: the two are compared and every difference is reported, without editing either. The
+      real hero check is PENDING P0 data.
     - Event 7 stays in the informational missing-event list of `validate` and of coverage
       (§10.1, §11.2). It never creates a coverage reason, because reasons come only from rule
       requirements (§10.3) and no rule can require event 7 (amendment 12). The earlier
@@ -145,7 +146,19 @@ Amendment 15 records the owner's answers to the P4 plan, given on 2026-10-30.
     - `anchor_unverified` counts the distinct ghost nodes that the anchor test accepts by name
       alone (§9.1).
 
-## Decisions and deviations
+Amendment 16 records owner decisions given on 2026-10-30.
+
+16. **Reports, record cap, master document and pushes.**
+    - The JSON report always holds the whole analysis. Display filters (`--since`, `--until`,
+      `--around`, `--focus`, `--hot-only`, `--storyline`) affect only the terminal views and are
+      recorded under `parameters` (§12.3, P5).
+    - The performance work stays, with the lower default `--max-records` of 2,000,000
+      (amendment 10). Memory per million records is documented in the README.
+    - The owner syncs the master document (backslash and §12.2 corrections, plus an appendix
+      listing every approved amendment) and re-exports the local copy before P5 starts.
+    - Gates are strict: work stops at every phase gate until the owner replies "continue". On
+      "continue" the phase branch is merged into main locally and the full suite is run on main,
+      but nothing is pushed; the owner pushes main after their own history scan.
 
 ### P1 · Skeleton and ingest
 
@@ -447,7 +460,7 @@ every run.
 These times are well below the earlier runs in every mode. Fewer allocations after amendment 9
 explain part of the drop and machine load the rest; these runs cannot separate the two.
 
-**README limitation (to publish in the README at P7):** peak memory grows by about 2.3 GiB
+**README limitation (published under "Known limitations", amendment 16):** peak memory grows by about 2.3 GiB
 (2.5 GB) per million records for a mix like the one above; at the default cap of 2,000,000
 records the measured peak is 4.9 GB. Raising `--max-records` needs memory in proportion.
 
@@ -463,7 +476,7 @@ Not started (P7).
 - Graph build time grows faster than record count: 29–31 s at 1M realistic records against
   79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
   under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
-- Peak memory is about 2.3 GiB per million records (README limitation under Benchmarks).
+- Peak memory is about 2.3 GiB per million records (published in the README, amendment 16).
 - Hero dataset check PENDING P0 data: the P4 gate used `phish_chain.jsonl` and its committed,
   hand-derived oracle instead (amendment 15).
 - Story steps for findings come from the retained evidence (first 10 and last 10 records), so a
