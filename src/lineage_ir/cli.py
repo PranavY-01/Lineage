@@ -38,7 +38,7 @@ from lineage_ir.errors import LineageError, UsageError
 from lineage_ir.graph.traverse import ancestors
 from lineage_ir.ingest.reader import IngestOptions
 from lineage_ir.outputs import OutputKind, OutputRequest, check_outputs, write_outputs
-from lineage_ir.render import artifacts, report_json, terminal
+from lineage_ir.render import artifacts, csv_timeline, report_json, terminal
 
 EXIT_INTERNAL = 4
 EXIT_INTERRUPTED = 130
@@ -315,7 +315,7 @@ def analyze(
         Path | None, typer.Option("--html", help="HTML report (not available in this build).")
     ] = None,
     csv: Annotated[
-        Path | None, typer.Option("--csv", help="CSV timeline (not available in this build).")
+        Path | None, typer.Option("--csv", help="Write the CSV storyline timeline here.")
     ] = None,
     force: Annotated[
         bool, typer.Option("--force", help="Replace an existing output Lineage wrote before.")
@@ -331,8 +331,6 @@ def analyze(
     def body() -> int:
         if html is not None:
             raise UsageError(f"--html: {NOT_AVAILABLE}")
-        if csv is not None:
-            raise UsageError(f"--csv: {NOT_AVAILABLE}")
         params = _params(
             host,
             rules=rules,
@@ -351,7 +349,7 @@ def analyze(
         )
         targets: list[tuple[Path, OutputKind]] = [
             (path, kind)
-            for path, kind in ((report, "report"), (artifacts_path, "artifacts"))
+            for path, kind in ((report, "report"), (artifacts_path, "artifacts"), (csv, "csv"))
             if path is not None
         ]
         # Unsafe paths end the run before analysis (exit 2); files are written after it.
@@ -362,6 +360,7 @@ def analyze(
         contents = {
             "report": lambda: report_json.dumps(document).encode("ascii"),
             "artifacts": lambda: artifacts.artifacts_text(result).encode("ascii"),
+            "csv": lambda: csv_timeline.csv_bytes(result),
         }
         requests = [OutputRequest(p, contents[k](), k) for p, k in targets]
         write_outputs(requests, inputs, force)

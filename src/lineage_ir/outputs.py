@@ -13,12 +13,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+from lineage_ir.config import CSV_COLUMNS
 from lineage_ir.errors import OutputError, UsageError
 
-OutputKind = Literal["report", "artifacts"]
+OutputKind = Literal["report", "artifacts", "csv"]
 
 # Bytes read from the head of an existing file to recognise a Lineage output.
 OWNERSHIP_PROBE_BYTES = 64 * 1024
+# A Lineage CSV starts with the BOM and its exact quoted header (§12.7 item 3).
+CSV_HEAD = (chr(0xFEFF) + ",".join(f'"{c}"' for c in CSV_COLUMNS)).encode() + bytes([13, 10])
 _REPORT_HEAD = re.compile(r'\A\s*\{\s*"envelope"\s*:\s*')
 
 
@@ -32,12 +35,15 @@ class OutputRequest:
 
 
 def _is_lineage_output(path: Path, kind: OutputKind) -> bool:
-    """True when the file starts like a report or artifacts file that Lineage wrote."""
+    """True when the file starts like a report, artifacts or CSV file that Lineage wrote."""
     try:
         with path.open("rb") as handle:
-            head = handle.read(OWNERSHIP_PROBE_BYTES).decode("utf-8", errors="replace")
+            raw = handle.read(OWNERSHIP_PROBE_BYTES)
     except OSError:
         return False
+    if kind == "csv":
+        return raw.startswith(CSV_HEAD)
+    head = raw.decode("utf-8", errors="replace")
     try:
         if kind == "report":
             match = _REPORT_HEAD.match(head)
