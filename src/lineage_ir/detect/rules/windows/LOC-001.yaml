@@ -9,11 +9,11 @@ why: >
 match:
   event_id: 1
   image|contains:
-    - '\users\public'
-    - '\appdata\local\temp'
-    - '\windows\temp'
-    - '\downloads'
-    - '$recycle.bin\'
+    - '\users\public\'
+    - '\appdata\local\temp\'
+    - '\windows\temp\'
+    - '\downloads\'
+    - '\$recycle.bin\'
     - '\perflogs\'
 exclude: []
 references: []

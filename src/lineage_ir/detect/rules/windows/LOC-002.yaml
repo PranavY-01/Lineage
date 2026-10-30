@@ -20,7 +20,7 @@ match:
     - taskhostw.exe
 exclude:
   - image|startswith:
-      - 'c:\windows\system32'
+      - 'c:\windows\system32\'
       - 'c:\windows\syswow64\'
       - 'c:\windows\winsxs\'
 references: []

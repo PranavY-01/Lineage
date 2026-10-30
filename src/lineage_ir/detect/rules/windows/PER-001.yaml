@@ -9,7 +9,7 @@ why: >
 match:
   event_id: 13
   target_object|contains:
-    - '\currentversion\run'
+    - '\currentversion\run\'
     - '\currentversion\runonce\'
     - '\currentversion\policies\explorer\run\'
 exclude: []
