@@ -9,7 +9,7 @@ import pytest
 from lineage_ir.engine import AnalysisResult, run_analysis
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
-PROVENANCE = {"source", "evidence", "create_record", "index", "file_sha256"}
+PROVENANCE = {"source", "evidence", "create_record", "index", "write_index", "file_sha256"}
 
 
 def _comparable(value: Any) -> Any:

@@ -40,12 +40,16 @@ def test_time_window_hides_storylines_findings_and_steps(phish: AnalysisResult) 
         "LOC-001",
     }
     s2 = phish.storylines[1]
-    assert [s.n for s in visible_steps(s2, late)] == [2, 3, 4, 5]
+    assert [s.n for s in visible_steps(s2, late)] == [1, 2, 3, 4]
+    later = make_params(since="2026-10-12T11:00:30Z")
+    assert [s.n for s in visible_steps(s2, later)] == [3, 4]
     early = make_params(until="2026-10-12T10:01:30Z")
     assert _ids(visible_storylines(phish.storylines, early)) == ["S1"]
     around = make_params(around="2026-10-12T11:00:40Z", window="1m")
     assert _ids(visible_storylines(phish.storylines, around)) == ["S2"]
-    assert [s.n for s in visible_steps(s2, around)] == [2, 3, 4, 5]
+    assert [s.n for s in visible_steps(s2, around)] == [1, 2, 3, 4]
+    narrow = make_params(around="2026-10-12T11:00:40Z", window="20s")
+    assert [s.n for s in visible_steps(s2, narrow)] == [3]
 
 
 def test_focus_limits_storylines_and_findings(phish: AnalysisResult) -> None:
