@@ -130,7 +130,61 @@ Amendments 13 and 14 were approved on 2026-10-30 at the P3 gate.
     - Whitespace is stripped from the payload before the 128 KiB input cap.
     - Rule files may not repeat a key in any mapping (loader check).
 
-## Decisions and deviations
+Amendment 15 records the owner's answers to the P4 plan, given on 2026-10-30.
+
+15. **P4 clarifications (§8 gate, §9.1, §10.1, §11.2).**
+    - The P4 gate uses `phish_chain.jsonl` as the oracle while P0 data is missing. Its expected
+      storylines were written by hand from the fixture and §8.6 and §9.1–9.3 before the
+      analysis code, committed as `tests/fixtures/expected/phish_chain.storylines.json`, and are
+      never edited to match output; a disagreement is reported. The owner writes an oracle
+      too: the two are compared and every difference is reported, without editing either. The
+      real hero check is PENDING P0 data.
+    - Event 7 stays in the informational missing-event list of `validate` and of coverage
+      (§10.1, §11.2). It never creates a coverage reason, because reasons come only from rule
+      requirements (§10.3) and no rule can require event 7 (amendment 12). The earlier
+      "histogram only" note is withdrawn.
+    - `anchor_unverified` counts the distinct ghost nodes that the anchor test accepts by name
+      alone (§9.1).
+
+Amendment 16 records owner decisions given on 2026-10-30.
+
+16. **Reports, record cap, master document and pushes.**
+    - The JSON report always holds the whole analysis. Display filters (`--since`, `--until`,
+      `--around`, `--focus`, `--hot-only`, `--storyline`) affect only the terminal views and are
+      recorded under `parameters` (§12.3, P5).
+    - The performance work stays, with the lower default `--max-records` of 2,000,000
+      (amendment 10). Memory per million records is documented in the README.
+    - The owner syncs the master document (backslash and §12.2 corrections, plus an appendix
+      listing every approved amendment) and re-exports the local copy before P5 starts.
+    - Gates are strict: work stops at every phase gate until the owner replies "continue". On
+      "continue" the phase branch is merged into main locally and the full suite is run on main,
+      but nothing is pushed; the owner pushes main after their own history scan.
+
+Amendments 17 and 18 record owner decisions given on 2026-10-30 after the P4 oracle
+comparison. Amendment 17 restates, as amendments, items the master document's Appendix A lists
+that were recorded above only as phase decisions; their meaning is unchanged.
+
+17. **Appendix A items recorded as amendments.**
+    - **Version (§3.3, §16).** `__version__` is `0.1.0` until P7, then `1.0.0`. No test,
+      golden file or sample hardcodes the version string.
+    - **JSON document or JSONL (§6.1).** A file whose first non-blank line is a bare `{` is one
+      JSON document; anything else starting with `{` is read as JSONL, so a bad first line is
+      counted invalid instead of failing the file.
+    - **Shape B recognition (§6.2).** Shape B is recognised by an event ID key plus an
+      EventData key or a channel, host or provider key, so non-Sysmon records count as
+      irrelevant, not invalid.
+    - **Anchor test argument (§8.7, §8.8).** The anchor test is passed into detection as a
+      required argument with no default.
+    - **Rule order (§8.8).** Rules are evaluated in ascending ID order.
+    - **§12.2 sample screen.** The sample is corrected to match the rule catalogue: LIN-001 and
+      CMD-001 on `cmd.exe`, and no LOC-001 on `rundll32.exe`.
+18. **GR-003 evidence (§8.7, §9.4).** GR-003 evidence holds only the execution record, the
+    event 1 of the executed process. The write is referenced in `details`: `creator_guid`,
+    `creator_image`, `write_file` and `write_index` (the event 11's input file and record
+    index), beside `target_filename`. Because §9.4 builds finding steps from evidence, the drop
+    is no longer a step of the executed process's storyline, so that storyline starts at the
+    execution and gains no gap from the earlier write. The committed oracle's S2 start was
+    re-derived under this amendment (the revision is recorded in the oracle file).
 
 ### P1 · Skeleton and ingest
 
@@ -265,7 +319,8 @@ Amendments 13 and 14 were approved on 2026-10-30 at the P3 gate.
   must be unique across all of them. Rules are evaluated in ascending ID order.
 - **`details`** follow §8.8 item 4 and are taken from the first matching event. Graph
   heuristics add: GR-001 `office_ancestor` and `destination`; GR-002 `binaries`; GR-003
-  `target_filename`, `creator_guid` and `creator_image`; GR-004 `activity`.
+  `target_filename`, `creator_guid`, `creator_image`, `write_file` and `write_index`
+  (amendment 18); GR-004 `activity`.
 - **GR-001** walks ancestors from the parent; an anchor ends the walk before it is checked.
 - **GR-002** counts every discovery child inside a qualifying window; evidence is their
   creation records.
@@ -283,6 +338,55 @@ Amendments 13 and 14 were approved on 2026-10-30 at the P3 gate.
   subclass that checks each mapping's keys before building it. It is run the way
   `yaml.safe_load` runs its loader (`get_single_data`, then `dispose`); a test checks it is a
   `SafeLoader` and still refuses Python tags.
+
+### P4 · Analysis and coverage
+
+- **Placement.** `AnalysisParams` lives in `analyze/filters.py` and `AnalysisResult` in
+  `engine.py`; both are importable from `engine` (§11.3). `AnalysisResult` cannot live in
+  `models.py` because it holds per-host `ProcessGraph`s and models.py sits below the graph
+  layer.
+- **`result`, `status`, `exit_code`** are read-only properties of `AnalysisResult`, derived by
+  `analyze.coverage.outcome` from the §10.4 table. They are not stored fields (§5.8 lists none);
+  making them fields is proposed in the P4 gate report.
+- **Anchors** are `analyze/anchors.yaml` (the §9.1 table), loaded with the duplicate-key safe
+  loader and validated (lowercase names, lowercase directories ending in a backslash, no
+  repeated names); an invalid table exits 2. The engine passes the `AnchorSet` to detection
+  and to storyline roots. A ghost whose image is a bare name matching an anchor is accepted by
+  name alone and counted in `anchor_unverified` (amendment 15).
+- **Roots and membership.** `path_nodes` includes the root when it is not flagged, so `nodes` is
+  exactly the union of `flagged`, `path_nodes` and `descendant_nodes`. All four are in pre-order
+  from the root. `descendant_nodes` follows §9.2 literally, so a node below an anchor under a
+  flagged node can also root a storyline of its own. Findings whose GUID has no node (possible
+  only for WMI events) join the host's "Unattributed activity" storyline.
+- **Tactics** are collected from the storyline's findings sorted by (first_us, rule_id).
+- **Steps.** Record order is (time, record ID, file, index), with a process creation before its
+  decoded payload and both before other steps of the same record. A step for an already-used
+  record is merged into the earlier one, whose tactic, technique and severity then come from
+  the highest-severity finding (lowest rule ID on a tie); because `Step` has no rule-ID field,
+  the merged rule IDs are appended to its text as ` [ID, ID]`. Decoded steps are never merged
+  (§9.4 places them right after the creation step, which shares their record). Process-creation
+  text truncates the command line at 80 characters; a node without a known parent reads
+  "unknown parent spawned …". A finding step names the event's acting process. GR-003's
+  evidence is only the execution record (amendment 18), so the drop never appears as a step
+  of the executed process's storyline.
+- **Storyline start and end** are the first and last step times; only a storyline whose
+  evidence resolves to no input record (crafted in tests) falls back to finding times.
+- **Scope.** Lists are de-duplicated case-insensitively, keeping the first spelling.
+  `dns_names` is capped at 50 like the other lists (§5.7 gives no cap). Registry keys set by
+  records that are evidence of a PER finding come first. A persistence line's target is the
+  finding's `target_object`, `target_filename` or `command_line` detail.
+- **Coverage.** `duplicate_conflicts` adds conflicting event 1 creations to ingest conflicts.
+  `unattached_findings` and each rule's `findings` count findings after `--min-severity`. A
+  graph heuristic missing any required ID is `not_evaluable` (never partial).
+- **Telemetry gaps** merge the event and image-load streams per host without copying them, so
+  event 7 counts however it is stored (§9.5 reminder).
+- **`--rules`** tokens match an exact ID or a family (the part before the hyphen),
+  case-insensitively; a token matching nothing, or an empty list, exits 2 and lists every valid
+  ID.
+- **Focus errors** list host, GUID, image and start for each candidate.
+- **Display filters** (`visible_findings`, `visible_storylines`, `visible_steps`) are pure
+  functions over an `AnalysisResult`; `run_analysis` validates `--focus` (exit 2 when not found
+  or ambiguous) but never applies the window or focus to what it returns.
 
 ## Assumptions
 
@@ -384,7 +488,7 @@ every run.
 These times are well below the earlier runs in every mode. Fewer allocations after amendment 9
 explain part of the drop and machine load the rest; these runs cannot separate the two.
 
-**README limitation (to publish in the README at P7):** peak memory grows by about 2.3 GiB
+**README limitation (published under "Known limitations", amendment 16):** peak memory grows by about 2.3 GiB
 (2.5 GB) per million records for a mix like the one above; at the default cap of 2,000,000
 records the measured peak is 4.9 GB. Raising `--max-records` needs memory in proportion.
 
@@ -400,12 +504,11 @@ Not started (P7).
 - Graph build time grows faster than record count: 29–31 s at 1M realistic records against
   79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
   under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
-- Peak memory is about 2.3 GiB per million records (README limitation under Benchmarks).
-- Carried to P4: re-run every GR-001 test with the real anchors from `anchors.yaml`, and count
-  `anchor_unverified` there.
-- Carried to P4: event 7 is never a coverage reason. It stays out of the missing event IDs that
-  drive `not_evaluable` and `partially_evaluable` and out of the readiness lines; it appears in
-  the event histogram only.
+- Peak memory is about 2.3 GiB per million records (published in the README, amendment 16).
+- Hero dataset check PENDING P0 data: the P4 gate used `phish_chain.jsonl` and its committed,
+  hand-derived oracle instead (amendment 15).
+- Story steps for findings come from the retained evidence (first 10 and last 10 records), so a
+  finding with more than 20 matching events has no step for the middle ones.
 
 ## Roadmap
 

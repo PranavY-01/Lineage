@@ -250,6 +250,156 @@ class Finding(FrozenModel):
     details: dict[str, str]
 
 
+class TimeSpan(FrozenModel):
+    """First and last event time in microseconds."""
+
+    start_us: int
+    end_us: int
+
+
+StepAction = Literal[
+    "process_create",
+    "network",
+    "dns",
+    "file_create",
+    "registry",
+    "process_access",
+    "remote_thread",
+    "decoded",
+    "finding",
+]
+
+
+class Step(FrozenModel):
+    """One line of a storyline narrative (§9.4); ``text`` is render-ready but unescaped."""
+
+    n: int
+    ts_us: int
+    tactic: str | None
+    technique: str | None
+    guid: str
+    image_name: str | None
+    action: StepAction
+    text: str
+    severity: Severity | None
+    source: SourceRef
+
+
+class Gap(FrozenModel):
+    """A pause between consecutive steps of at least ``--gap`` (§9.5)."""
+
+    after_step: int
+    seconds: int
+
+
+class StorylineLink(FrozenModel):
+    """A persistence or drop link between storylines (§9.8, stretch S1)."""
+
+    from_storyline: str
+    to_storyline: str
+    kind: Literal["persistence", "dropped_executed"]
+    match: Literal["exact", "suffix"]
+    path: str
+    evidence: tuple[SourceRef, ...]
+
+
+class Scope(FrozenModel):
+    """What a storyline touched (§5.7)."""
+
+    users: tuple[str, ...]
+    process_count: int
+    ghost_count: int
+    files_created: tuple[str, ...]
+    executable_files: int
+    registry_set: tuple[str, ...]
+    persistence: tuple[str, ...]
+    destinations: tuple[str, ...]
+    dns_names: tuple[str, ...]
+    decoded_payloads: int
+    review: dict[str, int]
+
+
+class Storyline(FrozenModel):
+    """Flagged processes sharing one root, with their context, steps and scope (§5.6)."""
+
+    storyline_id: str
+    host: str
+    root_guid: str
+    root_image_name: str | None
+    anchor_image_name: str | None
+    flagged: tuple[str, ...]
+    path_nodes: tuple[str, ...]
+    descendant_nodes: tuple[str, ...]
+    nodes: tuple[str, ...]
+    finding_ids: tuple[str, ...]
+    max_severity: Severity
+    tactics: tuple[str, ...]
+    users: tuple[str, ...]
+    start_us: int
+    end_us: int
+    steps: tuple[Step, ...]
+    gaps: tuple[Gap, ...]
+    scope: Scope
+    links: tuple[StorylineLink, ...]
+
+
+class RuleCoverage(FrozenModel):
+    """Whether an enabled rule could be evaluated on this input (§10.3)."""
+
+    state: Literal["evaluable", "partially_evaluable", "not_evaluable"]
+    missing_event_ids: tuple[int, ...]
+    events_examined: int
+    findings: int
+
+
+class TelemetryGap(FrozenModel):
+    """A pause of at least ``--telemetry-gap`` between consecutive events of a host (§9.5)."""
+
+    host: str
+    from_us: int
+    to_us: int
+    seconds: int
+
+
+class CoverageCounters(FrozenModel):
+    """Counters from every stage (§10.1, plus ``unattached_events`` from amendment 5)."""
+
+    records_total: int
+    sysmon: int
+    irrelevant: int
+    invalid: int
+    invalid_by_reason: dict[str, int]
+    duplicates_dropped: int
+    duplicate_conflicts: int
+    bad_guid: int
+    ghosts: dict[str, int]
+    cycles_broken: int
+    unattached_events: int
+    unattached_findings: int
+    anchor_unverified: int
+
+
+class Timeline(FrozenModel):
+    """First and last event time, telemetry gaps and out-of-order records (§10.1)."""
+
+    span: TimeSpan | None
+    gaps: tuple[TelemetryGap, ...]
+    out_of_order: int
+
+
+class Coverage(FrozenModel):
+    """Everything the analysis could not see; any reason makes the run incomplete (§10)."""
+
+    complete: bool
+    reasons: tuple[str, ...]
+    counters: CoverageCounters
+    event_ids_seen: dict[str, int]
+    event_ids_missing: tuple[int, ...]
+    rules: dict[str, RuleCoverage]
+    hosts: tuple[str, ...]
+    timeline: Timeline
+
+
 class ErrorEntry(FrozenModel):
     """A non-fatal problem; names files, indexes and reason codes, never record content."""
 
@@ -291,13 +441,6 @@ class IngestCounters(FrozenModel):
     duplicate_conflicts: int
     bad_guid: int
     out_of_order: int
-
-
-class TimeSpan(FrozenModel):
-    """First and last event time in microseconds."""
-
-    start_us: int
-    end_us: int
 
 
 class IngestResult(FrozenModel):

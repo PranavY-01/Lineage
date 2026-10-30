@@ -1,0 +1,18 @@
+# Long-lived system processes that sit above unrelated activity (section 9.1).
+# A node is an anchor when its image name matches AND its image directory is one of paths.
+anchors:
+  - {name: system,        paths: ['']}
+  - {name: registry,      paths: ['']}
+  - {name: smss.exe,      paths: ['c:\windows\system32\']}
+  - {name: csrss.exe,     paths: ['c:\windows\system32\']}
+  - {name: wininit.exe,   paths: ['c:\windows\system32\']}
+  - {name: winlogon.exe,  paths: ['c:\windows\system32\']}
+  - {name: services.exe,  paths: ['c:\windows\system32\']}
+  - {name: lsass.exe,     paths: ['c:\windows\system32\']}
+  - {name: svchost.exe,   paths: ['c:\windows\system32\', 'c:\windows\syswow64\']}
+  - {name: userinit.exe,  paths: ['c:\windows\system32\']}
+  - {name: explorer.exe,  paths: ['c:\windows\']}
+  - {name: wmiprvse.exe,  paths: ['c:\windows\system32\wbem\', 'c:\windows\syswow64\wbem\']}
+  - {name: taskhostw.exe, paths: ['c:\windows\system32\']}
+  - {name: taskeng.exe,   paths: ['c:\windows\system32\']}
+  - {name: sihost.exe,    paths: ['c:\windows\system32\']}

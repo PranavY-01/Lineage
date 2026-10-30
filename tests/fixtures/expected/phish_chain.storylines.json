@@ -1,0 +1,81 @@
+{
+  "fixture": "phish_chain.jsonl",
+  "basis": "Derived by hand from the fixture records with the rules of sections 8.6, 8.7, 9.1, 9.2 and 9.3 before the analysis code existed. Never edited to match output.",
+  "revisions": [
+    "Amendment 18 (section 8.7): GR-003 evidence is the execution record only, so the drop at 10:02:10 is no longer an S2 step; S2 start re-derived by hand as the upd.exe creation, 2026-10-12T11:00:00Z (was 2026-10-12T10:02:10Z)."
+  ],
+  "host": "ws-14.corp.example",
+  "status": "findings_detected",
+  "exit_code": 1,
+  "findings": [
+    ["CMD-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1"],
+    ["CMD-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1"],
+    ["CMD-002", "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1"],
+    ["GR-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1"],
+    ["GR-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"],
+    ["GR-002", "8f3c2a71-5e4b-4d9a-a1c3-000000000091"],
+    ["GR-003", "8f3c2a71-5e4b-4d9a-a1c3-000000000091"],
+    ["LIN-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1"],
+    ["LOC-001", "8f3c2a71-5e4b-4d9a-a1c3-000000000091"],
+    ["NET-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"],
+    ["PER-001", "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"]
+  ],
+  "storylines": [
+    {
+      "storyline_id": "S1",
+      "root_guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+      "root_image_name": "outlook.exe",
+      "anchor_image_name": "explorer.exe",
+      "flagged": [
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"
+      ],
+      "path_nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000c1"
+      ],
+      "descendant_nodes": [],
+      "nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000c1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"
+      ],
+      "node_images": ["outlook.exe", "winword.exe", "cmd.exe", "powershell.exe", "rundll32.exe"],
+      "finding_count": 8,
+      "max_severity": "high",
+      "tactics": ["execution", "defense-evasion", "command-and-control", "persistence"],
+      "users": ["CORP\\jdoe"],
+      "start": "2026-10-12T10:01:00Z",
+      "end": "2026-10-12T10:02:40Z"
+    },
+    {
+      "storyline_id": "S2",
+      "root_guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+      "root_image_name": "upd.exe",
+      "anchor_image_name": "services.exe",
+      "flagged": ["8f3c2a71-5e4b-4d9a-a1c3-000000000091"],
+      "path_nodes": [],
+      "descendant_nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000092",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000093",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000094"
+      ],
+      "nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000092",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000093",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000094"
+      ],
+      "node_images": ["upd.exe", "whoami.exe", "ipconfig.exe", "systeminfo.exe"],
+      "finding_count": 3,
+      "max_severity": "medium",
+      "tactics": ["execution", "discovery"],
+      "users": ["NT AUTHORITY\\SYSTEM"],
+      "start": "2026-10-12T11:00:00Z",
+      "end": "2026-10-12T11:01:10Z"
+    }
+  ]
+}

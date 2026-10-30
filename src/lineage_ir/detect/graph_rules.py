@@ -156,8 +156,10 @@ def _dropped_file_executed(
             details["creator_guid"] = drop.process_guid
         if drop.image:
             details["creator_image"] = drop.image
-        matches = ((drop.ts_us, drop.source), (event.ts_us, event.source))
-        hits.append(GraphHit(event.process_guid, matches, details))
+        # Evidence is the execution only; the write is referenced in details (amendment 18).
+        details["write_file"] = drop.source.file
+        details["write_index"] = str(drop.source.index)
+        hits.append(GraphHit(event.process_guid, ((event.ts_us, event.source),), details))
     return hits
 
 
