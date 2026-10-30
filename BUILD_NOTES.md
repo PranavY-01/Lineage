@@ -106,6 +106,30 @@ Amendment 12 was approved on 2026-10-30 with the P3 plan.
     reads events from the sorted event list (never from graph activities), so records with no
     acting process are still evaluated and attach to `host:<host>`.
 
+Amendments 13 and 14 were approved on 2026-10-30 at the P3 gate.
+
+13. **§8.6 path values corrected.** The catalogue lost backslashes to a markdown escaping error.
+    A path-style value is a directory fragment with a boundary on both sides. The bundled rules
+    use:
+    - LOC-001 `image|contains`: `\users\public\`, `\appdata\local\temp\`, `\windows\temp\`,
+      `\downloads\`, `\$recycle.bin\`, `\perflogs\`.
+    - LOC-002 exclude `image|startswith`: `c:\windows\system32\`, `c:\windows\syswow64\`,
+      `c:\windows\winsxs\`.
+    - PER-001 `target_object|contains`: `\currentversion\run\`, `\currentversion\runonce\`,
+      `\currentversion\policies\explorer\run\`.
+
+    The other path and registry values (PER-003, PER-004, CRD-001) were already bounded.
+    `tests/integration/test_rule_paths.py` covers every value above with a hit and a near
+    miss; removing any one backslash makes a test fail.
+14. **Detection details made binding (§8.2, §8.4, §8.5).**
+    - Exclude groups may omit `event_id`.
+    - YAML booleans and nulls are rejected as rule values, so bundled rules quote `'true'` and
+      `'no'`.
+    - Integer values match exactly (no modifier).
+    - The decoder's 64 KiB output cap is measured in UTF-8 bytes.
+    - Whitespace is stripped from the payload before the 128 KiB input cap.
+    - Rule files may not repeat a key in any mapping (loader check).
+
 ## Decisions and deviations
 
 ### P1 · Skeleton and ingest
@@ -252,10 +276,13 @@ Amendment 12 was approved on 2026-10-30 with the P3 plan.
   graph heuristic, the events with any of its required IDs.
 - **`lineage rules --format json`** prints the envelope, `kind: "rules"` and one entry per rule
   (id, kind, title, severity, event_ids, attack, tactics), sorted by ID.
-- **Catalogue wording.** LOC-002's first exclude is `c:\windows\system32` without a trailing
-  backslash, and several LOC-001 values have none either, exactly as catalogued in §8.6. The
-  LOC-002 value also excludes paths such as `c:\windows\system32x\`. Left unchanged pending the
-  owner's decision.
+- **GR-003 creator.** The reported creator is the most recent write of the path at or before
+  the execution in global order; a write after the execution is never used, and an execution
+  with only later writes produces no finding (tested).
+- **Duplicate keys in rule files** are rejected by `UniqueKeyLoader`, a `yaml.SafeLoader`
+  subclass that checks each mapping's keys before building it. It is run the way
+  `yaml.safe_load` runs its loader (`get_single_data`, then `dispose`); a test checks it is a
+  `SafeLoader` and still refuses Python tags.
 
 ## Assumptions
 
@@ -374,10 +401,11 @@ Not started (P7).
   79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
   under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
 - Peak memory is about 2.3 GiB per million records (README limitation under Benchmarks).
-- Duplicate keys inside a rule file are not detected: `yaml.safe_load` keeps the last value.
-  Bundled rules are covered by their fixtures; this matters only for hand-edited rules.
 - Carried to P4: re-run every GR-001 test with the real anchors from `anchors.yaml`, and count
   `anchor_unverified` there.
+- Carried to P4: event 7 is never a coverage reason. It stays out of the missing event IDs that
+  drive `not_evaluable` and `partially_evaluable` and out of the readiness lines; it appears in
+  the event histogram only.
 
 ## Roadmap
 
