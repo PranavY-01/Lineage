@@ -22,19 +22,21 @@ def _describe(graphs: Mapping[str, ProcessGraph], targets: Sequence[Target]) -> 
     return "; ".join(lines)
 
 
-def resolve_focus(graphs: Mapping[str, ProcessGraph], spec: str) -> tuple[Target, ...]:
+def resolve_focus(
+    graphs: Mapping[str, ProcessGraph], spec: str, option: str = "--focus"
+) -> tuple[Target, ...]:
     """Nodes named by ``--focus``: a GUID (braces optional), ``pid:N`` or ``image:NAME``."""
     text = spec.strip()
     every = [(host, guid) for host in sorted(graphs) for guid in graphs[host].nodes]
     if text.lower().startswith("pid:"):
         value = text[4:].strip()
         if not value.isdigit():
-            raise UsageError(f"--focus {spec!r}: pid must be a decimal number")
+            raise UsageError(f"{option} {spec!r}: pid must be a decimal number")
         pid = int(value)
         found = [t for t in every if graphs[t[0]].nodes[t[1]].pid == pid]
         if len(found) > 1:
             raise UsageError(
-                f"--focus {spec!r} matches {len(found)} processes; pick one by GUID: "
+                f"{option} {spec!r} matches {len(found)} processes; pick one by GUID: "
                 + _describe(graphs, found)
             )
     elif text.lower().startswith("image:"):
@@ -42,15 +44,15 @@ def resolve_focus(graphs: Mapping[str, ProcessGraph], spec: str) -> tuple[Target
         found = [t for t in every if graphs[t[0]].nodes[t[1]].image_name == name]
         if len(found) > IMAGE_FOCUS_CAP:
             raise UsageError(
-                f"--focus {spec!r} matches {len(found)} processes (at most {IMAGE_FOCUS_CAP})"
+                f"{option} {spec!r} matches {len(found)} processes (at most {IMAGE_FOCUS_CAP})"
             )
     else:
         guid, malformed = canonical_guid(text)
         if guid is None or malformed:
-            raise UsageError(f"--focus {spec!r} is not a GUID, pid:N or image:NAME")
+            raise UsageError(f"{option} {spec!r} is not a GUID, pid:N or image:NAME")
         found = [t for t in every if t[1] == guid]
     if not found:
-        raise UsageError(f"--focus {spec!r}: process not found")
+        raise UsageError(f"{option} {spec!r}: process not found")
     return tuple(found)
 
 
@@ -65,3 +67,14 @@ def focus_set(
             (guid, *ancestors(graph, guid), *descendants(graph, guid))
         )
     return {host: frozenset(nodes) for host, nodes in sorted(members.items())}
+
+
+def resolve_one(graphs: Mapping[str, ProcessGraph], spec: str, option: str) -> Target:
+    """Exactly one node for ``inspect``; several matches list the candidates (exit 2)."""
+    found = resolve_focus(graphs, spec, option)
+    if len(found) > 1:
+        raise UsageError(
+            f"{option} {spec!r} matches {len(found)} processes; pick one by GUID: "
+            + _describe(graphs, found)
+        )
+    return found[0]

@@ -1,5 +1,6 @@
 """Loading and validation of rule files (§8.1, §8.4); any failure is a RuleError (exit 2)."""
 
+import hashlib
 from collections.abc import Hashable
 from importlib.resources import files
 from importlib.resources.abc import Traversable
@@ -91,6 +92,16 @@ def _rule_files(root: Traversable) -> list[tuple[str, Traversable]]:
             elif entry.name.endswith(RULE_SUFFIX):
                 found.append((relative, entry))
     return sorted(found, key=lambda item: item[0])
+
+
+def rule_set_digest(directory: Path | Traversable | None = None) -> str:
+    """SHA-256 over every rule file's relative path and bytes, in path order (§12.3)."""
+    root = bundled_rules_dir() if directory is None else directory
+    digest = hashlib.sha256()
+    for relative, entry in _rule_files(root):
+        digest.update(relative.encode("utf-8") + b"\x00")
+        digest.update(entry.read_bytes() + b"\x00")
+    return digest.hexdigest()
 
 
 def load_rules(directory: Path | Traversable | None = None) -> tuple[Rule, ...]:

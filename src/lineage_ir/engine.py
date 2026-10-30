@@ -14,7 +14,7 @@ from lineage_ir.analyze.storyline import build_storylines
 from lineage_ir.config import READINESS_FAMILIES, STANDARD_EVENT_IDS
 from lineage_ir.detect.engine import run_detection
 from lineage_ir.detect.graph_rules import GRAPH_RULES
-from lineage_ir.detect.loader import load_rules
+from lineage_ir.detect.loader import load_rules, rule_set_digest
 from lineage_ir.graph.builder import build_graphs
 from lineage_ir.graph.model import ProcessGraph
 from lineage_ir.ingest.reader import IngestOptions, read_inputs
@@ -105,6 +105,11 @@ def build_host_graphs(ingest: IngestResult) -> dict[str, ProcessGraph]:
     The decoder lives in ``analyze``; passing it in keeps graph code from importing upward.
     """
     return build_graphs(ingest.events, ingest.image_loads, decode=decode_command)
+
+
+def rule_set_sha256() -> str:
+    """Digest of the bundled rule files, recorded in report parameters (§12.3)."""
+    return rule_set_digest()
 
 
 def list_rules() -> tuple[RuleInfo, ...]:

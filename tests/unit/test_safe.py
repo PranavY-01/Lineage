@@ -1,7 +1,7 @@
 import pytest
 from rich.console import Console
 
-from lineage_ir.render.safe import clean, safe, truncate
+from lineage_ir.render.safe import clean, defang, defang_host, safe, truncate
 
 
 @pytest.mark.parametrize(
@@ -42,8 +42,40 @@ def test_safe_output_is_inert_in_rich(hostile: str) -> None:
     console.print(f"[green]{safe(hostile)}[/]")
     text = console.export_text()
     assert "\x1b" not in text
-    assert clean(hostile) in text
+    assert defang(clean(hostile)) in text
 
 
 def test_safe_none() -> None:
     assert safe(None) == ""
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("http://203.0.113.50/a", "hxxp[://]203[.]0[.]113[.]50/a"),
+        ("HTTPS://Update-CDN.example:8443/x?y=1", "HXXPS[://]Update-CDN[.]example:8443/x?y=1"),
+        ("get('http://a.example/p.ps1')", "get('hxxp[://]a[.]example/p.ps1')"),
+        ("ftp://files.example/x", "ftp[://]files[.]example/x"),
+        ("no url C:\\Users\\Public\\a.dll", "no url C:\\Users\\Public\\a.dll"),
+        (
+            "two http://a.example and http://b.example",
+            "two hxxp[://]a[.]example and hxxp[://]b[.]example",
+        ),
+    ],
+)
+def test_defang(raw: str, expected: str) -> None:
+    assert defang(raw) == expected
+
+
+def test_defang_host() -> None:
+    assert defang_host("update-cdn.example") == "update-cdn[.]example"
+
+
+def test_safe_defangs_before_truncating() -> None:
+    assert safe("http://a.example/xyz", 12) == "hxxp[://]a[…"
+    assert "http" not in safe("x http://203.0.113.5/a")
+
+
+def test_defang_stays_linear_on_long_input() -> None:
+    text = "a" * 1_000_000 + "://" + "b." * 500_000
+    assert defang(text).endswith("b[.]")
