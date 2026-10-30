@@ -4,6 +4,7 @@ Views only format results. Every evidence-derived string goes through ``safe`` (
 characters, URL defanging, truncation, markup escaping) before it reaches Rich.
 """
 
+import sys
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -70,9 +71,24 @@ OVERVIEW_COMMANDS = (
 _STATE_STYLE = {"ready": "green", "partial": "yellow", "missing": "red"}
 
 
+def _is_terminal(stream: object) -> bool:
+    try:
+        return bool(stream.isatty())  # type: ignore[attr-defined]
+    except (AttributeError, ValueError):
+        return False
+
+
 def make_console(*, no_color: bool = False, stderr: bool = False) -> Console:
-    """A console that never interprets emoji codes or auto-highlights evidence text."""
-    return Console(stderr=stderr, no_color=no_color, emoji=False, highlight=False)
+    """A console that never interprets emoji codes or auto-highlights evidence text.
+
+    Legacy Windows console rendering applies only to a real console; redirected or captured
+    output is rendered at the full width and reads the same on every platform.
+    """
+    stream = sys.stderr if stderr else sys.stdout
+    legacy = None if _is_terminal(stream) else False
+    return Console(
+        stderr=stderr, no_color=no_color, emoji=False, highlight=False, legacy_windows=legacy
+    )
 
 
 def print_error(console: Console, message: str) -> None:

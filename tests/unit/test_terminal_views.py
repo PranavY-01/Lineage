@@ -164,3 +164,31 @@ def test_inspect_view(phish: AnalysisResult) -> None:
         assert mark in text
     assert "explorer.exe 8f3c2a71-5e4b-4d9a-a1c3-0000000000a1 (anchor)" in text
     assert "\\x0a" not in text
+
+
+def test_piped_output_uses_the_full_width_on_every_platform(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Redirected or captured output is not a console, so legacy Windows rendering (one column
+    # narrower than COLUMNS) must not apply; golden files then match on Linux and Windows.
+    monkeypatch.setenv("COLUMNS", "120")
+    monkeypatch.setattr("sys.stdout", io.StringIO())
+    monkeypatch.setattr("sys.stderr", io.StringIO())
+    for stderr in (False, True):
+        console = terminal.make_console(no_color=True, stderr=stderr)
+        assert console.legacy_windows is False
+        assert console.width == 120
+
+
+def test_a_120_character_line_is_not_wrapped_in_captured_output() -> None:
+    from typer.testing import CliRunner
+
+    from lineage_ir import cli
+
+    result = CliRunner().invoke(
+        cli.app,
+        ["story", str(FIXTURES / "phish_chain.jsonl"), "--storyline", "1"],
+        env={"COLUMNS": "120", "NO_COLOR": "1"},
+    )
+    lines = result.output.splitlines()
+    assert max(len(line) for line in lines) == 120
