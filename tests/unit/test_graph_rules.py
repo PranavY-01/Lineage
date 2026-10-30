@@ -220,11 +220,15 @@ def test_gr003_dropped_file_later_executed(write_jsonl: Callable[..., Path], log
     log.create(1, SYS32 + "cmd.exe", None, 0)
     log.event(11, 1, 1, Image=SYS32 + "cmd.exe", TargetFilename="C:\\Users\\Public\\Drop.exe")
     log.create(2, "c:/users/public/DROP.EXE", 1, 2)
-    (finding,) = findings(write_jsonl, log, "GR-003")
+    path = write_jsonl(log.rows)
+    (finding,) = detect_file(path, (), stub_is_anchor).by_rule("GR-003")
     assert finding.guid == bare(2)
     assert finding.details["creator_guid"] == bare(1)
     assert finding.details["creator_image"] == SYS32 + "cmd.exe"
-    assert len(finding.evidence) == 2
+    # Evidence is the execution record only; the write record is in details (amendment 18).
+    assert [e.index for e in finding.evidence] == [2]
+    assert finding.evidence[0].file == path.name
+    assert (finding.details["write_file"], finding.details["write_index"]) == (path.name, "1")
 
 
 def test_gr003_reports_the_latest_write_before_execution(
@@ -245,7 +249,9 @@ def test_gr003_reports_the_latest_write_before_execution(
     log.create(5, target, None, 5)
     by_node = {f.guid: f for f in findings(write_jsonl, log, "GR-003")}
     assert by_node[bare(5)].details["creator_guid"] == bare(3)
+    assert by_node[bare(5)].details["write_index"] == "6"
     assert by_node[bare(4)].details["creator_guid"] == bare(1)
+    assert by_node[bare(4)].details["write_index"] == "3"
 
 
 def test_gr003_execution_with_only_a_later_write(

