@@ -44,3 +44,5 @@ All notable changes to this project are documented here. The format follows
 ### Fixed
 
 - Text output redirected to a file on Windows no longer fails on non-ASCII characters.
+- Redirected or captured output on Windows uses the full terminal width, as on Linux. Golden
+  file `phish_chain.story.txt` changed for this (updated through `scripts/update_golden.py`).

