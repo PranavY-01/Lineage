@@ -186,6 +186,15 @@ that were recorded above only as phase decisions; their meaning is unchanged.
     execution and gains no gap from the earlier write. The committed oracle's S2 start was
     re-derived under this amendment (the revision is recorded in the oracle file).
 
+Amendments 19 and 20 record owner decisions given on 2026-10-30 at the P5 gate.
+
+19. **Envelope tool name (§12.3, §12.7).** The envelope's `tool` is `Lineage`, matching the
+    series convention of the tool's display name. §12.7 recognises a Lineage report by
+    `envelope.tool == "Lineage"`; the report schema and golden report follow.
+20. **Line and paragraph separators (§12.1).** U+2028 and U+2029 are replaced with `\u{2028}`
+    and `\u{2029}` in every human-readable output, like the bidi overrides.
+    `hostile_strings.jsonl` carries both.
+
 ### P1 · Skeleton and ingest
 
 - **Development version.** `__version__` is `0.1.0` during the build and becomes `1.0.0`
@@ -395,11 +404,10 @@ that were recorded above only as phase decisions; their meaning is unchanged.
   `pyproject.toml`. Envelope key names and order match §12.3 exactly (`schema`,
   `schema_version`, `tool`, `tool_version`, `run_id`, `started_at`, `completed_at`).
   AuthWatch's `schema_version` is the integer `1`; Lineage used the string `"1.0"` and now
-  writes `1`. AuthWatch's `tool` value is its display name (`AuthWatch`); Lineage keeps
-  `lineage`, which §12.3 shows and §12.7 relies on to recognise its own reports. The build
-  backend is `hatchling.build` in both. AuthWatch requires `hatchling` with no lower bound;
-  Lineage keeps `hatchling>=1.27`, the first release that supports the PEP 639
-  `license-files` key in Lineage's `pyproject.toml`.
+  writes `1`. AuthWatch's `tool` value is its display name (`AuthWatch`); Lineage writes
+  `Lineage` (amendment 19). The build backend is `hatchling.build` in both. AuthWatch requires
+  `hatchling` with no lower bound; Lineage keeps `hatchling>=1.27` (§3.1 lower-bound pins), the
+  first release that supports the PEP 639 `license-files` key in Lineage's `pyproject.toml`.
 - **Report keys** are exactly those of §12.3, in its order. Display filters are recorded
   after the §12.3 parameters (`around`, `window`, `hot_only`, `storyline`, `max_steps`,
   `max_file_size_mb`) as amendment 16 requires; `since` and `until` hold the resolved window,
@@ -421,7 +429,7 @@ that were recorded above only as phase decisions; their meaning is unchanged.
   Lines follow storyline rank, then node order, then activity time.
 - **Output safety.** Every requested path is checked before analysis (exit 2 ends the run
   first) and again before writing. A file is recognised as Lineage output from its first
-  64 KiB: a report must start with an `envelope` object whose `tool` is `lineage`, an
+  64 KiB: a report must start with an `envelope` object whose `tool` is `Lineage`, an
   artifacts file with a `lineage-artifacts` header line. The same path requested twice is
   refused. A write failure is exit 4 and removes the temporary file.
 - **`--html` and `--csv`** are accepted and exit 2 with "not available in this build" until S2
