@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_docs  # noqa: E402
 
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
 README_SECTIONS = [
     "Problem and aim",
     "Why Lineage",
@@ -57,8 +58,14 @@ def test_version_flag_prints_the_package_version() -> None:
 
 
 def test_html_report_is_not_offered() -> None:
+    analyze = typer.main.get_command(cli.app).commands["analyze"]  # type: ignore[attr-defined]
+    options = {opt for param in analyze.params for opt in param.opts}
+    assert "--html" not in options and "--csv" in options
+    # Typer forces coloured help when GITHUB_ACTIONS is set, so compare the text without
+    # ANSI escape sequences.
     result = CliRunner().invoke(cli.app, ["analyze", "--help"], env={"COLUMNS": "200"})
-    assert "--html" not in result.output and "--csv" in result.output
+    help_text = ANSI_ESCAPE.sub("", result.output)
+    assert "--html" not in help_text and "--csv" in help_text
     pyproject = _text("pyproject.toml")
     assert "jinja2" not in pyproject.lower()
     roadmap = _text("README.md").split("## Roadmap", 1)[1]
