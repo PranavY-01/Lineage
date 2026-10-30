@@ -81,6 +81,23 @@ ATTACK_VERSION = "unpinned"
 TIMESTAMP_SOURCE = "utc_time, then time_created"
 REPORT_ERRORS_CAP = 1000
 
+# CSV storyline timeline columns (§12.6); outputs.py recognises the header.
+CSV_COLUMNS = (
+    "storyline",
+    "step",
+    "time_utc",
+    "tactic",
+    "technique",
+    "severity",
+    "host",
+    "process_guid",
+    "image_name",
+    "action",
+    "text",
+    "record_id",
+    "file",
+)
+
 # Display options (§11.1); they never change the analysis.
 DEFAULT_MAX_DEPTH = 64
 MAX_DEPTH_RANGE = (4, 10_000)

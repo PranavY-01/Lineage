@@ -7,12 +7,13 @@ from typing import Any
 
 import pytest
 
-from helpers.golden import GOLDEN, golden_path, render
+from helpers.golden import CSV_GOLDEN, GOLDEN, TEXT_GOLDEN, golden_path, render
 from helpers.reports import FIXTURES, frozen_analysis, report_text
 from lineage_ir.engine import run_analysis
 from lineage_ir.render import artifacts
 
 DETERMINISM_FIXTURES = ["phish_chain", "hostile_strings", "masquerade", "missing_telemetry"]
+BOM = bytes([0xEF, 0xBB, 0xBF])
 PROVENANCE = {"source", "evidence", "index", "write_index", "record_id", "create_record"}
 
 
@@ -63,7 +64,7 @@ def test_shuffled_input_gives_the_same_report(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("name", sorted(GOLDEN))
 def test_golden_output(name: str) -> None:
-    expected = golden_path(name).read_text(encoding="utf-8")
+    expected = golden_path(name).read_bytes()
     assert render(name) == expected, (
         f"{name} changed; if intended, run scripts/update_golden.py and note it in CHANGELOG.md"
     )
@@ -72,9 +73,19 @@ def test_golden_output(name: str) -> None:
 def test_golden_files_do_not_hardcode_the_version() -> None:
     from lineage_ir import __version__
 
-    for name in GOLDEN:
+    for name in TEXT_GOLDEN:
         text = golden_path(name).read_text(encoding="utf-8")
         assert __version__ not in text and "<version>" in text
+    assert __version__.encode() not in golden_path(CSV_GOLDEN).read_bytes()
+
+
+def test_committed_golden_csv_keeps_its_bom_and_crlf() -> None:
+    # .gitattributes marks *.csv as -text so a checkout never rewrites CRLF as LF.
+    data = golden_path(CSV_GOLDEN).read_bytes()
+    assert data.startswith(BOM + b'"storyline","step","time_utc"')
+    crlf = bytes([13, 10])
+    assert data.count(crlf) >= 2 and data.endswith(crlf)
+    assert bytes([10]) not in data.replace(crlf, b"")
 
 
 def _records(path: Path) -> list[dict[str, Any]]:

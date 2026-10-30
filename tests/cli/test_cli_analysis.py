@@ -146,7 +146,6 @@ def test_partial_coverage_still_writes_outputs(tmp_path: Path) -> None:
         (["--gap", "10x"], "not a duration"),
         (["--max-steps", "5"], "--max-steps"),
         (["--html", "out.html"], "--html: not available in this build"),
-        (["--csv", "out.csv"], "--csv: not available in this build"),
     ],
 )
 def test_usage_errors(extra: list[str], message: str) -> None:
@@ -197,6 +196,9 @@ def test_unsafe_output_paths_end_the_run_before_analysis(
         ["--report", str(existing)],
         ["--report", str(existing), "--force"],
         ["--artifacts", str(tmp_path / "missing" / "a.jsonl")],
+        ["--csv", str(PHISH)],
+        ["--csv", str(existing), "--force"],
+        ["--csv", str(tmp_path / "t.csv"), "--report", str(tmp_path / "t.csv")],
     ):
         result = invoke("analyze", PHISH, *args)
         assert result.exit_code == 2, args  # type: ignore[attr-defined]
@@ -290,3 +292,40 @@ def test_redirected_output_survives_a_legacy_code_page(tmp_path: Path) -> None:
     )
     assert proc.returncode == 1, proc.stderr
     assert "→".encode() in proc.stdout
+
+
+def test_csv_timeline_is_written_with_the_other_outputs(tmp_path: Path) -> None:
+    from lineage_ir.render.csv_timeline import csv_bytes
+
+    from helpers.reports import frozen_analysis
+
+    csv_path, report = tmp_path / "timeline.csv", tmp_path / "report.json"
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "analyze",
+            str(PHISH),
+            "--csv",
+            str(csv_path),
+            "--report",
+            str(report),
+            "--artifacts",
+            str(tmp_path / "iocs.jsonl"),
+            "--format",
+            "json",
+        ],
+    )
+    assert result.exit_code == 1
+    assert json.loads(result.stdout)["envelope"]["tool"] == "Lineage"
+    assert csv_path.read_bytes() == csv_bytes(frozen_analysis(PHISH))
+    assert report.exists() and (tmp_path / "iocs.jsonl").exists()
+    again = CliRunner().invoke(cli.app, ["analyze", str(PHISH), "--csv", str(csv_path), "--force"])
+    assert again.exit_code == 1
+    assert "csv" in again.output and "timeline.csv" in again.output
+
+
+def test_csv_for_an_incomplete_run_is_still_written(tmp_path: Path) -> None:
+    csv_path = tmp_path / "t.csv"
+    proc = run("analyze", MISSING, "--csv", csv_path)
+    assert proc.returncode == 4
+    assert csv_path.read_bytes().startswith(bytes([0xEF, 0xBB, 0xBF]))
