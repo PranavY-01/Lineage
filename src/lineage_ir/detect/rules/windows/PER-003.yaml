@@ -1,0 +1,20 @@
+id: PER-003
+title: Service created
+severity: medium
+attack: [T1543.003]
+tactics: [persistence]
+why: >
+  A new service runs its binary with system rights at every boot; creating one from the
+  command line or by writing a service ImagePath is a common persistence step.
+match_any:
+  - event_id: 1
+    image_name: sc.exe
+    command_line|contains: create
+  - event_id: 1
+    command_line_full|contains: new-service
+  - event_id: 13
+    target_object|contains: '\currentcontrolset\services\'
+    target_object|endswith: '\imagepath'
+exclude: []
+references: []
+enabled: true

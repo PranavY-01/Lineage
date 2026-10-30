@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
+from helpers.anchors import stub_is_anchor
+from lineage_ir.detect.engine import run_detection
+from lineage_ir.detect.loader import load_rules
+from lineage_ir.engine import build_host_graphs
 from lineage_ir.graph.builder import build_graphs
 from lineage_ir.graph.traverse import ancestors, collapse_children, descendants, hot_set
 from lineage_ir.ingest import reader
@@ -146,7 +151,7 @@ def test_shared_maps_and_strings_survive_the_pipeline(tmp_path: Path, name: str)
     before_events, before_loads = _snapshot(result)
 
     # Everything downstream of ingest that exists so far; later phases add their stages here.
-    graphs = build_graphs(result.events, result.image_loads)
+    graphs = build_host_graphs(result)
     for graph in graphs.values():
         graph.model_dump()
         hot = hot_set(graph, list(graph.nodes)[:3])
@@ -156,11 +161,19 @@ def test_shared_maps_and_strings_survive_the_pipeline(tmp_path: Path, name: str)
             collapse_children(graph, node.children, hot, 2)
     for item in (*result.events, *result.image_loads):
         content_digest(item)
+    detection = run_detection(result, graphs, load_rules(), is_anchor=stub_is_anchor)
+    findings_before = copy.deepcopy(detection.findings)
+    again = run_detection(result, graphs, load_rules(), is_anchor=stub_is_anchor)
+    for finding in detection.findings:
+        finding.model_dump()
+        with pytest.raises(ValidationError):
+            finding.count = 0  # type: ignore[misc]
 
     after_events, after_loads = _snapshot(result)
     assert [_dump(e) for e in after_events] == [_dump(e) for e in before_events]
     assert all(a == b for a, b in zip(result.events, before_events, strict=True))
     assert after_loads == before_loads
+    assert detection.findings == findings_before == again.findings
 
 
 def test_activities_share_the_event_field_map() -> None:

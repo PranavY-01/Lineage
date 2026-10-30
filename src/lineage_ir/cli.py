@@ -14,7 +14,7 @@ from lineage_ir.config import (
     MAX_FILE_SIZE_MB_RANGE,
     MAX_RECORDS_RANGE,
 )
-from lineage_ir.engine import new_run_id, now_us, run_validate
+from lineage_ir.engine import list_rules, new_run_id, now_us, run_validate
 from lineage_ir.errors import LineageError
 from lineage_ir.ingest.reader import IngestOptions
 from lineage_ir.render import report_json, terminal
@@ -139,3 +139,32 @@ def validate(
     else:
         terminal.render_validate(terminal.make_console(no_color=no_color), result, max_errors)
     raise typer.Exit(result.exit_code)
+
+
+@app.command("rules")
+def rules_command(
+    output_format: FormatOpt = OutputFormat.text,
+    no_color: NoColorOpt = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """List the bundled rules and graph heuristics with the event IDs they need."""
+    run_id = run_id_factory()
+    started = clock()
+    try:
+        catalogue = list_rules()
+    except LineageError as exc:
+        terminal.print_error(terminal.make_console(no_color=no_color, stderr=True), str(exc))
+        raise typer.Exit(exc.exit_code) from None
+    except KeyboardInterrupt:
+        raise typer.Exit(EXIT_INTERRUPTED) from None
+    except Exception:
+        _fail_internal(verbose, no_color)
+
+    if output_format is OutputFormat.json:
+        document = report_json.dumps(
+            report_json.rules_document(catalogue, run_id, started, clock())
+        )
+        typer.echo(document.encode("ascii"), nl=False)
+    else:
+        terminal.render_rules(terminal.make_console(no_color=no_color), catalogue)
+    raise typer.Exit(0)

@@ -1,0 +1,17 @@
+id: PER-001
+title: Registry Run key set
+severity: medium
+attack: [T1547.001]
+tactics: [persistence]
+why: >
+  Values under the Run and RunOnce keys start a program at every logon, the most common
+  way for malware to survive a reboot.
+match:
+  event_id: 13
+  target_object|contains:
+    - '\currentversion\run\'
+    - '\currentversion\runonce\'
+    - '\currentversion\policies\explorer\run\'
+exclude: []
+references: []
+enabled: true

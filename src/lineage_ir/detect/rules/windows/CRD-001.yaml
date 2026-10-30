@@ -1,0 +1,33 @@
+id: CRD-001
+title: LSASS memory access
+severity: high
+attack: [T1003.001]
+tactics: [credential-access]
+why: >
+  Opening LSASS with memory-read access is how credential dumpers extract passwords and
+  hashes. The exclusions are system processes that do this routinely; they can be
+  bypassed by renaming a tool.
+match:
+  event_id: 10
+  target_image|endswith: '\lsass.exe'
+  granted_access:
+    - '0x1010'
+    - '0x1410'
+    - '0x1438'
+    - '0x143a'
+    - '0x1f0fff'
+    - '0x1f1fff'
+    - '0x1f2fff'
+    - '0x1f3fff'
+    - '0x1fffff'
+exclude:
+  - source_image_name:
+      - csrss.exe
+      - wininit.exe
+      - services.exe
+      - svchost.exe
+      - wmiprvse.exe
+      - lsm.exe
+      - msmpeng.exe
+references: []
+enabled: true

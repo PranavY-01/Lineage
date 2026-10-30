@@ -1,0 +1,14 @@
+id: PER-004
+title: File written to a Startup folder
+severity: medium
+attack: [T1547.001]
+tactics: [persistence]
+why: >
+  Anything placed in a Startup folder runs when the user logs on; dropping a file there is
+  a simple and common persistence method.
+match:
+  event_id: 11
+  target_filename|contains: '\start menu\programs\startup\'
+exclude: []
+references: []
+enabled: true

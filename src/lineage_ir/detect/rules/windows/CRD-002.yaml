@@ -1,0 +1,17 @@
+id: CRD-002
+title: LSASS dump via command line
+severity: high
+attack: [T1003.001]
+tactics: [credential-access]
+why: >
+  The comsvcs.dll MiniDump export and ProcDump pointed at LSASS write the process memory to
+  a file, from which credentials can be extracted offline.
+match_any:
+  - event_id: 1
+    command_line|contains|all: [comsvcs, minidump]
+  - event_id: 1
+    image_name: [procdump.exe, procdump64.exe]
+    command_line|contains: lsass
+exclude: []
+references: []
+enabled: true

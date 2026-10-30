@@ -1,0 +1,30 @@
+id: LIN-001
+title: Office application spawned an interpreter
+severity: high
+attack: [T1204.002]
+tactics: [execution]
+why: >
+  Office documents that start a shell, script host or proxy-execution binary are a
+  classic phishing payload; Office rarely needs to launch interpreters in normal use.
+match:
+  event_id: 1
+  parent_image_name:
+    - winword.exe
+    - excel.exe
+    - powerpnt.exe
+    - outlook.exe
+    - msaccess.exe
+    - mspub.exe
+    - onenote.exe
+  image_name:
+    - cmd.exe
+    - powershell.exe
+    - pwsh.exe
+    - wscript.exe
+    - cscript.exe
+    - mshta.exe
+    - rundll32.exe
+    - regsvr32.exe
+exclude: []
+references: []
+enabled: true

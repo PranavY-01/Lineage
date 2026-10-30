@@ -1,0 +1,17 @@
+id: CMD-007
+title: Event log cleared
+severity: high
+attack: [T1070.001]
+tactics: [defense-evasion]
+why: >
+  Clearing Windows event logs destroys the record of earlier activity; outside planned
+  maintenance it is a strong sign that someone is covering their tracks.
+match_any:
+  - event_id: 1
+    image_name: wevtutil.exe
+    command_line|contains: [' cl ', ' clear-log ']
+  - event_id: 1
+    command_line_full|contains: clear-eventlog
+exclude: []
+references: []
+enabled: true

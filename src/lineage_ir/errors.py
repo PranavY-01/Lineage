@@ -13,6 +13,10 @@ class UsageError(LineageError):
     exit_code = 2
 
 
+class RuleError(UsageError):
+    """A rule file failed validation (exit 2); bundled rules failing is a build bug."""
+
+
 class InputError(LineageError):
     """An input file is unusable as a whole (exit 3)."""
 
