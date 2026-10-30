@@ -75,3 +75,17 @@ READINESS_FAMILIES: tuple[tuple[str, tuple[int, ...], str], ...] = (
 )
 
 UNKNOWN_KEYS_SHOWN = 20
+
+# Reports (§12.3). The ATT&CK version is pinned in P7, after every technique ID is verified.
+ATTACK_VERSION = "unpinned"
+TIMESTAMP_SOURCE = "utc_time, then time_created"
+REPORT_ERRORS_CAP = 1000
+
+# Display options (§11.1); they never change the analysis.
+DEFAULT_MAX_DEPTH = 64
+MAX_DEPTH_RANGE = (4, 10_000)
+DEFAULT_COLLAPSE_MIN = 3
+COLLAPSE_MIN_RANGE = (2, 1_000)
+COMMAND_LINE_WIDTH = 120
+ACTIVITY_LINES_PER_KIND = 5
+INSPECT_ITEMS_PER_KIND = 50

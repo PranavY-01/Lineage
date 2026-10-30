@@ -123,7 +123,7 @@ def test_validate_json_prints_only_json() -> None:
     assert list(document)[:2] == ["envelope", "kind"]
     assert document["kind"] == "validate"
     assert document["envelope"]["schema"] == "7d7b-report"
-    assert document["envelope"]["tool"] == "lineage"
+    assert document["envelope"]["tool"] == "Lineage"
     assert document["envelope"]["tool_version"] == __version__
     assert document["counters"]["duplicates_dropped"] == 2
     assert document["counters"]["duplicate_conflicts"] == 1

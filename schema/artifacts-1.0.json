@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:lineage:schema:artifacts-1.0",
+  "title": "Lineage artifacts JSONL line",
+  "description": "Each line of `lineage analyze --artifacts` is one JSON object. The first line is a header; every other line is one artifact from a storyline node.",
+  "oneOf": [{ "$ref": "#/$defs/header" }, { "$ref": "#/$defs/artifact" }],
+  "$defs": {
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "schema_version", "tool_version", "run_id", "source_sha256"],
+      "properties": {
+        "schema": { "const": "lineage-artifacts" },
+        "schema_version": { "const": "1.0" },
+        "tool_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+" },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "source_sha256": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storyline", "host", "process_guid", "image", "record_id", "kind", "value"],
+      "properties": {
+        "storyline": { "type": "string", "pattern": "^S[0-9]+$" },
+        "host": { "type": "string" },
+        "process_guid": { "type": "string" },
+        "image": { "type": ["string", "null"] },
+        "record_id": { "type": ["integer", "null"] },
+        "kind": {
+          "enum": [
+            "command_line",
+            "decoded_command",
+            "destination",
+            "destination_hostname",
+            "dns_query",
+            "file",
+            "registry_value",
+            "image_hash"
+          ]
+        },
+        "value": { "type": "string" }
+      }
+    }
+  }
+}

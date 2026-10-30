@@ -186,6 +186,15 @@ that were recorded above only as phase decisions; their meaning is unchanged.
     execution and gains no gap from the earlier write. The committed oracle's S2 start was
     re-derived under this amendment (the revision is recorded in the oracle file).
 
+Amendments 19 and 20 record owner decisions given on 2026-10-30 at the P5 gate.
+
+19. **Envelope tool name (§12.3, §12.7).** The envelope's `tool` is `Lineage`, matching the
+    series convention of the tool's display name. §12.7 recognises a Lineage report by
+    `envelope.tool == "Lineage"`; the report schema and golden report follow.
+20. **Line and paragraph separators (§12.1).** U+2028 and U+2029 are replaced with `\u{2028}`
+    and `\u{2029}` in every human-readable output, like the bidi overrides.
+    `hostile_strings.jsonl` carries both.
+
 ### P1 · Skeleton and ingest
 
 - **Development version.** `__version__` is `0.1.0` during the build and becomes `1.0.0`
@@ -388,12 +397,62 @@ that were recorded above only as phase decisions; their meaning is unchanged.
   functions over an `AnalysisResult`; `run_analysis` validates `--focus` (exit 2 when not found
   or ambiguous) but never applies the window or focus to what it returns.
 
+### P5 · Render and CLI
+
+- **AuthWatch comparison (2026-10-30).** Read with the owner's approval, limited to the
+  `envelope` block of `examples/sample-report.json` and the `[build-system]` section of
+  `pyproject.toml`. Envelope key names and order match §12.3 exactly (`schema`,
+  `schema_version`, `tool`, `tool_version`, `run_id`, `started_at`, `completed_at`).
+  AuthWatch's `schema_version` is the integer `1`; Lineage used the string `"1.0"` and now
+  writes `1`. AuthWatch's `tool` value is its display name (`AuthWatch`); Lineage writes
+  `Lineage` (amendment 19). The build backend is `hatchling.build` in both. AuthWatch requires
+  `hatchling` with no lower bound; Lineage keeps `hatchling>=1.27` (§3.1 lower-bound pins), the
+  first release that supports the PEP 639 `license-files` key in Lineage's `pyproject.toml`.
+- **Report keys** are exactly those of §12.3, in its order. Display filters are recorded
+  after the §12.3 parameters (`around`, `window`, `hot_only`, `storyline`, `max_steps`,
+  `max_file_size_mb`) as amendment 16 requires; `since` and `until` hold the resolved window,
+  so `--around` appears there too. `result`, `status` and the exit code stay properties of
+  `AnalysisResult`; the report prints `status` and `result` (§10.4, §12.3).
+- **Findings** in the report use the series shape (`event`, `category`, `subject`,
+  `details`). The subject is `process:<host>/<guid>`, or `host:<host>` for host-level
+  findings. Rule-specific details follow the fixed keys and never replace them. Evidence
+  references print `file`, `index` and `record_id`; the file's SHA-256 is under `input`.
+- **`rule_set_sha256`** hashes each bundled rule file's relative path and bytes in path order.
+  `attack_version` is `unpinned` until P7 verifies every technique ID (Known gaps).
+- **`errors`** in the report are capped at 1,000 entries with `errors_truncated`.
+- **Inspect JSON** (`kind: "inspect"`) lists activity per kind with its total and at most 50
+  items, image loads included as `image_load` (amendment 6). Its schema is
+  `report-1.0.json#/$defs/inspectDocument`, which carries the activity kinds including
+  `file_stream` and `other` (amendment 4).
+- **Artifacts** are written ASCII-escaped (`ensure_ascii`), so the file stays valid UTF-8 even
+  when evidence holds lone surrogates. Destinations are `ip:port`, with IPv6 in brackets.
+  Lines follow storyline rank, then node order, then activity time.
+- **Output safety.** Every requested path is checked before analysis (exit 2 ends the run
+  first) and again before writing. A file is recognised as Lineage output from its first
+  64 KiB: a report must start with an `envelope` object whose `tool` is `Lineage`, an
+  artifacts file with a `lineage-artifacts` header line. The same path requested twice is
+  refused. A write failure is exit 4 and removes the temporary file.
+- **`--html` and `--csv`** are accepted and exit 2 with "not available in this build" until S2
+  and S3 ship; P7 removes any option whose stretch phase was skipped.
+- **Defanging** is part of `safe()`, so every human-readable value is defanged: `http` →
+  `hxxp` (case kept), `://` → `[://]`, dots in the URL host → `[.]`. No word boundary is needed
+  before the scheme, so text glued to a URL cannot hide it. DNS names in trees and scope lists
+  are shown with `[.]` as in the §12.2 sample; step text keeps names as written apart from
+  URLs.
+- **Terminal views** live in `render/terminal.py` (§4.1). Command lines in trees drop the
+  leading program, which the node label already names, and are cut at 120 characters unless
+  `--wide`; decoded payloads in trees are cut at 60. Activity lines appear under flagged nodes
+  only, five per kind. Low-signal storylines (only `low` or `info` findings) are listed under
+  their own heading without a tree; `story --storyline N` shows one in full.
+- **Redirected output on Windows.** `cli.py` reconfigures stdout and stderr to UTF-8 when they
+  are not terminals, and to `errors="replace"` when they are. Before this, `validate` and the
+  new views raised `UnicodeEncodeError` when redirected to a file on a cp1252 console (exit 4).
+- **Golden files** (`phish_chain.report.json`, `phish_chain.story.txt`) are produced through
+  the CLI with a frozen clock and run ID by `tests/helpers/golden.py`, shared by the test and
+  `scripts/update_golden.py`. The version string is replaced by `<version>` (amendment 17).
+
 ## Assumptions
 
-- `ASSUMPTION` Build backend is `hatchling` (§3.3 asks for the AuthWatch backend; not yet
-  confirmed).
-- `ASSUMPTION` Envelope `schema_version` is `"1.0"` and the envelope keys are those listed in
-  §12.3 (AuthWatch sample report not yet compared).
 - `ASSUMPTION` Field aliases and shape rules are the §6.2–6.4 defaults; no real dataset has
   been checked against them.
 - `ASSUMPTION` No hero dataset is available, so `validate` has only been run on synthetic
@@ -507,6 +566,7 @@ Not started (P7).
 - Peak memory is about 2.3 GiB per million records (published in the README, amendment 16).
 - Hero dataset check PENDING P0 data: the P4 gate used `phish_chain.jsonl` and its committed,
   hand-derived oracle instead (amendment 15).
+- `attack_version` in report parameters is `unpinned` until the P7 ATT&CK check pins it.
 - Story steps for findings come from the retained evidence (first 10 and last 10 records), so a
   finding with more than 20 matching events has no step for the middle ones.
 
