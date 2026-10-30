@@ -18,6 +18,10 @@ specification text they amend.
    `* text=auto eol=lf` and `*.evtx binary`; ruff formats with `line-ending = "lf"`. Code and
    tests that write reports, golden files or other output write LF explicitly (bytes, or
    `newline="\n"`), and JSON printed to stdout is written as bytes.
+   Exception (2026-10-30, S3): `*.csv -text` keeps CSV files byte for byte, because the CSV
+   timeline is CRLF by definition (§12.6); without it a checkout would turn the golden CSV's
+   CRLF into LF. A test checks that the committed golden CSV starts with the BOM and uses
+   CRLF only.
 2. **`validate` exits 4 when the record cap is reached (§10.5).** Reading stopped before the
    end of the input, so not every record was checked.
 3. **`RuleName` → `rule_name` (§6.4, §8.3, §8.4).** Added to the EventData map and therefore to
@@ -204,6 +208,15 @@ Amendment 21 records the owner's answers to the S1 plan, given on 2026-10-30.
     ran the target (its GUID and start time are given) but belongs to no storyline;
     `not_seen_running` means no later process on the host ran it. At most 50 per storyline.
     The report schema carries the field.
+
+Amendment 22 records the owner's answers to the S3 plan, given on 2026-10-30.
+
+22. **CSV storyline timeline (§12.6).** The CSV always holds every step of every storyline;
+    display filters never trim it (as amendment 16 does for the JSON report). Values are raw,
+    as in every machine output (§12): no defanging and no control-character escapes. The only
+    change is the formula prefix, plus lone surrogates, which cannot be written as UTF-8 and
+    become U+FFFD. Gaps and links get no rows; the report carries them. The golden file
+    `phish_chain.timeline.csv` changes only through `scripts/update_golden.py`.
 
 ### P1 · Skeleton and ingest
 
@@ -494,6 +507,27 @@ Amendment 21 records the owner's answers to the S1 plan, given on 2026-10-30.
   "Not linked".
 - **Reuse.** The decoder's tokenizer (`command_tokens`) and the storyline evidence lookup
   (`evidence_events`) are now public so the link code shares them.
+
+### S3 · CSV storyline timeline
+
+- **Format.** `render/csv_timeline.py` writes a UTF-8 BOM, then the §12.6 header and one row
+  per step in storyline rank and step order. Every field is quoted with quotes doubled, and
+  every line ends in CRLF. Newlines inside a cell stay inside its quotes (RFC 4180).
+- **Formula prefix.** A cell gets a leading `'` when its first character that is not
+  whitespace is `=`, `+`, `-`, `@` or a full-width form of one, or when a tab or a carriage
+  return comes before any other character. Whitespace includes U+3000. Every column is
+  checked.
+- **Columns.** `CSV_COLUMNS` lives in `config.py` so `outputs.py` can recognise the header
+  without importing a renderer. Empty values (no tactic, technique, severity or record ID)
+  are empty cells.
+- **Output safety.** `--csv` follows §12.7 like the other outputs: checked before analysis,
+  written atomically after it. `--force` replaces a file only when it starts with the BOM,
+  the exact quoted header and CRLF.
+- **Golden CSV.** Built from the renderer with a frozen run, not through the CLI, so the
+  update script writes no temporary files; a CLI test checks `--csv` writes the same bytes.
+  Golden comparisons are byte comparisons.
+- **Image names** lose leading spaces in normalization, so a name such as ` -x.exe` reaches
+  the CSV as `-x.exe` (still prefixed). Leading whitespace is covered by unit tests.
 
 ## Assumptions
 
