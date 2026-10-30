@@ -295,9 +295,8 @@ def test_redirected_output_survives_a_legacy_code_page(tmp_path: Path) -> None:
 
 
 def test_csv_timeline_is_written_with_the_other_outputs(tmp_path: Path) -> None:
-    from lineage_ir.render.csv_timeline import csv_bytes
-
     from helpers.reports import frozen_analysis
+    from lineage_ir.render.csv_timeline import csv_bytes
 
     csv_path, report = tmp_path / "timeline.csv", tmp_path / "report.json"
     result = CliRunner().invoke(
