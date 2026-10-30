@@ -11,7 +11,11 @@ import pytest
 from pydantic import ValidationError
 
 from helpers.anchors import stub_is_anchor
+from lineage_ir.analyze.anchors import load_anchors
+from lineage_ir.analyze.coverage import build_coverage
+from lineage_ir.analyze.storyline import build_storylines
 from lineage_ir.detect.engine import run_detection
+from lineage_ir.detect.graph_rules import GRAPH_RULES
 from lineage_ir.detect.loader import load_rules
 from lineage_ir.engine import build_host_graphs
 from lineage_ir.graph.builder import build_graphs
@@ -168,12 +172,27 @@ def test_shared_maps_and_strings_survive_the_pipeline(tmp_path: Path, name: str)
         finding.model_dump()
         with pytest.raises(ValidationError):
             finding.count = 0  # type: ignore[misc]
+    anchors = load_anchors()
+    storylines = build_storylines(result, graphs, detection.findings, anchors, gap_seconds=600)
+    storylines_before = copy.deepcopy(storylines)
+    build_coverage(
+        result, graphs, detection, detection.findings, load_rules(), GRAPH_RULES, anchors, 1800
+    )
+    for story in storylines:
+        story.model_dump()
+        with pytest.raises(ValidationError):
+            story.max_severity = "info"  # type: ignore[misc]
 
     after_events, after_loads = _snapshot(result)
     assert [_dump(e) for e in after_events] == [_dump(e) for e in before_events]
     assert all(a == b for a, b in zip(result.events, before_events, strict=True))
     assert after_loads == before_loads
     assert detection.findings == findings_before == again.findings
+    assert (
+        storylines
+        == storylines_before
+        == build_storylines(result, graphs, detection.findings, anchors, gap_seconds=600)
+    )
 
 
 def test_activities_share_the_event_field_map() -> None:

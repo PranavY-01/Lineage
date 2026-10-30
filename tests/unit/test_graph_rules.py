@@ -8,6 +8,7 @@ import pytest
 
 from helpers.anchors import stub_is_anchor
 from helpers.detection import detect_file
+from lineage_ir.analyze.anchors import load_anchors
 from lineage_ir.detect.graph_rules import GRAPH_RULES, AnchorTest
 from lineage_ir.models import ProcessNode
 
@@ -60,8 +61,13 @@ class Log:
         )
 
 
-def findings(write_jsonl: Callable[..., Path], log: Log, rule_id: str) -> list[Any]:
-    return detect_file(write_jsonl(log.rows), ()).by_rule(rule_id)
+def findings(
+    write_jsonl: Callable[..., Path],
+    log: Log,
+    rule_id: str,
+    is_anchor: AnchorTest = stub_is_anchor,
+) -> list[Any]:
+    return detect_file(write_jsonl(log.rows), (), is_anchor).by_rule(rule_id)
 
 
 @pytest.fixture
@@ -99,63 +105,74 @@ def test_stub_anchor_needs_name_and_directory() -> None:
     assert not stub_is_anchor(node(None, ghost=True))
 
 
-# GR-001
+# GR-001: every test runs with the stub anchors and with the real anchors.yaml.
 
 
-def test_gr001_office_descendant_connecting_out(write_jsonl: Callable[..., Path], log: Log) -> None:
+@pytest.fixture(params=["stub", "anchors.yaml"])
+def anchor_test(request: pytest.FixtureRequest) -> AnchorTest:
+    return stub_is_anchor if request.param == "stub" else load_anchors()
+
+
+def test_gr001_office_descendant_connecting_out(
+    write_jsonl: Callable[..., Path], log: Log, anchor_test: AnchorTest
+) -> None:
     log.create(1, "C:\\Windows\\explorer.exe", None, 0)
     log.create(2, OFFICE + "WINWORD.EXE", 1, 1)
     log.create(3, SYS32 + "cmd.exe", 2, 2)
     log.create(4, SYS32 + "WindowsPowerShell\\v1.0\\powershell.exe", 3, 3)
     log.connect(4, 4)
     log.connect(4, 5)
-    (finding,) = findings(write_jsonl, log, "GR-001")
+    (finding,) = findings(write_jsonl, log, "GR-001", anchor_test)
     assert finding.guid == bare(4)
     assert finding.count == 2
     assert finding.details["office_ancestor"] == "winword.exe"
     assert finding.details["destination"] == "203.0.113.7:443/tcp"
 
 
-def test_gr001_stops_at_the_first_anchor(write_jsonl: Callable[..., Path], log: Log) -> None:
+def test_gr001_stops_at_the_first_anchor(
+    write_jsonl: Callable[..., Path], log: Log, anchor_test: AnchorTest
+) -> None:
     log.create(1, OFFICE + "WINWORD.EXE", None, 0)
     log.create(2, "C:\\Windows\\explorer.exe", 1, 1)
     log.create(3, SYS32 + "cmd.exe", 2, 2)
     log.connect(3, 3)
-    assert findings(write_jsonl, log, "GR-001") == []
+    assert findings(write_jsonl, log, "GR-001", anchor_test) == []
 
 
 def test_gr001_walks_through_a_same_named_binary_elsewhere(
-    write_jsonl: Callable[..., Path], log: Log
+    write_jsonl: Callable[..., Path], log: Log, anchor_test: AnchorTest
 ) -> None:
     log.create(1, OFFICE + "EXCEL.EXE", None, 0)
     log.create(2, "C:\\Users\\Public\\explorer.exe", 1, 1)
     log.create(3, SYS32 + "cmd.exe", 2, 2)
     log.connect(3, 3)
-    (finding,) = findings(write_jsonl, log, "GR-001")
+    (finding,) = findings(write_jsonl, log, "GR-001", anchor_test)
     assert finding.guid == bare(3)
     assert finding.details["office_ancestor"] == "excel.exe"
 
 
-def test_gr001_ghost_ancestors(write_jsonl: Callable[..., Path], log: Log) -> None:
+def test_gr001_ghost_ancestors(
+    write_jsonl: Callable[..., Path], log: Log, anchor_test: AnchorTest
+) -> None:
     # Parent 10 is never created: a ghost seeded with the Office image from the child record.
     log.create(11, SYS32 + "cmd.exe", 10, 0, parent_image=OFFICE + "OUTLOOK.EXE")
     log.connect(11, 1)
     # Parent 20 is a ghost with no image at all: the walk ends there without a hit.
     log.create(21, SYS32 + "cmd.exe", 20, 2)
     log.connect(21, 3)
-    run_findings = findings(write_jsonl, log, "GR-001")
+    run_findings = findings(write_jsonl, log, "GR-001", anchor_test)
     assert [f.guid for f in run_findings] == [bare(11)]
 
 
 def test_gr001_needs_initiated_connection_and_a_real_ancestor(
-    write_jsonl: Callable[..., Path], log: Log
+    write_jsonl: Callable[..., Path], log: Log, anchor_test: AnchorTest
 ) -> None:
     log.create(1, OFFICE + "WINWORD.EXE", None, 0)
     log.create(2, SYS32 + "cmd.exe", 1, 1)
     log.connect(2, 2, initiated="false")
     # The Office process itself connecting out has no Office ancestor.
     log.connect(1, 3)
-    assert findings(write_jsonl, log, "GR-001") == []
+    assert findings(write_jsonl, log, "GR-001", anchor_test) == []
 
 
 # GR-002

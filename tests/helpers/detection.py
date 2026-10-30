@@ -5,6 +5,7 @@ from pathlib import Path
 
 from helpers.anchors import stub_is_anchor
 from lineage_ir.detect.engine import DetectionResult, run_detection
+from lineage_ir.detect.graph_rules import AnchorTest
 from lineage_ir.detect.loader import load_rules
 from lineage_ir.detect.schema import Rule
 from lineage_ir.engine import build_host_graphs
@@ -23,9 +24,13 @@ class Run:
         return [f for f in self.detection.findings if f.rule_id == rule_id]
 
 
-def detect_file(path: Path, rules: tuple[Rule, ...] | None = None) -> Run:
+def detect_file(
+    path: Path,
+    rules: tuple[Rule, ...] | None = None,
+    is_anchor: AnchorTest = stub_is_anchor,
+) -> Run:
     ingest = read_inputs([path])
     graphs = build_host_graphs(ingest)
     selected = load_rules() if rules is None else rules
-    detection = run_detection(ingest, graphs, selected, is_anchor=stub_is_anchor)
+    detection = run_detection(ingest, graphs, selected, is_anchor=is_anchor)
     return Run(ingest, graphs, detection)

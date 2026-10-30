@@ -49,8 +49,8 @@ class UniqueKeyLoader(yaml.SafeLoader):
         return super().construct_mapping(node, deep=deep)
 
 
-def _load_yaml(text: str) -> Any:
-    # What yaml.safe_load does, with the stricter loader.
+def load_yaml(text: str) -> Any:
+    """What yaml.safe_load does, with the duplicate-key check; raises yaml.YAMLError."""
     loader = UniqueKeyLoader(text)
     try:
         return loader.get_single_data()
@@ -61,7 +61,7 @@ def _load_yaml(text: str) -> Any:
 def parse_rule(text: str, file_name: str) -> Rule:
     """Parse and validate one rule file; ``file_name`` must be ``<id>.yaml``."""
     try:
-        data = _load_yaml(text)
+        data = load_yaml(text)
     except DuplicateKeyError as exc:
         raise RuleError(f"{file_name}: {exc}") from None
     except yaml.YAMLError as exc:
