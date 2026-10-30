@@ -3,15 +3,15 @@
 from pathlib import Path
 
 import pytest
+
+from helpers.chain import EXPLORER, HOST, SYS32, Chain, guid
+from helpers.reports import FIXTURES, frozen_analysis
 from lineage_ir.analyze.persistence_links import (
     LinkTarget,
     extract_target,
     sc_binpath_target,
     schtasks_target,
 )
-
-from helpers.chain import EXPLORER, HOST, SYS32, Chain, guid
-from helpers.reports import FIXTURES, frozen_analysis
 from lineage_ir.engine import AnalysisResult
 from lineage_ir.ingest.timeparse import format_rfc3339
 from lineage_ir.models import Storyline
@@ -68,6 +68,13 @@ OTHER_HOST = "ws-15.corp.example"
             LinkTarget("c:\\users\\public\\s.ps1", "exact"),
         ),
         ("cmd.exe /c C:\\Users\\Public\\go.bat", LinkTarget("c:\\users\\public\\go.bat", "exact")),
+        # The DLL argument has no extension, so only the ",Entry" cut ends the path.
+        (
+            "rundll32.exe C:\\Users\\Public\\payload,Start",
+            LinkTarget("c:\\users\\public\\payload", "exact"),
+        ),
+        # No separator after the variable: the suffix is kept exactly as written.
+        ("%TEMP%x.exe", LinkTarget("x.exe", "suffix")),
         ("wscript.exe //B %APPDATA%\\x.vbs", LinkTarget("\\x.vbs", "suffix")),
         ("mshta.exe C:\\Users\\Public\\p.hta", LinkTarget("c:\\users\\public\\p.hta", "exact")),
         (
