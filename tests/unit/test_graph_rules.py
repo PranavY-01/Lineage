@@ -210,6 +210,37 @@ def test_gr003_dropped_file_later_executed(write_jsonl: Callable[..., Path], log
     assert len(finding.evidence) == 2
 
 
+def test_gr003_reports_the_latest_write_before_execution(
+    write_jsonl: Callable[..., Path], log: Log
+) -> None:
+    target = "C:\\Users\\Public\\tool.exe"
+    log.create(1, SYS32 + "cmd.exe", None, 0)
+    log.create(2, SYS32 + "bitsadmin.exe", None, 0)
+    log.create(3, SYS32 + "certutil.exe", None, 0)
+    log.event(11, 1, 1, Image=SYS32 + "cmd.exe", TargetFilename=target)  # write A at t1
+    log.create(4, target, None, 2)  # execute at t2
+    log.event(11, 2, 3, Image=SYS32 + "bitsadmin.exe", TargetFilename=target)  # rewrite B at t3
+    (finding,) = findings(write_jsonl, log, "GR-003")
+    assert finding.guid == bare(4)
+    assert finding.details["creator_guid"] == bare(1)
+    # Two writes before the execution: the more recent one is the creator.
+    log.event(11, 3, 4, Image=SYS32 + "certutil.exe", TargetFilename=target)
+    log.create(5, target, None, 5)
+    by_node = {f.guid: f for f in findings(write_jsonl, log, "GR-003")}
+    assert by_node[bare(5)].details["creator_guid"] == bare(3)
+    assert by_node[bare(4)].details["creator_guid"] == bare(1)
+
+
+def test_gr003_execution_with_only_a_later_write(
+    write_jsonl: Callable[..., Path], log: Log
+) -> None:
+    target = "C:\\Users\\Public\\late.exe"
+    log.create(1, SYS32 + "cmd.exe", None, 0)
+    log.create(2, target, None, 1)
+    log.event(11, 1, 2, Image=SYS32 + "cmd.exe", TargetFilename=target)
+    assert findings(write_jsonl, log, "GR-003") == []
+
+
 def test_gr003_ignores_earlier_runs_streams_and_other_hosts(
     write_jsonl: Callable[..., Path], log: Log
 ) -> None:

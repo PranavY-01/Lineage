@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from lineage_ir.detect.loader import load_rules, parse_rule
+from lineage_ir.detect.loader import UniqueKeyLoader, load_rules, parse_rule
 from lineage_ir.detect.schema import ALLOWED_FIELDS, TACTICS, VIRTUAL_FIELDS, Rule
 from lineage_ir.errors import RuleError
 
@@ -196,6 +196,25 @@ def test_leading_and_trailing_spaces_are_preserved() -> None:
     values = {c.field: (c.values, c.folded) for c in rule.groups[0].conditions}
     assert values["command_line"] == ((" cl ", " clear-log "), (" cl ", " clear-log "))
     assert values["image_name"] == (("  padded.exe ",), ("  padded.exe ",))
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "id: TST-001\nid: TST-002\n",
+        "id: TST-001\nmatch:\n  event_id: 1\n  image_name: a.exe\n  image_name: b.exe\n",
+        "id: TST-001\nmatch_any:\n  - {event_id: 1, event_id: 3}\n",
+    ],
+)
+def test_duplicate_keys_are_rejected(text: str) -> None:
+    with pytest.raises(RuleError, match="TST-001.yaml: duplicate key"):
+        parse_rule(text, "TST-001.yaml")
+
+
+def test_rule_yaml_loader_stays_safe() -> None:
+    assert issubclass(UniqueKeyLoader, yaml.SafeLoader)
+    with pytest.raises(RuleError):
+        parse_rule("id: !!python/object/apply:os.getcwd []\n", "TST-001.yaml")
 
 
 def test_yaml_that_is_not_a_mapping() -> None:

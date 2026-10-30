@@ -1,8 +1,10 @@
 """Loading and validation of rule files (§8.1, §8.4); any failure is a RuleError (exit 2)."""
 
+from collections.abc import Hashable
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import ValidationError
@@ -30,10 +32,38 @@ def _describe(exc: ValidationError) -> str:
     return "; ".join(problems)
 
 
+class DuplicateKeyError(yaml.YAMLError):
+    """A mapping in a rule file repeats a key (``yaml.safe_load`` would keep the last one)."""
+
+
+class UniqueKeyLoader(yaml.SafeLoader):
+    """The safe loader, plus a check that no mapping repeats a key."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node, deep=deep)  # type: ignore[no-untyped-call]
+            if isinstance(key, Hashable) and key in seen:
+                raise DuplicateKeyError(f"duplicate key {key!r}")
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
+def _load_yaml(text: str) -> Any:
+    # What yaml.safe_load does, with the stricter loader.
+    loader = UniqueKeyLoader(text)
+    try:
+        return loader.get_single_data()
+    finally:
+        loader.dispose()  # type: ignore[no-untyped-call]
+
+
 def parse_rule(text: str, file_name: str) -> Rule:
     """Parse and validate one rule file; ``file_name`` must be ``<id>.yaml``."""
     try:
-        data = yaml.safe_load(text)
+        data = _load_yaml(text)
+    except DuplicateKeyError as exc:
+        raise RuleError(f"{file_name}: {exc}") from None
     except yaml.YAMLError as exc:
         raise RuleError(f"{file_name}: not valid YAML") from exc
     if not isinstance(data, dict):
