@@ -379,7 +379,8 @@
         "destinations",
         "dns_names",
         "decoded_payloads",
-        "review"
+        "review",
+        "unlinked_targets"
       ],
       "properties": {
         "users": { "$ref": "#/$defs/strings" },
@@ -403,7 +404,27 @@
             "persistence": { "$ref": "#/$defs/count" },
             "destinations": { "$ref": "#/$defs/count" }
           }
+        },
+        "unlinked_targets": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/unlinkedTarget" }
         }
+      }
+    },
+    "unlinkedTarget": {
+      "description": "A persistence target that links to no other storyline (section 9.8, amendment 21).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "rule_id", "path", "match", "guid", "start", "source"],
+      "properties": {
+        "reason": { "enum": ["target_not_in_storyline", "not_seen_running"] },
+        "rule_id": { "$ref": "#/$defs/ruleId" },
+        "path": { "type": "string" },
+        "match": { "enum": ["exact", "suffix"] },
+        "guid": { "$ref": "#/$defs/nullableString" },
+        "start": { "$ref": "#/$defs/nullableTime" },
+        "source": { "$ref": "#/$defs/sourceRef" }
       }
     },
     "storyline": {
