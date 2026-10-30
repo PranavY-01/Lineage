@@ -7,13 +7,13 @@ import random
 from pathlib import Path
 
 import pytest
-from lineage_ir.render.csv_timeline import csv_bytes, neutralize
 
 from helpers.chain import EXPLORER, Chain
 from helpers.reports import FIXTURES, frozen_analysis
 from lineage_ir.config import CSV_COLUMNS
 from lineage_ir.engine import AnalysisResult
 from lineage_ir.ingest.timeparse import format_rfc3339
+from lineage_ir.render.csv_timeline import csv_bytes, neutralize
 
 BOM = bytes([0xEF, 0xBB, 0xBF])
 CRLF = bytes([13, 10])
@@ -161,7 +161,8 @@ def test_hostile_cells_are_neutralized_end_to_end() -> None:
     assert "'=sum(1+1).exe" in names
     assert "'@cmd.exe" in names
     assert "'" + FULLWIDTH["="] + "calc.exe" in names
-    assert "' -x.exe" in names
+    # Normalization strips the leading space from the image name; the dash still starts it.
+    assert "'-x.exe" in names
 
 
 def test_two_runs_and_shuffled_input_give_the_same_bytes(tmp_path: Path) -> None:
