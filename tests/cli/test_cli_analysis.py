@@ -145,7 +145,7 @@ def test_partial_coverage_still_writes_outputs(tmp_path: Path) -> None:
         (["--min-severity", "urgent"], "invalid option"),
         (["--gap", "10x"], "not a duration"),
         (["--max-steps", "5"], "--max-steps"),
-        (["--html", "out.html"], "--html: not available in this build"),
+        (["--html", "out.html"], "No such option"),
     ],
 )
 def test_usage_errors(extra: list[str], message: str) -> None:
