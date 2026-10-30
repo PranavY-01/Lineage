@@ -5,6 +5,9 @@ import re
 from rich.markup import escape
 
 _BIDI = frozenset(range(0x202A, 0x202F)) | frozenset(range(0x2066, 0x206A))
+# Line and paragraph separators can start a new line in some terminals (amendment 20).
+_LINE_SEPARATORS = frozenset({0x2028, 0x2029})
+_ESCAPED = _BIDI | _LINE_SEPARATORS
 ELLIPSIS = "…"
 
 # Scheme, separator and host of a URL. Bounded and single quantifiers over disjoint classes
@@ -16,13 +19,13 @@ _URL = re.compile(r"([A-Za-z][A-Za-z0-9+.-]{0,15})://([^\s/?#'\"<>\\]*)")
 def _replacement(code: int) -> str | None:
     if code < 0x20 or code == 0x7F or 0x80 <= code <= 0x9F:
         return f"\\x{code:02x}"
-    if code in _BIDI:
+    if code in _ESCAPED:
         return f"\\u{{{code:04x}}}"
     return None
 
 
 def clean(text: str) -> str:
-    """Replace control characters and bidi overrides with visible escape notation."""
+    """Replace control characters, bidi overrides and line separators with escape notation."""
     out = []
     for char in text:
         replacement = _replacement(ord(char))

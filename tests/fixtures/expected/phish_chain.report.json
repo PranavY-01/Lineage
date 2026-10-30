@@ -2,7 +2,7 @@
   "envelope": {
     "schema": "7d7b-report",
     "schema_version": 1,
-    "tool": "lineage",
+    "tool": "Lineage",
     "tool_version": "<version>",
     "run_id": "00000000-0000-4000-8000-000000000001",
     "started_at": "2026-10-14T17:46:40Z",

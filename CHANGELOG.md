@@ -33,6 +33,9 @@ All notable changes to this project are documented here. The format follows
 - `--max-records` defaults to 2,000,000 so that peak memory stays under 6 GB for typical
   logs; the cap message says how to raise it.
 - The report envelope's `schema_version` is the integer `1`, as in the other series tools.
+- The report envelope's `tool` is `Lineage`. Golden file `phish_chain.report.json` changed
+  for this (updated through `scripts/update_golden.py`).
+- Line and paragraph separators (U+2028, U+2029) are escaped in human-readable output.
 
 ### Fixed
 

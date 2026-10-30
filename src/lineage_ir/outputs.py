@@ -44,7 +44,8 @@ def _is_lineage_output(path: Path, kind: OutputKind) -> bool:
             if match is None:
                 return False
             envelope, _ = json.JSONDecoder().raw_decode(head, match.end())
-            return isinstance(envelope, dict) and envelope.get("tool") == "lineage"
+            # The envelope tool name written by render/report_json.py (amendment 19).
+            return isinstance(envelope, dict) and envelope.get("tool") == "Lineage"
         first = json.loads(head.split("\n", 1)[0])
         return isinstance(first, dict) and first.get("schema") == "lineage-artifacts"
     except (ValueError, RecursionError):

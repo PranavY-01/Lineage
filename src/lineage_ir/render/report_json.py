@@ -29,7 +29,7 @@ from lineage_ir.models import (
 ENVELOPE_SCHEMA = "7d7b-report"
 # Same key names and schema_version as the AuthWatch sample report.
 ENVELOPE_SCHEMA_VERSION = 1
-TOOL = "lineage"
+TOOL = "Lineage"
 
 
 def envelope(run_id: str, started_us: int, completed_us: int) -> dict[str, Any]:
