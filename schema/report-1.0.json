@@ -1,0 +1,631 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:lineage:schema:report-1.0",
+  "title": "Lineage report (7d7b-report envelope)",
+  "description": "Written by `lineage analyze --report` and printed by `--format json` on analyze, tree and story. $defs/inspectDocument describes `lineage inspect --format json`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "envelope",
+    "status",
+    "result",
+    "input",
+    "parameters",
+    "coverage",
+    "summary",
+    "findings",
+    "storylines",
+    "errors",
+    "errors_truncated"
+  ],
+  "properties": {
+    "envelope": { "$ref": "#/$defs/envelope" },
+    "status": { "enum": ["no_findings", "findings_detected", "incomplete"] },
+    "result": { "enum": ["no_findings", "findings_detected"] },
+    "input": { "type": "array", "items": { "$ref": "#/$defs/input" } },
+    "parameters": { "$ref": "#/$defs/parameters" },
+    "coverage": { "$ref": "#/$defs/coverage" },
+    "summary": { "$ref": "#/$defs/summary" },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "storylines": { "type": "array", "items": { "$ref": "#/$defs/storyline" } },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/error" } },
+    "errors_truncated": { "type": "boolean" }
+  },
+  "$defs": {
+    "time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$"
+    },
+    "nullableTime": { "anyOf": [{ "$ref": "#/$defs/time" }, { "type": "null" }] },
+    "nullableString": { "type": ["string", "null"] },
+    "count": { "type": "integer", "minimum": 0 },
+    "counts": { "type": "object", "additionalProperties": { "$ref": "#/$defs/count" } },
+    "strings": { "type": "array", "items": { "type": "string" } },
+    "severity": { "enum": ["high", "medium", "low", "info"] },
+    "ruleId": { "type": "string", "pattern": "^[A-Z]{2,4}-[0-9]{3}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "index", "record_id"],
+      "properties": {
+        "file": { "type": "string" },
+        "index": { "$ref": "#/$defs/count" },
+        "record_id": { "type": ["integer", "null"] }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "schema_version",
+        "tool",
+        "tool_version",
+        "run_id",
+        "started_at",
+        "completed_at"
+      ],
+      "properties": {
+        "schema": { "const": "7d7b-report" },
+        "schema_version": { "const": 1 },
+        "tool": { "const": "lineage" },
+        "tool_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+" },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "started_at": { "$ref": "#/$defs/time" },
+        "completed_at": { "$ref": "#/$defs/time" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "format", "sha256", "size_bytes"],
+      "properties": {
+        "label": { "type": "string" },
+        "format": { "enum": ["evtx", "json", "jsonl"] },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size_bytes": { "$ref": "#/$defs/count" }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hosts",
+        "rules",
+        "min_severity",
+        "since",
+        "until",
+        "focus",
+        "gap_seconds",
+        "telemetry_gap_seconds",
+        "max_records",
+        "timestamp_source",
+        "rule_set_sha256",
+        "attack_version",
+        "around",
+        "window",
+        "hot_only",
+        "storyline",
+        "max_steps",
+        "max_file_size_mb"
+      ],
+      "properties": {
+        "hosts": { "$ref": "#/$defs/strings" },
+        "rules": { "type": "string" },
+        "min_severity": { "$ref": "#/$defs/severity" },
+        "since": { "$ref": "#/$defs/nullableTime" },
+        "until": { "$ref": "#/$defs/nullableTime" },
+        "focus": { "$ref": "#/$defs/nullableString" },
+        "gap_seconds": { "type": "integer", "minimum": 60 },
+        "telemetry_gap_seconds": { "type": "integer", "minimum": 60 },
+        "max_records": { "type": "integer", "minimum": 1 },
+        "timestamp_source": { "type": "string" },
+        "rule_set_sha256": { "$ref": "#/$defs/sha256" },
+        "attack_version": { "type": "string" },
+        "around": { "$ref": "#/$defs/nullableString" },
+        "window": { "$ref": "#/$defs/nullableString" },
+        "hot_only": { "type": "boolean" },
+        "storyline": { "type": ["integer", "null"], "minimum": 1 },
+        "max_steps": { "type": "integer", "minimum": 10 },
+        "max_file_size_mb": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ruleCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "missing_event_ids", "events_examined", "findings"],
+      "properties": {
+        "state": { "enum": ["evaluable", "partially_evaluable", "not_evaluable"] },
+        "missing_event_ids": { "type": "array", "items": { "type": "integer" } },
+        "events_examined": { "$ref": "#/$defs/count" },
+        "findings": { "$ref": "#/$defs/count" }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "complete",
+        "reasons",
+        "counters",
+        "event_ids_seen",
+        "event_ids_missing",
+        "rules",
+        "hosts",
+        "timeline"
+      ],
+      "properties": {
+        "complete": { "type": "boolean" },
+        "reasons": { "$ref": "#/$defs/strings" },
+        "counters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "records_total",
+            "sysmon",
+            "irrelevant",
+            "invalid",
+            "invalid_by_reason",
+            "duplicates_dropped",
+            "duplicate_conflicts",
+            "bad_guid",
+            "ghosts",
+            "cycles_broken",
+            "unattached_events",
+            "unattached_findings",
+            "anchor_unverified"
+          ],
+          "properties": {
+            "records_total": { "$ref": "#/$defs/count" },
+            "sysmon": { "$ref": "#/$defs/count" },
+            "irrelevant": { "$ref": "#/$defs/count" },
+            "invalid": { "$ref": "#/$defs/count" },
+            "invalid_by_reason": { "$ref": "#/$defs/counts" },
+            "duplicates_dropped": { "$ref": "#/$defs/count" },
+            "duplicate_conflicts": { "$ref": "#/$defs/count" },
+            "bad_guid": { "$ref": "#/$defs/count" },
+            "ghosts": { "$ref": "#/$defs/counts" },
+            "cycles_broken": { "$ref": "#/$defs/count" },
+            "unattached_events": { "$ref": "#/$defs/count" },
+            "unattached_findings": { "$ref": "#/$defs/count" },
+            "anchor_unverified": { "$ref": "#/$defs/count" }
+          }
+        },
+        "event_ids_seen": { "$ref": "#/$defs/counts" },
+        "event_ids_missing": { "type": "array", "items": { "type": "integer" } },
+        "rules": { "type": "object", "additionalProperties": { "$ref": "#/$defs/ruleCoverage" } },
+        "hosts": { "$ref": "#/$defs/strings" },
+        "timeline": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["span", "gaps", "out_of_order"],
+          "properties": {
+            "span": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["from", "to"],
+                  "properties": {
+                    "from": { "$ref": "#/$defs/time" },
+                    "to": { "$ref": "#/$defs/time" }
+                  }
+                }
+              ]
+            },
+            "gaps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["host", "from", "to", "seconds"],
+                "properties": {
+                  "host": { "type": "string" },
+                  "from": { "$ref": "#/$defs/time" },
+                  "to": { "$ref": "#/$defs/time" },
+                  "seconds": { "$ref": "#/$defs/count" }
+                }
+              }
+            },
+            "out_of_order": { "$ref": "#/$defs/count" }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hosts",
+        "events",
+        "nodes",
+        "ghosts",
+        "findings_total",
+        "findings_by_severity",
+        "storylines",
+        "rules_evaluable",
+        "rules_not_evaluable"
+      ],
+      "properties": {
+        "hosts": { "$ref": "#/$defs/count" },
+        "events": { "$ref": "#/$defs/count" },
+        "nodes": { "$ref": "#/$defs/count" },
+        "ghosts": { "$ref": "#/$defs/count" },
+        "findings_total": { "$ref": "#/$defs/count" },
+        "findings_by_severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["high", "medium", "low", "info"],
+          "properties": {
+            "high": { "$ref": "#/$defs/count" },
+            "medium": { "$ref": "#/$defs/count" },
+            "low": { "$ref": "#/$defs/count" },
+            "info": { "$ref": "#/$defs/count" }
+          }
+        },
+        "storylines": { "$ref": "#/$defs/count" },
+        "rules_evaluable": { "$ref": "#/$defs/count" },
+        "rules_not_evaluable": { "$ref": "#/$defs/count" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event", "category", "subject", "details"],
+      "properties": {
+        "event": { "$ref": "#/$defs/ruleId" },
+        "category": { "const": "detection" },
+        "subject": { "type": "string", "pattern": "^(process:.+/.+|host:.+)$" },
+        "details": {
+          "type": "object",
+          "description": "Fixed keys first; rule-specific extras (command_line, decoded, destination, target_object, ...) are strings.",
+          "required": [
+            "finding_id",
+            "title",
+            "severity",
+            "attack",
+            "tactics",
+            "why",
+            "image_name",
+            "first_seen",
+            "last_seen",
+            "count",
+            "storyline",
+            "evidence",
+            "evidence_truncated"
+          ],
+          "properties": {
+            "finding_id": { "type": "string", "pattern": "^[0-9a-f]{12}$" },
+            "title": { "type": "string" },
+            "severity": { "$ref": "#/$defs/severity" },
+            "attack": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$" }
+            },
+            "tactics": { "$ref": "#/$defs/strings" },
+            "why": { "type": "string" },
+            "image_name": { "$ref": "#/$defs/nullableString" },
+            "first_seen": { "$ref": "#/$defs/time" },
+            "last_seen": { "$ref": "#/$defs/time" },
+            "count": { "type": "integer", "minimum": 1 },
+            "storyline": { "type": ["string", "null"], "pattern": "^S[0-9]+$" },
+            "evidence": {
+              "type": "array",
+              "maxItems": 20,
+              "items": { "$ref": "#/$defs/sourceRef" }
+            },
+            "evidence_truncated": { "type": "boolean" }
+          },
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n",
+        "time",
+        "tactic",
+        "technique",
+        "guid",
+        "image_name",
+        "action",
+        "text",
+        "severity",
+        "source"
+      ],
+      "properties": {
+        "n": { "type": "integer", "minimum": 1 },
+        "time": { "$ref": "#/$defs/time" },
+        "tactic": { "$ref": "#/$defs/nullableString" },
+        "technique": { "$ref": "#/$defs/nullableString" },
+        "guid": { "type": "string" },
+        "image_name": { "$ref": "#/$defs/nullableString" },
+        "action": {
+          "enum": [
+            "process_create",
+            "network",
+            "dns",
+            "file_create",
+            "registry",
+            "process_access",
+            "remote_thread",
+            "decoded",
+            "finding"
+          ]
+        },
+        "text": { "type": "string" },
+        "severity": { "anyOf": [{ "$ref": "#/$defs/severity" }, { "type": "null" }] },
+        "source": { "$ref": "#/$defs/sourceRef" }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "users",
+        "process_count",
+        "ghost_count",
+        "files_created",
+        "executable_files",
+        "registry_set",
+        "persistence",
+        "destinations",
+        "dns_names",
+        "decoded_payloads",
+        "review"
+      ],
+      "properties": {
+        "users": { "$ref": "#/$defs/strings" },
+        "process_count": { "$ref": "#/$defs/count" },
+        "ghost_count": { "$ref": "#/$defs/count" },
+        "files_created": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "executable_files": { "$ref": "#/$defs/count" },
+        "registry_set": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "persistence": { "$ref": "#/$defs/strings" },
+        "destinations": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "dns_names": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "decoded_payloads": { "$ref": "#/$defs/count" },
+        "review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["processes", "files", "registry_keys", "persistence", "destinations"],
+          "properties": {
+            "processes": { "$ref": "#/$defs/count" },
+            "files": { "$ref": "#/$defs/count" },
+            "registry_keys": { "$ref": "#/$defs/count" },
+            "persistence": { "$ref": "#/$defs/count" },
+            "destinations": { "$ref": "#/$defs/count" }
+          }
+        }
+      }
+    },
+    "storyline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "storyline_id",
+        "host",
+        "root_guid",
+        "root_image_name",
+        "anchor_image_name",
+        "flagged",
+        "path_nodes",
+        "descendant_nodes",
+        "nodes",
+        "finding_ids",
+        "max_severity",
+        "tactics",
+        "users",
+        "start",
+        "end",
+        "steps",
+        "gaps",
+        "scope",
+        "links"
+      ],
+      "properties": {
+        "storyline_id": { "type": "string", "pattern": "^S[0-9]+$" },
+        "host": { "type": "string" },
+        "root_guid": { "type": "string" },
+        "root_image_name": { "$ref": "#/$defs/nullableString" },
+        "anchor_image_name": { "$ref": "#/$defs/nullableString" },
+        "flagged": { "$ref": "#/$defs/strings" },
+        "path_nodes": { "$ref": "#/$defs/strings" },
+        "descendant_nodes": { "$ref": "#/$defs/strings" },
+        "nodes": { "$ref": "#/$defs/strings" },
+        "finding_ids": { "$ref": "#/$defs/strings" },
+        "max_severity": { "$ref": "#/$defs/severity" },
+        "tactics": { "$ref": "#/$defs/strings" },
+        "users": { "$ref": "#/$defs/strings" },
+        "start": { "$ref": "#/$defs/time" },
+        "end": { "$ref": "#/$defs/time" },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["after_step", "seconds"],
+            "properties": {
+              "after_step": { "type": "integer", "minimum": 1 },
+              "seconds": { "$ref": "#/$defs/count" }
+            }
+          }
+        },
+        "scope": { "$ref": "#/$defs/scope" },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from_storyline", "to_storyline", "kind", "match", "path", "evidence"],
+            "properties": {
+              "from_storyline": { "type": "string" },
+              "to_storyline": { "type": "string" },
+              "kind": { "enum": ["persistence", "dropped_executed"] },
+              "match": { "enum": ["exact", "suffix"] },
+              "path": { "type": "string" },
+              "evidence": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "subject", "message"],
+      "properties": {
+        "kind": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    },
+    "activityKind": {
+      "description": "Section 5.4 kinds plus file_stream (event 15) and other (amendment 4); image loads are listed separately as image_load.",
+      "enum": [
+        "network",
+        "dns",
+        "file_create",
+        "file_delete",
+        "file_stream",
+        "registry",
+        "process_access",
+        "remote_thread",
+        "pipe",
+        "wmi",
+        "terminate",
+        "other"
+      ]
+    },
+    "activity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "event_id", "time", "role", "summary", "fields", "source"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/activityKind" },
+        "event_id": { "type": "integer" },
+        "time": { "$ref": "#/$defs/time" },
+        "role": { "enum": ["actor", "target"] },
+        "summary": { "type": "string" },
+        "fields": { "type": "object", "additionalProperties": { "type": "string" } },
+        "source": { "$ref": "#/$defs/sourceRef" }
+      }
+    },
+    "imageLoad": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time", "image_loaded", "signed", "source"],
+      "properties": {
+        "time": { "$ref": "#/$defs/time" },
+        "image_loaded": { "$ref": "#/$defs/nullableString" },
+        "signed": { "$ref": "#/$defs/nullableString" },
+        "source": { "$ref": "#/$defs/sourceRef" }
+      }
+    },
+    "nodeBrief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["guid", "image_name", "pid", "start", "is_ghost"],
+      "properties": {
+        "guid": { "type": "string" },
+        "image_name": { "$ref": "#/$defs/nullableString" },
+        "pid": { "type": ["integer", "null"] },
+        "start": { "$ref": "#/$defs/nullableTime" },
+        "is_ghost": { "type": "boolean" },
+        "anchor": { "type": "boolean" }
+      }
+    },
+    "inspectDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["envelope", "kind", "node", "ancestry", "children", "activity", "findings", "storylines"],
+      "properties": {
+        "envelope": { "$ref": "#/$defs/envelope" },
+        "kind": { "const": "inspect" },
+        "node": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "host",
+            "guid",
+            "pid",
+            "image",
+            "image_name",
+            "command_line",
+            "decoded_command",
+            "decode_note",
+            "user",
+            "integrity_level",
+            "hashes",
+            "current_directory",
+            "logon_id",
+            "start",
+            "end",
+            "parent_guid",
+            "is_ghost",
+            "ghost_reason",
+            "create_record"
+          ],
+          "properties": {
+            "host": { "type": "string" },
+            "guid": { "type": "string" },
+            "pid": { "type": ["integer", "null"] },
+            "image": { "$ref": "#/$defs/nullableString" },
+            "image_name": { "$ref": "#/$defs/nullableString" },
+            "command_line": { "$ref": "#/$defs/nullableString" },
+            "decoded_command": { "$ref": "#/$defs/nullableString" },
+            "decode_note": { "$ref": "#/$defs/nullableString" },
+            "user": { "$ref": "#/$defs/nullableString" },
+            "integrity_level": { "$ref": "#/$defs/nullableString" },
+            "hashes": { "type": "object", "additionalProperties": { "type": "string" } },
+            "current_directory": { "$ref": "#/$defs/nullableString" },
+            "logon_id": { "$ref": "#/$defs/nullableString" },
+            "start": { "$ref": "#/$defs/nullableTime" },
+            "end": { "$ref": "#/$defs/nullableTime" },
+            "parent_guid": { "$ref": "#/$defs/nullableString" },
+            "is_ghost": { "type": "boolean" },
+            "ghost_reason": {
+              "enum": ["parent_reference", "activity_reference", "access_reference", null]
+            },
+            "create_record": {
+              "anyOf": [{ "$ref": "#/$defs/sourceRef" }, { "type": "null" }]
+            }
+          }
+        },
+        "ancestry": { "type": "array", "items": { "$ref": "#/$defs/nodeBrief" } },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/nodeBrief" } },
+        "activity": {
+          "type": "object",
+          "propertyNames": {
+            "anyOf": [{ "$ref": "#/$defs/activityKind" }, { "const": "image_load" }]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["total", "items"],
+            "properties": {
+              "total": { "$ref": "#/$defs/count" },
+              "items": {
+                "type": "array",
+                "maxItems": 50,
+                "items": {
+                  "anyOf": [{ "$ref": "#/$defs/activity" }, { "$ref": "#/$defs/imageLoad" }]
+                }
+              }
+            }
+          }
+        },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "storylines": { "$ref": "#/$defs/strings" }
+      }
+    }
+  }
+}
