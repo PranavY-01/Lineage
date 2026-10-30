@@ -21,8 +21,19 @@ All notable changes to this project are documented here. The format follows
 - Analysis: anchors, storylines with roots, steps, gaps and scope, ranking, focus and
   time filters, coverage with reason codes and rule evaluability, status and exit code,
   and the `run_analysis` library entry point.
+- `lineage analyze`, `tree`, `story` and `inspect` with every common option, terminal
+  views with escaping and URL defanging, the JSON report (`--report`, `--format json`),
+  artifacts JSONL for Lucent (`--artifacts`) and atomic, path-safe output writes.
+- JSON Schemas `schema/report-1.0.json` and `schema/artifacts-1.0.json`.
+- Golden files for `phish_chain.jsonl` (report JSON and story view) and
+  `scripts/update_golden.py` to regenerate them.
 
 ### Changed
 
 - `--max-records` defaults to 2,000,000 so that peak memory stays under 6 GB for typical
   logs; the cap message says how to raise it.
+- The report envelope's `schema_version` is the integer `1`, as in the other series tools.
+
+### Fixed
+
+- Text output redirected to a file on Windows no longer fails on non-ASCII characters.
