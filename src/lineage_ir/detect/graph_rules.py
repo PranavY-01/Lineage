@@ -36,6 +36,8 @@ DISCOVERY_IMAGES = frozenset(
     )
 )
 DISCOVERY_WINDOW_US = 120 * 1_000_000
+# Anchors listed with an empty path (anchors.yaml): they never have a creation record.
+PATHLESS_ANCHORS = frozenset({"system", "registry"})
 DISCOVERY_MIN_BINARIES = 3
 
 
@@ -163,13 +165,27 @@ def _dropped_file_executed(
     return hits
 
 
+def _known_system_process(node: ProcessNode, is_anchor: AnchorTest) -> bool:
+    """An anchor accepted with a verified path, or the path-less System or Registry entry.
+
+    A ghost whose image is only a bare name that matches an anchor is not trusted
+    (amendment 24): anything can be named svchost.exe.
+    """
+    if not is_anchor(node) or node.image is None:
+        return False
+    has_directory = "\\" in node.image or "/" in node.image
+    return has_directory or node.image_name in PATHLESS_ANCHORS
+
+
 def _active_ghost(
-    graph: ProcessGraph, _events: Sequence[Event], _is_anchor: AnchorTest
+    graph: ProcessGraph, _events: Sequence[Event], is_anchor: AnchorTest
 ) -> list[GraphHit]:
     hits = []
     for guid in sorted(graph.nodes):
         node = graph.nodes[guid]
         if not node.is_ghost or node.ghost_reason != "activity_reference":
+            continue
+        if _known_system_process(node, is_anchor):
             continue
         # Only network and file_create: file_stream and other never count (amendment 4).
         active = [a for a in node.activity if a.kind in ("network", "file_create")]

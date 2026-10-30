@@ -123,7 +123,7 @@ def test_snake_case_map_and_values_as_strings(make_record: Any) -> None:
         Initiated=True,
         DestinationPort=80,
         RuleName="-",
-        SourceIsIpv6=False,
+        VendorFlag=False,
     )
     result = _event(record)
     fields = result.event.fields
@@ -132,8 +132,8 @@ def test_snake_case_map_and_values_as_strings(make_record: Any) -> None:
     assert fields["initiated"] == "true"
     assert fields["destination_port"] == "80"
     assert fields["rule_name"] == "-"
-    assert fields["source_is_ipv6"] == "false"
-    assert result.unknown_keys == ("SourceIsIpv6",)
+    assert fields["vendor_flag"] == "false"
+    assert result.unknown_keys == ("VendorFlag",)
     assert result.event.process_guid == GUID
     assert result.event.pid == 4242
     assert result.event.record_id == 77

@@ -24,8 +24,9 @@ REFERENCE_KEYS = {
 
 @pytest.mark.parametrize(("raw", "normalized"), sorted(REFERENCE_KEYS.items()))
 def test_keys_are_mapped(raw: str, normalized: str) -> None:
-    assert normalize_key(raw) == normalized
-    assert normalize_key(raw.lower()) == normalized
+    # (key, True): the key comes from the explicit map, so validate does not list it as unknown.
+    assert normalize_key(raw) == (normalized, True)
+    assert normalize_key(raw.lower()) == (normalized, True)
     assert normalized in NORMALIZED_KEYS
 
 

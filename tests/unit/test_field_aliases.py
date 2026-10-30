@@ -69,8 +69,8 @@ def test_rule_name_is_an_allowed_field_name() -> None:
 @pytest.mark.parametrize(
     ("key", "expected"),
     [
-        ("FileVersion", "file_version"),
-        ("SourceIsIpv6", "source_is_ipv6"),
+        ("ImageVersion", "image_version"),
+        ("TargetIsIpv6", "target_is_ipv6"),
         ("NewThreadId", "new_thread_id"),
         ("HTTPHeader", "http_header"),
         ("@version", "version"),
