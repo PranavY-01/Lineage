@@ -11,11 +11,12 @@ from pydantic import (
     model_validator,
 )
 
-from lineage_ir.ingest.field_aliases import NORMALIZED_KEYS
+from lineage_ir.ingest.field_aliases import NORMALIZED_KEYS, REFERENCE_KEYS
 from lineage_ir.ingest.normalize import PATH_FIELDS
 from lineage_ir.models import IMAGE_LOAD_EVENT_ID, FrozenModel, RuleInfo, Severity
 
-# The 14 ATT&CK Enterprise tactics.
+# The 15 ATT&CK Enterprise tactics (v20: Defense Evasion became Stealth and Defense
+# Impairment, amendment 23).
 TACTICS = frozenset(
     {
         "reconnaissance",
@@ -24,7 +25,8 @@ TACTICS = frozenset(
         "execution",
         "persistence",
         "privilege-escalation",
-        "defense-evasion",
+        "stealth",
+        "defense-impairment",
         "credential-access",
         "discovery",
         "lateral-movement",
@@ -48,7 +50,8 @@ VIRTUAL_FIELDS = frozenset(
         "target_filename_name",
     }
 )
-ALLOWED_FIELDS = NORMALIZED_KEYS | VIRTUAL_FIELDS
+# Rule fields: the §6.4 keys except reference-only ones (amendment 25), plus virtual fields.
+ALLOWED_FIELDS = (NORMALIZED_KEYS - REFERENCE_KEYS) | VIRTUAL_FIELDS
 MATCH_PATH_FIELDS = frozenset(PATH_FIELDS)
 # Fields whose integer form is compared when a rule value is an integer (§8.2 item 7).
 NUMERIC_FIELDS = frozenset(

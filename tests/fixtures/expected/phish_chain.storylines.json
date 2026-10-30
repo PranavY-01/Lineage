@@ -2,7 +2,9 @@
   "fixture": "phish_chain.jsonl",
   "basis": "Derived by hand from the fixture records with the rules of sections 8.6, 8.7, 9.1, 9.2 and 9.3 before the analysis code existed. Never edited to match output.",
   "revisions": [
-    "Amendment 18 (section 8.7): GR-003 evidence is the execution record only, so the drop at 10:02:10 is no longer an S2 step; S2 start re-derived by hand as the upd.exe creation, 2026-10-12T11:00:00Z (was 2026-10-12T10:02:10Z)."
+    "Amendment 18 (section 8.7): GR-003 evidence is the execution record only, so the drop at 10:02:10 is no longer an S2 step; S2 start re-derived by hand as the upd.exe creation, 2026-10-12T11:00:00Z (was 2026-10-12T10:02:10Z).",
+    "Amendment 23 (sections 8.4, 8.6, 8.7, ATT&CK v20): CMD-001 and NET-001 list stealth instead of defense-evasion and GR-001 lists execution only, so the S1 tactics in first-seen order are execution, stealth, command-and-control, persistence (was execution, defense-evasion, command-and-control, persistence).",
+    "Amendment 23: GR-003 lists command-and-control; its first event (11:00:00, the execution) sorts before LOC-001 at the same time by rule ID, so the S2 tactics are command-and-control, execution, discovery (was execution, discovery)."
   ],
   "host": "ws-14.corp.example",
   "status": "findings_detected",
@@ -46,7 +48,7 @@
       "node_images": ["outlook.exe", "winword.exe", "cmd.exe", "powershell.exe", "rundll32.exe"],
       "finding_count": 8,
       "max_severity": "high",
-      "tactics": ["execution", "defense-evasion", "command-and-control", "persistence"],
+      "tactics": ["execution", "stealth", "command-and-control", "persistence"],
       "users": ["CORP\\jdoe"],
       "start": "2026-10-12T10:01:00Z",
       "end": "2026-10-12T10:02:40Z"
@@ -72,7 +74,7 @@
       "node_images": ["upd.exe", "whoami.exe", "ipconfig.exe", "systeminfo.exe"],
       "finding_count": 3,
       "max_severity": "medium",
-      "tactics": ["execution", "discovery"],
+      "tactics": ["command-and-control", "execution", "discovery"],
       "users": ["NT AUTHORITY\\SYSTEM"],
       "start": "2026-10-12T11:00:00Z",
       "end": "2026-10-12T11:01:10Z"

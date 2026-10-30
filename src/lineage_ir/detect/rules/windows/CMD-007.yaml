@@ -1,8 +1,8 @@
 id: CMD-007
 title: Event log cleared
 severity: high
-attack: [T1070.001]
-tactics: [defense-evasion]
+attack: [T1685.005]
+tactics: [defense-impairment]
 why: >
   Clearing Windows event logs destroys the record of earlier activity; outside planned
   maintenance it is a strong sign that someone is covering their tracks.

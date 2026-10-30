@@ -38,11 +38,8 @@ def test_shape_fixture_values(fixtures_dir: Path) -> None:
     assert net.fields["destination_port"] == "80"
     assert reg.fields["event_type"] == "SetValue"
     assert result.event_ids_seen == {"1": 1, "3": 1, "13": 1}
-    assert set(result.unknown_keys) == {
-        "DestinationIsIpv6",
-        "FileVersion",
-        "SourceIsIpv6",
-    }
+    # FileVersion, SourceIsIpv6 and DestinationIsIpv6 are mapped since amendment 25.
+    assert set(result.unknown_keys) == set()
 
 
 def test_all_shapes_together_dedupe_to_one_copy(fixtures_dir: Path) -> None:

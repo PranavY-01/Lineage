@@ -307,3 +307,56 @@ def test_gr004_ignores_file_stream_other_and_parent_ghosts(
     kinds = {a.kind for n in run.graphs[HOST].nodes.values() for a in n.activity}
     assert {"file_stream", "other", "network"} <= kinds
     assert run.by_rule("GR-004") == []
+
+
+# GR-004 and anchors (amendment 24): only verified anchors and the path-less System and
+# Registry entries are skipped.
+
+
+def test_gr004_skips_the_system_process(write_jsonl: Callable[..., Path], log: Log) -> None:
+    log.event(
+        3,
+        1,
+        0,
+        Image="System",
+        Protocol="tcp",
+        Initiated="false",
+        SourceIp="10.0.2.18",
+        SourcePort="445",
+        DestinationIp="10.0.2.17",
+        DestinationPort="63025",
+    )
+    log.event(18, 1, 1, Image="System", PipeName="\\46a676ab7f179e511e30dd2dc41bd388")
+    log.event(11, 2, 2, Image="Registry", TargetFilename="C:\\Windows\\x.dat")
+    assert findings(write_jsonl, log, "GR-004", load_anchors()) == []
+
+
+def test_gr004_skips_a_verified_anchor_ghost(write_jsonl: Callable[..., Path], log: Log) -> None:
+    log.event(
+        3,
+        1,
+        0,
+        Image=SYS32 + "svchost.exe",
+        Protocol="tcp",
+        Initiated="true",
+        DestinationIp="203.0.113.7",
+        DestinationPort="443",
+    )
+    assert findings(write_jsonl, log, "GR-004", load_anchors()) == []
+
+
+def test_gr004_still_flags_a_name_only_anchor_ghost(
+    write_jsonl: Callable[..., Path], log: Log
+) -> None:
+    log.event(
+        3,
+        1,
+        0,
+        Image="svchost.exe",
+        Protocol="tcp",
+        Initiated="true",
+        DestinationIp="203.0.113.7",
+        DestinationPort="443",
+    )
+    (finding,) = findings(write_jsonl, log, "GR-004", load_anchors())
+    assert finding.guid == bare(1)

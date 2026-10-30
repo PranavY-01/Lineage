@@ -2,7 +2,7 @@ id: LOC-002
 title: System binary name outside system directories
 severity: high
 attack: [T1036.005]
-tactics: [defense-evasion]
+tactics: [stealth]
 why: >
   Core Windows process names only ever run from the system directories; the same name
   anywhere else is a classic masquerade meant to blend into a process list.

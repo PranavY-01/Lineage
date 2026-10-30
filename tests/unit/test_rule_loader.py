@@ -92,9 +92,11 @@ def test_attack_may_be_empty_for_context_rules() -> None:
 
 
 def test_tactics_are_enterprise_slugs() -> None:
-    assert len(TACTICS) == 14
+    # ATT&CK v20: Defense Evasion is split into Stealth and Defense Impairment (amendment 23).
+    assert len(TACTICS) == 15
     _parse(tactics=sorted(TACTICS))
     _fails("tactic", tactics=["execution", "lateral_movement"])
+    _fails("tactic", tactics=["defense-evasion"])
 
 
 def test_unknown_field_name() -> None:

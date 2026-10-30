@@ -111,6 +111,17 @@ _EVENTDATA_MAP = {
     "Filter": "filter",
     "IsExecutable": "is_executable",
     "Archived": "archived",
+    # Reference only (amendment 25): normalized so validate does not report them as unknown,
+    # never rule fields.
+    "FileVersion": "file_version",
+    "PreviousCreationUtcTime": "previous_creation_utc_time",
+    "SignatureStatus": "signature_status",
+    "TerminalSessionId": "terminal_session_id",
+    "DestinationIsIpv6": "destination_is_ipv6",
+    "DestinationPortName": "destination_port_name",
+    "SourceIsIpv6": "source_is_ipv6",
+    "SourcePortName": "source_port_name",
+    "SourceThreadId": "source_thread_id",
 }
 
 # Case-insensitive lookup: casefolded Sysmon key -> normalized key.
@@ -118,8 +129,23 @@ EVENTDATA_KEYS: Mapping[str, str] = MappingProxyType(
     {k.casefold(): v for k, v in _EVENTDATA_MAP.items()}
 )
 
-# Every normalized EventData key (the field names rules may use).
+# Every normalized EventData key.
 NORMALIZED_KEYS = frozenset(_EVENTDATA_MAP.values())
+
+# Normalized keys that no rule may use (amendment 25).
+REFERENCE_KEYS = frozenset(
+    {
+        "file_version",
+        "previous_creation_utc_time",
+        "signature_status",
+        "terminal_session_id",
+        "destination_is_ipv6",
+        "destination_port_name",
+        "source_is_ipv6",
+        "source_port_name",
+        "source_thread_id",
+    }
+)
 
 _CAMEL_LOWER = re.compile(r"([a-z0-9])([A-Z])")
 _CAMEL_ACRONYM = re.compile(r"([A-Z]+)([A-Z][a-z])")

@@ -60,7 +60,7 @@ def test_rules_json_lists_24_entries_sorted_by_id() -> None:
         "severity": "medium",
         "event_ids": [1, 11],
         "attack": ["T1105"],
-        "tactics": ["execution"],
+        "tactics": ["command-and-control"],  # ATT&CK v20 (amendment 23)
     }
     assert by_id["PER-003"]["kind"] == "event"
     assert by_id["PER-003"]["event_ids"] == [1, 13]

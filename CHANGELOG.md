@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-30
+
 ### Added
 
 - Package skeleton, `lineage --version` and the overview screen.
@@ -37,6 +39,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- ATT&CK mappings follow ATT&CK v20 (`attack_version` `v20` in reports): Defense Evasion is
+  replaced by Stealth and Defense Impairment, CMD-007 maps to T1685.005, GR-001 lists
+  execution only and GR-003 command-and-control. Golden files `phish_chain.report.json`,
+  `phish_chain.story.txt` and `phish_chain.timeline.csv`, and the oracle
+  `phish_chain.storylines.json`, changed for this (updated through
+  `scripts/update_golden.py`).
 - `--max-records` defaults to 2,000,000 so that peak memory stays under 6 GB for typical
   logs; the cap message says how to raise it.
 - The report envelope's `schema_version` is the integer `1`, as in the other series tools.

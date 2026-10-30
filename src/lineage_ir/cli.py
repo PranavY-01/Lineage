@@ -247,8 +247,6 @@ CollapseMinOpt = Annotated[
     ),
 ]
 
-NOT_AVAILABLE = "not available in this build"
-
 
 def _fail(exc: LineageError, no_color: bool) -> NoReturn:
     terminal.print_error(terminal.make_console(no_color=no_color, stderr=True), str(exc))
@@ -311,9 +309,6 @@ def analyze(
     artifacts_path: Annotated[
         Path | None, typer.Option("--artifacts", help="Write artifacts JSONL for Lucent here.")
     ] = None,
-    html: Annotated[
-        Path | None, typer.Option("--html", help="HTML report (not available in this build).")
-    ] = None,
     csv: Annotated[
         Path | None, typer.Option("--csv", help="Write the CSV storyline timeline here.")
     ] = None,
@@ -329,8 +324,6 @@ def analyze(
     """Full run: storylines, hot trees, scope, findings and coverage."""
 
     def body() -> int:
-        if html is not None:
-            raise UsageError(f"--html: {NOT_AVAILABLE}")
         params = _params(
             host,
             rules=rules,
