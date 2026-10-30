@@ -65,6 +65,7 @@ def test_terminal_views_are_inert(name: str, hostile: AnalysisResult) -> None:
     text = "".join(s.text for s in segments)
     assert "\x1b" not in text, "a control sequence from the evidence reached the terminal"
     assert "\x00" not in text and "‮" not in text
+    assert " " not in text and " " not in text, "a line separator reached the terminal"
     assert "http://" not in text and "https://" not in text
     assert not any(s.style is not None and s.style.link for s in segments), "evidence became a link"
     assert "\U0001f480" not in text, "an emoji code in the evidence was rendered"
@@ -77,6 +78,7 @@ def test_markup_is_shown_literally(hostile: AnalysisResult) -> None:
     assert "[bold red]FAKE[/bold red]" in text
     assert "\\x1b[31mRED\\x1b[0m" in text
     assert "=cmd|' /C calc'!A0" in text
+    assert "x\\u{2028}y\\u{2029}z" in text
     assert "hxxp[://]203[.]0[.]113[.]5" in text
 
 
@@ -84,7 +86,7 @@ def test_tree_shows_escaped_dns_and_registry(hostile: AnalysisResult) -> None:
     console = _console()
     terminal.render_analyze(console, hostile, _view())
     text = console.export_text()
-    assert "</script><script>alert(1)</script>[.]example" in text
+    assert "</script><script>alert(1)</script>x\\u{2028}y\\u{2029}z[.]example" in text
     assert "invoice\\u{202e}gpj.exe" in text
     assert "hxxp[://]evil[.]example/payload" in text
 

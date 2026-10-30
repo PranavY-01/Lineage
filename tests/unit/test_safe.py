@@ -14,6 +14,7 @@ from lineage_ir.render.safe import clean, defang, defang_host, safe, truncate
         ("c1\x85", "c1\\x85"),
         ("bidi\u202eexe.txt", "bidi\\u{202e}exe.txt"),
         ("iso\u2066x\u2069", "iso\\u{2066}x\\u{2069}"),
+        ("line\u2028sep\u2029para", "line\\u{2028}sep\\u{2029}para"),
         ("plain C:\\Windows", "plain C:\\Windows"),
     ],
 )

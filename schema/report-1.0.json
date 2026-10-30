@@ -69,7 +69,7 @@
       "properties": {
         "schema": { "const": "7d7b-report" },
         "schema_version": { "const": 1 },
-        "tool": { "const": "lineage" },
+        "tool": { "const": "Lineage" },
         "tool_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+" },
         "run_id": {
           "type": "string",

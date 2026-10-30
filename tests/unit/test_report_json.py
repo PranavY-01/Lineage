@@ -62,7 +62,7 @@ def test_envelope_matches_the_series_contract(phish: AnalysisResult) -> None:
     ]
     assert envelope["schema"] == "7d7b-report"
     assert envelope["schema_version"] == 1
-    assert envelope["tool"] == "lineage"
+    assert envelope["tool"] == "Lineage"
     assert envelope["run_id"] == RUN_ID
     assert envelope["started_at"] == envelope["completed_at"] == "2026-10-14T17:46:40Z"
 

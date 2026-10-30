@@ -12,7 +12,7 @@ from lineage_ir import outputs
 from lineage_ir.errors import OutputError, UsageError
 from lineage_ir.outputs import OutputRequest, check_outputs, write_outputs
 
-REPORT = (json.dumps({"envelope": {"schema": "7d7b-report", "tool": "lineage"}}) + "\n").encode()
+REPORT = (json.dumps({"envelope": {"schema": "7d7b-report", "tool": "Lineage"}}) + "\n").encode()
 ARTIFACTS = b'{"schema":"lineage-artifacts","schema_version":"1.0"}\n'
 
 
@@ -102,7 +102,8 @@ def test_existing_file_needs_force(tmp_path: Path, evidence: Path) -> None:
 def test_force_never_replaces_a_foreign_file(tmp_path: Path, evidence: Path) -> None:
     for name, content, kind in (
         ("notes.json", b'{"envelope": {"tool": "authwatch"}}', "report"),
-        ("other.json", b'{"tool": "lineage"}', "report"),
+        ("other.json", b'{"tool": "Lineage"}', "report"),
+        ("lowercase.json", b'{"envelope": {"tool": "lineage"}}', "report"),
         ("plain.txt", b"hello", "report"),
         ("iocs.jsonl", b'{"schema":"something-else"}\n', "artifacts"),
         ("report-as-artifacts.jsonl", REPORT, "artifacts"),

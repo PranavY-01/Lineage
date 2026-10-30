@@ -48,7 +48,7 @@ def test_rules_json_lists_24_entries_sorted_by_id() -> None:
     document = json.loads(proc.stdout)
     assert document["kind"] == "rules"
     assert document["envelope"]["schema"] == "7d7b-report"
-    assert document["envelope"]["tool"] == "lineage"
+    assert document["envelope"]["tool"] == "Lineage"
     rules = document["rules"]
     assert [r["id"] for r in rules] == EXPECTED_IDS
     assert list(rules[0]) == ["id", "kind", "title", "severity", "event_ids", "attack", "tactics"]
