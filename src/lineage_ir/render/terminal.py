@@ -1,5 +1,7 @@
 """Rich terminal views."""
 
+from collections.abc import Sequence
+
 from rich import box
 from rich.console import Console, Group
 from rich.panel import Panel
@@ -9,7 +11,7 @@ from rich.text import Text
 from lineage_ir import __version__
 from lineage_ir.config import SYSMON_EVENT_NAMES, UNKNOWN_KEYS_SHOWN
 from lineage_ir.ingest.timeparse import format_rfc3339
-from lineage_ir.models import ValidateResult
+from lineage_ir.models import RuleInfo, ValidateResult
 from lineage_ir.render.safe import safe
 
 TAGLINE = "Process lineage & attack storylines"
@@ -209,3 +211,27 @@ def render_validate(console: Console, result: ValidateResult, max_errors: int) -
             box=box.ROUNDED,
         )
     )
+
+
+_SEVERITY_STYLE = {"high": "bold red", "medium": "yellow", "low": "cyan", "info": "dim"}
+
+
+def render_rules(console: Console, rules: Sequence[RuleInfo]) -> None:
+    """The `lineage rules` table: event rules and graph heuristics, sorted by ID."""
+    console.print(_banner("rules"))
+    table = Table(box=box.SIMPLE, header_style="bold")
+    for column in ("ID", "Kind", "Title", "Severity", "Events", "ATT&CK", "Tactics"):
+        table.add_column(column)
+    for rule in sorted(rules, key=lambda r: r.id):
+        style = _SEVERITY_STYLE[rule.severity]
+        table.add_row(
+            rule.id,
+            rule.kind,
+            safe(rule.title),
+            f"[{style}]{rule.severity}[/]",
+            ", ".join(str(i) for i in rule.event_ids),
+            ", ".join(rule.attack) or "-",
+            ", ".join(rule.tactics) or "-",
+        )
+    console.print(table)
+    console.print(f"{len(rules)} rules")

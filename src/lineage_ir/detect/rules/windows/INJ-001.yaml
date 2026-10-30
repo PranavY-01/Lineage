@@ -1,0 +1,21 @@
+id: INJ-001
+title: Remote thread created in another process
+severity: medium
+attack: [T1055]
+tactics: [defense-evasion, privilege-escalation]
+why: >
+  Starting a thread inside another process is the core of most code-injection techniques.
+  The exclusions are system processes that do this routinely; they can be bypassed by
+  renaming a tool.
+match:
+  event_id: 8
+exclude:
+  - source_image_name:
+      - csrss.exe
+      - wininit.exe
+      - services.exe
+      - svchost.exe
+      - lsass.exe
+      - smss.exe
+references: []
+enabled: true

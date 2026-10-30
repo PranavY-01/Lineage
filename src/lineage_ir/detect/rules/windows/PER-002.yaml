@@ -1,0 +1,15 @@
+id: PER-002
+title: Scheduled task created
+severity: medium
+attack: [T1053.005]
+tactics: [persistence, execution]
+why: >
+  A scheduled task created from the command line can run a payload on a timer or at
+  logon; attackers use it for persistence and for delayed execution.
+match:
+  event_id: 1
+  image_name: schtasks.exe
+  command_line|contains: [/create, -create]
+exclude: []
+references: []
+enabled: true

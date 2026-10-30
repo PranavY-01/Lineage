@@ -1,0 +1,15 @@
+id: LIN-002
+title: Script host spawned a shell
+severity: medium
+attack: [T1059.005, T1059.007]
+tactics: [execution]
+why: >
+  VBScript, JScript and HTA files that open a command shell or PowerShell often belong to
+  a downloader chain; legitimate scripts seldom need a second interpreter.
+match:
+  event_id: 1
+  parent_image_name: [wscript.exe, cscript.exe, mshta.exe]
+  image_name: [cmd.exe, powershell.exe, pwsh.exe]
+exclude: []
+references: []
+enabled: true

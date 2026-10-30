@@ -1,0 +1,22 @@
+id: CMD-002
+title: PowerShell download cradle
+severity: high
+attack: [T1059.001, T1105]
+tactics: [execution, command-and-control]
+why: >
+  PowerShell fetching remote content in one command is a common first-stage
+  loader pattern; admin scripts rarely download and run code inline.
+match:
+  event_id: 1
+  image_name: [powershell.exe, pwsh.exe]
+  command_line_full|contains:
+    - downloadstring
+    - downloadfile
+    - downloaddata
+    - invoke-webrequest
+    - invoke-restmethod
+    - net.webclient
+    - start-bitstransfer
+exclude: []
+references: []
+enabled: true

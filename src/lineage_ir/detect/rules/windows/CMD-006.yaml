@@ -1,0 +1,24 @@
+id: CMD-006
+title: Recovery inhibited
+severity: high
+attack: [T1490]
+tactics: [impact]
+why: >
+  Deleting shadow copies or backup catalogs, or turning off boot recovery, removes the
+  usual ways to restore files and is a common step just before ransomware encryption.
+match_any:
+  - event_id: 1
+    image_name: vssadmin.exe
+    command_line|contains|all: [delete, shadows]
+  - event_id: 1
+    image_name: wmic.exe
+    command_line|contains|all: [shadowcopy, delete]
+  - event_id: 1
+    image_name: wbadmin.exe
+    command_line|contains|all: [delete, catalog]
+  - event_id: 1
+    image_name: bcdedit.exe
+    command_line|contains|all: [recoveryenabled, 'no']
+exclude: []
+references: []
+enabled: true

@@ -1,0 +1,15 @@
+id: CMD-003
+title: Certutil download or decode
+severity: high
+attack: [T1105, T1140]
+tactics: [command-and-control, defense-evasion]
+why: >
+  Certutil is a certificate tool, but its URL cache and decode options are widely abused
+  to download payloads and unpack base64-encoded files without extra tooling.
+match:
+  event_id: 1
+  image_name: certutil.exe
+  command_line|contains: [urlcache, -decode, /decode, verifyctl]
+exclude: []
+references: []
+enabled: true

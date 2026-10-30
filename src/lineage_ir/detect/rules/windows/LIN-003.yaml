@@ -1,0 +1,15 @@
+id: LIN-003
+title: WMI provider host spawned a shell
+severity: high
+attack: [T1047]
+tactics: [execution]
+why: >
+  A shell started by the WMI provider host usually means a command was run remotely or by a
+  WMI subscription, both common for lateral movement and persistence.
+match:
+  event_id: 1
+  parent_image_name: wmiprvse.exe
+  image_name: [cmd.exe, powershell.exe, pwsh.exe]
+exclude: []
+references: []
+enabled: true

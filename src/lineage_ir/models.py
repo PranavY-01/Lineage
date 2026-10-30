@@ -213,6 +213,43 @@ class ProcessNode(FrozenModel):
     image_loads: tuple[ImageLoad, ...]
 
 
+Severity = Literal["high", "medium", "low", "info"]
+
+
+class RuleInfo(FrozenModel):
+    """What `lineage rules` lists for an event rule or a graph heuristic (§11.2)."""
+
+    id: str
+    kind: Literal["event", "graph"]
+    title: str
+    severity: Severity
+    event_ids: tuple[int, ...]
+    attack: tuple[str, ...]
+    tactics: tuple[str, ...]
+    why: str
+
+
+class Finding(FrozenModel):
+    """Rule hits aggregated per rule, host and process (§5.5)."""
+
+    finding_id: str
+    rule_id: str
+    title: str
+    severity: Severity
+    attack: tuple[str, ...]
+    tactics: tuple[str, ...]
+    why: str
+    host: str
+    guid: str
+    image_name: str | None
+    first_us: int
+    last_us: int
+    count: int
+    evidence: tuple[SourceRef, ...]
+    evidence_truncated: bool
+    details: dict[str, str]
+
+
 class ErrorEntry(FrozenModel):
     """A non-fatal problem; names files, indexes and reason codes, never record content."""
 

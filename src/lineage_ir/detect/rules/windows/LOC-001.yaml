@@ -1,0 +1,20 @@
+id: LOC-001
+title: Execution from a user-writable staging path
+severity: low
+attack: []
+tactics: [execution]
+why: >
+  Programs started from Public, Temp, Downloads, the recycle bin or PerfLogs are often
+  freshly dropped tools. This is a context signal: installers also run from these places.
+match:
+  event_id: 1
+  image|contains:
+    - '\users\public'
+    - '\appdata\local\temp'
+    - '\windows\temp'
+    - '\downloads'
+    - '$recycle.bin\'
+    - '\perflogs\'
+exclude: []
+references: []
+enabled: true

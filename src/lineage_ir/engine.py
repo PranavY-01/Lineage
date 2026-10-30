@@ -5,9 +5,14 @@ import uuid
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from lineage_ir.analyze.decode import decode_command
 from lineage_ir.config import READINESS_FAMILIES, STANDARD_EVENT_IDS
+from lineage_ir.detect.graph_rules import GRAPH_RULES
+from lineage_ir.detect.loader import load_rules
+from lineage_ir.graph.builder import build_graphs
+from lineage_ir.graph.model import ProcessGraph
 from lineage_ir.ingest.reader import IngestOptions, read_inputs
-from lineage_ir.models import IngestResult, Readiness, ValidateResult
+from lineage_ir.models import IngestResult, Readiness, RuleInfo, ValidateResult
 
 Clock = Callable[[], int]
 RunIdFactory = Callable[[], str]
@@ -73,3 +78,17 @@ def run_validate(
         completed_us=clock(),
         run_id=run_id,
     )
+
+
+def build_host_graphs(ingest: IngestResult) -> dict[str, ProcessGraph]:
+    """Per-host graphs with PowerShell decoding applied as nodes are frozen (§4.3 step 6).
+
+    The decoder lives in ``analyze``; passing it in keeps graph code from importing upward.
+    """
+    return build_graphs(ingest.events, ingest.image_loads, decode=decode_command)
+
+
+def list_rules() -> tuple[RuleInfo, ...]:
+    """Every bundled event rule and graph heuristic, sorted by ID (§11.2 `rules`)."""
+    infos = [rule.info for rule in load_rules()] + [rule.info for rule in GRAPH_RULES]
+    return tuple(sorted(infos, key=lambda info: info.id))

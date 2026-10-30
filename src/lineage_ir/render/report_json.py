@@ -1,11 +1,12 @@
 """Builders for the 7d7b-report envelope and the JSON documents printed by the CLI (§12.3)."""
 
 import json
+from collections.abc import Sequence
 from typing import Any
 
 from lineage_ir import __version__
 from lineage_ir.ingest.timeparse import format_rfc3339
-from lineage_ir.models import ValidateResult
+from lineage_ir.models import RuleInfo, ValidateResult
 
 ENVELOPE_SCHEMA = "7d7b-report"
 ENVELOPE_SCHEMA_VERSION = "1.0"
@@ -77,4 +78,26 @@ def validate_document(result: ValidateResult) -> dict[str, Any]:
         "reasons": list(ingest.reasons),
         "warnings": list(ingest.warnings),
         "errors": [e.model_dump(mode="json") for e in ingest.errors],
+    }
+
+
+def rules_document(
+    rules: Sequence[RuleInfo], run_id: str, started_us: int, completed_us: int
+) -> dict[str, Any]:
+    """The `rules --format json` document: the envelope plus one entry per rule, sorted by ID."""
+    return {
+        "envelope": envelope(run_id, started_us, completed_us),
+        "kind": "rules",
+        "rules": [
+            {
+                "id": r.id,
+                "kind": r.kind,
+                "title": r.title,
+                "severity": r.severity,
+                "event_ids": list(r.event_ids),
+                "attack": list(r.attack),
+                "tactics": list(r.tactics),
+            }
+            for r in sorted(rules, key=lambda r: r.id)
+        ],
     }
