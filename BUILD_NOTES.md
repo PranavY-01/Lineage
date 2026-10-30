@@ -98,6 +98,14 @@ Amendments 9–11 were approved on 2026-10-30.
     not take on memory or speed work unless a test fails or the 6 GB rule is violated; anything
     else goes under Known gaps.
 
+Amendment 12 was approved on 2026-10-30 with the P3 plan.
+
+12. **No rules on event 7 in v1.0 (§8.4).** The loader rejects any group, match or exclude,
+    whose `event_id` includes 7, even when other IDs are listed beside it, with a message naming
+    the rule and saying that image-load events are stored in summary form in v1.0. Detection
+    reads events from the sorted event list (never from graph activities), so records with no
+    acting process are still evaluated and attach to `host:<host>`.
+
 ## Decisions and deviations
 
 ### P1 · Skeleton and ingest
@@ -200,6 +208,54 @@ Amendments 9–11 were approved on 2026-10-30.
   any focus set); `hot_only_children` also returns the hidden count for `--hot-only`.
 - **Shuffle invariance** is tested with 20 seeds on `ghosts`, `zero_guid`, `bad_guid`, `cycle`,
   `multi_host`, `duplicates` and `ties` (amendment 7).
+
+### P3 · Detection
+
+- **Anchor test injection.** `detect.graph_rules.AnchorTest` is `Callable[[ProcessNode], bool]`.
+  `run_detection` takes it as a required keyword with no default. P3 tests use
+  `tests/helpers/anchors.py`: explorer.exe, services.exe and svchost.exe, matched by name AND
+  directory per §9.1 (a ghost whose image is a bare name matches by name). P4 supplies the real
+  anchors from `anchors.yaml` and counts `anchor_unverified`.
+- **Decoder placement.** `engine.build_host_graphs` passes `analyze.decode.decode_command` into
+  `build_graphs`, so nodes carry `decoded_command` and `decode_note` and graph code never
+  imports `analyze`.
+- **Flag and payload detection** tokenizes the command line once (whitespace-separated, a token
+  opening with a quote runs to the matching quote), then looks for a flag token followed by a
+  payload token. This stays linear on hostile input; a regex over quoted spans would not.
+- **Decoder caps.** Whitespace is removed before the 128 KiB input cap, so the cut always lands
+  on whole base64 characters. The 64 KiB output cap is measured in UTF-8 bytes: in characters
+  it could never trigger, since 128 KiB of base64 decodes to at most 48K UTF-16 characters.
+- **Decode notes** are comma-joined in the order `truncated_input`, `invalid_base64`, `not_text`,
+  `truncated_output`, `nested_encoding`. Failures return only these codes; the payload and
+  decoded text never appear in a note or an exception.
+- **`decoded_command`, `command_line_full` and `encoded_command_present`** come from the node of
+  the event 1's `process_guid` (§8.3 "node's decoded payload"). `encoded_command_present` is
+  `true` when the decoder found a flag and payload, even if decoding failed, and is absent (so
+  never matches) on other event IDs.
+- **Exclude groups** may omit `event_id` (then they apply to any event the rule matched); when
+  present it restricts the exclude.
+- **Rule values.** YAML booleans and nulls are rejected (quote `'true'` and `'no'`). Integer
+  values allow only an exact match. Integer comparison applies to `destination_port`,
+  `source_port` and the four PID fields; other fields compare an integer value as text.
+- **Rule files** are read from every subdirectory of the rules directory, sorted by path; IDs
+  must be unique across all of them. Rules are evaluated in ascending ID order.
+- **`details`** follow §8.8 item 4 and are taken from the first matching event. Graph
+  heuristics add: GR-001 `office_ancestor` and `destination`; GR-002 `binaries`; GR-003
+  `target_filename`, `creator_guid` and `creator_image`; GR-004 `activity`.
+- **GR-001** walks ancestors from the parent; an anchor ends the walk before it is checked.
+- **GR-002** counts every discovery child inside a qualifying window; evidence is their
+  creation records.
+- **GR-003** "later" means after the file creation in global order (time, record ID, hash); the
+  most recent write of a path is the one reported. Only the event 1 that created the node
+  counts, and only event 11 (never 15) can supply the file.
+- **`events_examined`** counts, per event rule, the events of its IDs that were visited; for a
+  graph heuristic, the events with any of its required IDs.
+- **`lineage rules --format json`** prints the envelope, `kind: "rules"` and one entry per rule
+  (id, kind, title, severity, event_ids, attack, tactics), sorted by ID.
+- **Catalogue wording.** LOC-002's first exclude is `c:\windows\system32` without a trailing
+  backslash, and several LOC-001 values have none either, exactly as catalogued in §8.6. The
+  LOC-002 value also excludes paths such as `c:\windows\system32x\`. Left unchanged pending the
+  owner's decision.
 
 ## Assumptions
 
@@ -318,6 +374,10 @@ Not started (P7).
   79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
   under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
 - Peak memory is about 2.3 GiB per million records (README limitation under Benchmarks).
+- Duplicate keys inside a rule file are not detected: `yaml.safe_load` keeps the last value.
+  Bundled rules are covered by their fixtures; this matters only for hand-edited rules.
+- Carried to P4: re-run every GR-001 test with the real anchors from `anchors.yaml`, and count
+  `anchor_unverified` there.
 
 ## Roadmap
 

@@ -15,6 +15,9 @@ All notable changes to this project are documented here. The format follows
 - Per-host process graph: nodes from process creation, ghost nodes with recorded reasons,
   activity attached to acting and target processes, parent-loop breaking, iterative walks and
   the display collapse rule.
+- Detection: 20 YAML rules with a validating loader, field resolution with virtual fields,
+  PowerShell encoded-command decoding, graph heuristics GR-001 to GR-004, findings
+  aggregated per rule, host and process, and `lineage rules`.
 
 ### Changed
 
