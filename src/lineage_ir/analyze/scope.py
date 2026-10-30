@@ -86,4 +86,6 @@ def build_scope(
             "persistence": len(lines),
             "destinations": len(destinations),
         },
+        # Filled in by analyze.persistence_links once storylines are numbered.
+        unlinked_targets=(),
     )

@@ -25,6 +25,10 @@ All notable changes to this project are documented here. The format follows
   views with escaping and URL defanging, the JSON report (`--report`, `--format json`),
   artifacts JSONL for Lucent (`--artifacts`) and atomic, path-safe output writes.
 - JSON Schemas `schema/report-1.0.json` and `schema/artifacts-1.0.json`.
+- Persistence and drop links between storylines, shown in the story and tree views and in
+  the report, plus `scope.unlinked_targets` for targets that link nowhere. Golden files
+  `phish_chain.report.json` and `phish_chain.story.txt` changed for this (updated through
+  `scripts/update_golden.py`).
 - Golden files for `phish_chain.jsonl` (report JSON and story view) and
   `scripts/update_golden.py` to regenerate them.
 

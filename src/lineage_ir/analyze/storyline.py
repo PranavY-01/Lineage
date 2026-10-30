@@ -77,7 +77,7 @@ def _members(graph: ProcessGraph, group: _Group) -> tuple[list[str], set[str], s
     return order, path, below
 
 
-def _evidence_events(ingest: IngestResult, findings: Sequence[Finding]) -> dict[SourceKey, Event]:
+def evidence_events(ingest: IngestResult, findings: Sequence[Finding]) -> dict[SourceKey, Event]:
     wanted = {source_key(s) for f in findings for s in f.evidence}
     return {source_key(e.source): e for e in ingest.events if source_key(e.source) in wanted}
 
@@ -154,7 +154,7 @@ def build_storylines(
 ) -> tuple[Storyline, ...]:
     """One storyline per (host, root) of flagged nodes, ranked and numbered S1…Sn."""
     groups = _group_findings(graphs, findings, is_anchor)
-    events = _evidence_events(ingest, findings)
+    events = evidence_events(ingest, findings)
     stories = [
         _storyline(group, graphs.get(group.host), findings, events, gap_seconds)
         for _, group in sorted(groups.items())

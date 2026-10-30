@@ -32,7 +32,7 @@ _WORD = re.compile(r"\S*")
 _QUOTES = "\"'"
 
 
-def _tokens(text: str) -> Iterator[tuple[str, bool]]:
+def command_tokens(text: str) -> Iterator[tuple[str, bool]]:
     """Whitespace-separated tokens in one linear pass; a token opening with a quote runs to
     the matching quote (or the end) and is returned without the quotes."""
     i, n = 0, len(text)
@@ -58,7 +58,7 @@ def _is_flag(token: str) -> bool:
 def find_encoded_payload(text: str) -> str | None:
     """The payload after the first encoded-command flag, or None when there is none."""
     expecting = False
-    for token, quoted in _tokens(text):
+    for token, quoted in command_tokens(text):
         if expecting:
             payload = "".join(token.split()) if quoted else token
             if len(payload) >= MIN_PAYLOAD_CHARS and _BASE64.fullmatch(payload):

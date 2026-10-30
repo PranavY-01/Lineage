@@ -922,9 +922,49 @@
           "registry_keys": 1,
           "persistence": 1,
           "destinations": 2
-        }
+        },
+        "unlinked_targets": []
       },
-      "links": []
+      "links": [
+        {
+          "from_storyline": "S1",
+          "to_storyline": "S2",
+          "kind": "dropped_executed",
+          "match": "exact",
+          "path": "c:\\users\\public\\upd.exe",
+          "evidence": [
+            {
+              "file": "phish_chain.jsonl",
+              "index": 8,
+              "record_id": 5009
+            },
+            {
+              "file": "phish_chain.jsonl",
+              "index": 15,
+              "record_id": 5016
+            }
+          ]
+        },
+        {
+          "from_storyline": "S1",
+          "to_storyline": "S2",
+          "kind": "persistence",
+          "match": "exact",
+          "path": "c:\\users\\public\\upd.exe",
+          "evidence": [
+            {
+              "file": "phish_chain.jsonl",
+              "index": 12,
+              "record_id": 5013
+            },
+            {
+              "file": "phish_chain.jsonl",
+              "index": 15,
+              "record_id": 5016
+            }
+          ]
+        }
+      ]
     },
     {
       "storyline_id": "S2",
@@ -1048,7 +1088,8 @@
           "registry_keys": 0,
           "persistence": 0,
           "destinations": 0
-        }
+        },
+        "unlinked_targets": []
       },
       "links": []
     }

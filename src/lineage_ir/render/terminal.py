@@ -51,6 +51,7 @@ from lineage_ir.models import (
     RuleInfo,
     Scope,
     Storyline,
+    StorylineLink,
     ValidateResult,
 )
 from lineage_ir.render.safe import defang_host, safe
@@ -494,6 +495,7 @@ def _node_label(
     context: bool,
     dimmed: bool,
     view: View,
+    marks: Sequence[str] = (),
 ) -> str:
     anchor = view.is_anchor(node)
     name = safe(_display_name(node))
@@ -505,6 +507,8 @@ def _node_label(
         text += f"  [dim]decoded:[/] {safe(node.decoded_command, None if view.wide else 60)}"
     if node.is_ghost:
         text = f"[italic]? {text}[/]"
+    if marks:
+        text += "  " + " ".join(f"[bold]{m}[/]" for m in marks)
     if findings:
         worst = max(findings, key=lambda f: SEVERITY_RANK[f.severity]).severity
         ids = " ".join(sorted({f.rule_id for f in findings}))
@@ -562,6 +566,30 @@ class _TreeScope:
     members: frozenset[str] | None = None
     dimmed: frozenset[str] = frozenset()
     hot_only: bool = False
+    marks: Mapping[str, Sequence[str]] = field(default_factory=dict)
+
+
+def _incoming(result: AnalysisResult, graph: ProcessGraph) -> dict[str, list[str]]:
+    """Markers for processes that a link points at (§9.8 "Display"), by GUID."""
+    created = {
+        (n.create_record.file, n.create_record.index): guid
+        for guid, n in graph.nodes.items()
+        if n.create_record is not None
+    }
+    marks: dict[str, list[str]] = {}
+    for story in result.storylines:
+        if story.host != graph.host:
+            continue
+        for link in story.links:
+            last = link.evidence[-1]
+            guid = created.get((last.file, last.index))
+            if guid is None:
+                continue
+            verb = "persistence of" if link.kind == "persistence" else "dropped by"
+            mark = f"↩ {verb} {link.from_storyline}"
+            if mark not in marks.setdefault(guid, []):
+                marks[guid].append(mark)
+    return marks
 
 
 def _grow(
@@ -588,6 +616,7 @@ def _grow(
                 context=item in scope.keep and item not in flagged,
                 dimmed=item in scope.dimmed,
                 view=view,
+                marks=scope.marks.get(item, ()),
             )
         )
         if found:
@@ -615,7 +644,12 @@ def _story_tree(result: AnalysisResult, story: Storyline, view: View) -> Tree | 
     keep = set(story.flagged) | set(story.path_nodes) | {story.root_guid}
     if view.focus is not None:
         keep |= view.focus.get(story.host, frozenset())
-    scope = _TreeScope(findings=findings, keep=frozenset(keep), members=frozenset(story.nodes))
+    scope = _TreeScope(
+        findings=findings,
+        keep=frozenset(keep),
+        members=frozenset(story.nodes),
+        marks=_incoming(result, graph),
+    )
     label = (
         f"[dim]{safe(story.anchor_image_name)} (anchor)[/]"
         if story.anchor_image_name
@@ -678,6 +712,15 @@ def _scope_details(scope: Scope) -> list[str]:
             lines.append(_kv(label if n == 0 else "", shown))
         if len(values) > ACTIVITY_LINES_PER_KIND:
             lines.append(_kv("", f"[dim]+{len(values) - ACTIVITY_LINES_PER_KIND} more[/]"))
+    for n, item in enumerate(scope.unlinked_targets):
+        if item.reason == "target_not_in_storyline":
+            start = format_rfc3339(item.start_us) if item.start_us is not None else "?"
+            state = f"ran as {safe(item.guid or '?')} at {start}, in no storyline"
+        else:
+            state = "not seen running"
+        lines.append(
+            _kv("Not linked" if n == 0 else "", f"{safe(item.path)} · {state} ({item.rule_id})")
+        )
     return lines
 
 
@@ -822,6 +865,7 @@ def render_tree(console: Console, result: AnalysisResult, view: View) -> None:
             members=members,
             dimmed=dimmed,
             hot_only=view.params.hot_only,
+            marks=_incoming(result, graph),
         )
         roots = [r for r in graph.roots if members is None or r in members]
         if view.params.hot_only:
@@ -861,6 +905,7 @@ def _step_lines(story: Storyline, view: View) -> list[str]:
         cut_after = None
     gaps = {g.after_step: g.seconds for g in story.gaps}
     day = format_rfc3339(story.start_us)[:10]
+    pending = _links_by_setting_record(story)
     lines = []
     last_tactic: str | None = None
     for step in steps:
@@ -872,11 +917,31 @@ def _step_lines(story: Storyline, view: View) -> list[str]:
         marker = f"[{_SEVERITY_STYLE[step.severity]}]![/]" if step.severity is not None else " "
         technique = f"  [dim]{step.technique}[/]" if step.technique else ""
         lines.append(f"   {step.n:>3}  {when}  {marker} {safe(step.text)}{technique}")
+        for link in pending.pop((step.source.file, step.source.index), []):
+            lines.append(f"        {_link_text(link)}")
         if step.n in gaps:
             lines.append(f"        [dim]⏸ {_gap_text(gaps[step.n])} with no storyline activity[/]")
         if cut_after is not None and step.n == cut_after:
             lines.append(f"        [dim]… {omitted} steps omitted[/]")
+    # Links whose setting step is not shown (no step for it, or hidden by a filter).
+    rest = [link for links in pending.values() for link in links]
+    if rest:
+        lines.append("   [bold]Links[/]")
+        lines.extend(f"        {_link_text(link)}" for link in rest)
     return lines
+
+
+def _links_by_setting_record(story: Storyline) -> dict[tuple[str, int], list[StorylineLink]]:
+    pending: dict[tuple[str, int], list[StorylineLink]] = {}
+    for link in story.links:
+        first = link.evidence[0]
+        pending.setdefault((first.file, first.index), []).append(link)
+    return pending
+
+
+def _link_text(link: StorylineLink) -> str:
+    what = "fires later as" if link.kind == "persistence" else "dropped file runs later as"
+    return f"[bold]↪ {what} {link.to_storyline}[/] ({link.match} match: {safe(link.path)})"
 
 
 def render_story(console: Console, result: AnalysisResult, view: View) -> None:
