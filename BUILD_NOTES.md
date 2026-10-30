@@ -195,6 +195,16 @@ Amendments 19 and 20 record owner decisions given on 2026-10-30 at the P5 gate.
     and `\u{2029}` in every human-readable output, like the bidi overrides.
     `hostile_strings.jsonl` carries both.
 
+Amendment 21 records the owner's answers to the S1 plan, given on 2026-10-30.
+
+21. **Unlinked persistence targets (§5.7, §9.8).** `Scope.unlinked_targets` lists the
+    persistence targets of a storyline that link to no other storyline, as
+    `UnlinkedTarget` entries (reason, rule ID, path, match, process GUID, start time, setting
+    record). The two §9.8 cases are kept apart: `target_not_in_storyline` means a later process
+    ran the target (its GUID and start time are given) but belongs to no storyline;
+    `not_seen_running` means no later process on the host ran it. At most 50 per storyline.
+    The report schema carries the field.
+
 ### P1 · Skeleton and ingest
 
 - **Development version.** `__version__` is `0.1.0` during the build and becomes `1.0.0`
@@ -451,6 +461,40 @@ Amendments 19 and 20 record owner decisions given on 2026-10-30 at the P5 gate.
   the CLI with a frozen clock and run ID by `tests/helpers/golden.py`, shared by the test and
   `scripts/update_golden.py`. The version string is replaced by `<version>` (amendment 17).
 
+### S1 · Persistence and drop links
+
+- **Targets** come from each evidence record of a PER finding: PER-001 the event 13 value
+  data, PER-002 the schtasks `/tr` (or `-tr`) argument, PER-003 the sc.exe `binPath=` argument
+  (with or without a space after `=`) or the event 13 ImagePath data, PER-004 the event 11 file
+  name taken as a path (it is not a command line, so a `.lnk` in a Startup folder is a target
+  that never runs). PowerShell `New-Service` gives no target. Repeated targets within one
+  finding are used once.
+- **Path extraction** follows §9.8. An extension ends at the end of the value, whitespace, a
+  quote or a comma, so `.js` inside `.json` is not one. An unquoted value with no listed
+  extension, a relative path and an unlisted variable (for example `%HOMEDRIVE%`) give no target
+  and no note. For a host program the first argument that looks like a path (a backslash, a
+  drive letter or a leading `%`) is used, skipping switches; for `rundll32.exe` the `,Entry`
+  part is cut. A suffix keeps the text after the variable exactly as written
+  (`%TEMP%\x.exe` gives `\x.exe`).
+- **Matching** looks at process creations on the finding's host that start after the finding's
+  first event; ghosts never match. The setting storylines are those whose `finding_ids` hold the
+  finding. A process in two storylines links to the storyline it roots, otherwise to each one
+  holding it. This happens when a flagged process starts a path-verified anchor binary (for
+  example a new `explorer.exe`) whose child has its own finding: the child is a descendant in
+  the first storyline and roots its own (tested with a synthetic chain).
+- **Drop links** come from GR-003 findings: from each storyline holding the writer
+  (`creator_guid`) to each storyline holding the executed process, inside one storyline too.
+  Evidence is the write record and the creation record. A writer in no storyline gives no link
+  and no note.
+- **Links** are kept on the setting storyline only, de-duplicated and sorted by (from, to,
+  kind, path, match). Persistence link evidence is the setting record and the creation record.
+- **Views.** The story view prints a link under the step whose record set it; links whose step is
+  not shown are listed after the steps under "Links". Tree views mark the later process
+  (`↩ persistence of S1`, `↩ dropped by S1`). Scope details list unlinked targets under
+  "Not linked".
+- **Reuse.** The decoder's tokenizer (`command_tokens`) and the storyline evidence lookup
+  (`evidence_events`) are now public so the link code shares them.
+
 ## Assumptions
 
 - `ASSUMPTION` Field aliases and shape rules are the §6.2–6.4 defaults; no real dataset has
@@ -567,6 +611,10 @@ Not started (P7).
 - Hero dataset check PENDING P0 data: the P4 gate used `phish_chain.jsonl` and its committed,
   hand-derived oracle instead (amendment 15).
 - `attack_version` in report parameters is `unpinned` until the P7 ATT&CK check pins it.
+- Suffix matches for %APPDATA%-style paths can link the wrong process (§9.8 matches any
+  image ending with the text after the variable).
+- A `binPath=` value quoted inside the same token (`binPath="C:\a b\x.exe"`) is not
+  parsed as an S1 target.
 - Story steps for findings come from the retained evidence (first 10 and last 10 records), so a
   finding with more than 20 matching events has no step for the middle ones.
 
