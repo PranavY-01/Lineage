@@ -615,6 +615,8 @@ Not started (P7).
   image ending with the text after the variable).
 - A `binPath=` value quoted inside the same token (`binPath="C:\a b\x.exe"`) is not
   parsed as an S1 target.
+- A `.lnk` written to a Startup folder is recorded as `not_seen_running`, because shortcut
+  targets are not resolved.
 - Story steps for findings come from the retained evidence (first 10 and last 10 records), so a
   finding with more than 20 matching events has no step for the middle ones.
 
