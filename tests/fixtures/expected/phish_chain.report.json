@@ -29,8 +29,8 @@
     "telemetry_gap_seconds": 1800,
     "max_records": 2000000,
     "timestamp_source": "utc_time, then time_created",
-    "rule_set_sha256": "0b12635a12cf74da8827a956dc5a3355676713e73f9af78939d0ddf67b04553a",
-    "attack_version": "unpinned",
+    "rule_set_sha256": "b108e54abb012130687e5325c63a51901a3268354af99846657ebaa47f4b77e6",
+    "attack_version": "v20",
     "around": null,
     "window": null,
     "hot_only": false,
@@ -270,7 +270,7 @@
         ],
         "tactics": [
           "execution",
-          "defense-evasion"
+          "stealth"
         ],
         "why": "Passing a base64-encoded script hides the command from casual review and from naive command-line matching; it is common in loaders and rare in hand-written admin work.\n",
         "image_name": "cmd.exe",
@@ -336,7 +336,7 @@
         ],
         "tactics": [
           "execution",
-          "defense-evasion"
+          "stealth"
         ],
         "why": "Passing a base64-encoded script hides the command from casual review and from naive command-line matching; it is common in loaders and rare in hand-written admin work.\n",
         "image_name": "powershell.exe",
@@ -402,8 +402,7 @@
           "T1204.002"
         ],
         "tactics": [
-          "execution",
-          "command-and-control"
+          "execution"
         ],
         "why": "A process started below an Office application made an outbound connection; documents that launch helpers which then reach the network are a common phishing delivery pattern.",
         "image_name": "powershell.exe",
@@ -435,8 +434,7 @@
           "T1204.002"
         ],
         "tactics": [
-          "execution",
-          "command-and-control"
+          "execution"
         ],
         "why": "A process started below an Office application made an outbound connection; documents that launch helpers which then reach the network are a common phishing delivery pattern.",
         "image_name": "rundll32.exe",
@@ -469,7 +467,7 @@
           "T1105"
         ],
         "tactics": [
-          "defense-evasion",
+          "stealth",
           "command-and-control"
         ],
         "why": "Signed Windows binaries that can run arbitrary code rarely need to open outbound connections; when they do, they are often fetching or talking to a payload.\n",
@@ -534,7 +532,7 @@
           "T1105"
         ],
         "tactics": [
-          "execution"
+          "command-and-control"
         ],
         "why": "A file written to disk and then started as a process on the same host is how dropped payloads usually begin.",
         "image_name": "upd.exe",
@@ -670,7 +668,7 @@
       "max_severity": "high",
       "tactics": [
         "execution",
-        "defense-evasion",
+        "stealth",
         "command-and-control",
         "persistence"
       ],
@@ -994,6 +992,7 @@
       ],
       "max_severity": "medium",
       "tactics": [
+        "command-and-control",
         "execution",
         "discovery"
       ],
@@ -1006,7 +1005,7 @@
         {
           "n": 1,
           "time": "2026-10-12T11:00:00Z",
-          "tactic": "execution",
+          "tactic": "command-and-control",
           "technique": "T1105",
           "guid": "8f3c2a71-5e4b-4d9a-a1c3-000000000091",
           "image_name": "upd.exe",

@@ -15,7 +15,8 @@ from lineage_ir.ingest.field_aliases import NORMALIZED_KEYS
 from lineage_ir.ingest.normalize import PATH_FIELDS
 from lineage_ir.models import IMAGE_LOAD_EVENT_ID, FrozenModel, RuleInfo, Severity
 
-# The 14 ATT&CK Enterprise tactics.
+# The 15 ATT&CK Enterprise tactics (v20: Defense Evasion became Stealth and Defense
+# Impairment, amendment 23).
 TACTICS = frozenset(
     {
         "reconnaissance",
@@ -24,7 +25,8 @@ TACTICS = frozenset(
         "execution",
         "persistence",
         "privilege-escalation",
-        "defense-evasion",
+        "stealth",
+        "defense-impairment",
         "credential-access",
         "discovery",
         "lateral-movement",

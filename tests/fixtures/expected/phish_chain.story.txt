@@ -40,9 +40,9 @@ HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\Curr
  DNS         dl[.]example
              cdn[.]example
 
-S2 · root upd.exe · ws-14.corp.example · NT AUTHORITY\SYSTEM · MEDIUM · 2 tactics · 3 findings · 2026-10-12T11:00:00Z → 
+S2 · root upd.exe · ws-14.corp.example · NT AUTHORITY\SYSTEM · MEDIUM · 3 tactics · 3 findings · 2026-10-12T11:00:00Z → 
 11:01:10Z (1m10s)
-   ── Execution ──
+   ── Command And Control ──
      1  11:00:00Z  ! services.exe spawned upd.exe C:\Users\Public\upd.exe [GR-003, LOC-001]  T1105
    ── Discovery ──
      2  11:00:10Z  ! upd.exe spawned whoami.exe whoami /all [GR-002]  T1033

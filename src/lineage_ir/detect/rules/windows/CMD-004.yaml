@@ -2,7 +2,7 @@ id: CMD-004
 title: Mshta remote or inline script
 severity: high
 attack: [T1218.005]
-tactics: [defense-evasion]
+tactics: [stealth]
 why: >
   Mshta running an HTA from a URL or an inline javascript or vbscript expression executes
   code through a signed Windows binary, a frequent way to slip past allow-listing.

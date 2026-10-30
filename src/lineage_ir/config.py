@@ -76,8 +76,8 @@ READINESS_FAMILIES: tuple[tuple[str, tuple[int, ...], str], ...] = (
 
 UNKNOWN_KEYS_SHOWN = 20
 
-# Reports (§12.3). The ATT&CK version is pinned in P7, after every technique ID is verified.
-ATTACK_VERSION = "unpinned"
+# Reports (§12.3). ATT&CK version the technique IDs were verified against (amendment 23).
+ATTACK_VERSION = "v20"
 TIMESTAMP_SOURCE = "utc_time, then time_created"
 REPORT_ERRORS_CAP = 1000
 

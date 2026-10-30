@@ -2,7 +2,7 @@ id: CMD-005
 title: Regsvr32 remote scriptlet
 severity: high
 attack: [T1218.010]
-tactics: [defense-evasion]
+tactics: [stealth]
 why: >
   Regsvr32 loading a scriptlet from a URL or through scrobj.dll runs remote script code
   with a signed Windows binary and leaves little on disk.

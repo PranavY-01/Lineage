@@ -2,7 +2,7 @@ id: NET-001
 title: Proxy-execution binary made a network connection
 severity: high
 attack: [T1218, T1105]
-tactics: [defense-evasion, command-and-control]
+tactics: [stealth, command-and-control]
 why: >
   Signed Windows binaries that can run arbitrary code rarely need to open outbound
   connections; when they do, they are often fetching or talking to a payload.

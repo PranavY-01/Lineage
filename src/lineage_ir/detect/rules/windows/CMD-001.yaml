@@ -2,7 +2,7 @@ id: CMD-001
 title: Encoded PowerShell command
 severity: medium
 attack: [T1059.001, T1027.010]
-tactics: [execution, defense-evasion]
+tactics: [execution, stealth]
 why: >
   Passing a base64-encoded script hides the command from casual review and from naive
   command-line matching; it is common in loaders and rare in hand-written admin work.

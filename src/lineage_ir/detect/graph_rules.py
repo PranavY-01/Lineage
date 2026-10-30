@@ -211,7 +211,7 @@ GRAPH_RULES = (
             "high",
             (1, 3),
             attack=("T1204.002",),
-            tactics=("execution", "command-and-control"),
+            tactics=("execution",),
             why=(
                 "A process started below an Office application made an outbound connection; "
                 "documents that launch helpers which then reach the network are a common "
@@ -242,7 +242,7 @@ GRAPH_RULES = (
             "medium",
             (1, 11),
             attack=("T1105",),
-            tactics=("execution",),
+            tactics=("command-and-control",),
             why=(
                 "A file written to disk and then started as a process on the same host is how "
                 "dropped payloads usually begin."
