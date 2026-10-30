@@ -1,11 +1,16 @@
+import json
 from typing import Any
 
 import pytest
 
+from lineage_ir.config import STRING_POOL_CAP
 from lineage_ir.ingest.normalize import (
     Invalid,
     Irrelevant,
     Normalized,
+    NormalizedImageLoad,
+    StringPool,
+    StringPools,
     canonical_guid,
     image_name,
     normalize_granted_access,
@@ -292,3 +297,110 @@ def test_shape_a_outer_record_id_fallback() -> None:
         "timestamp": "2026-10-12 10:41:58.123000 UTC",
     }
     assert _event(record).event.record_id == 55
+
+
+def _fresh(text: str) -> str:
+    """An equal string that is a distinct object, as a JSON parse would produce."""
+    return "".join(list(text))
+
+
+def test_string_pool_reuses_equal_strings() -> None:
+    pool = StringPool()
+    first = pool(_fresh("CORP\\jdoe"))
+    second = pool(_fresh("CORP\\jdoe"))
+    assert second is first
+    assert len(pool) == 1
+    assert pool.optional(None) is None
+
+
+def test_string_pool_stops_growing_at_its_cap() -> None:
+    assert STRING_POOL_CAP == 100_000
+    pool = StringPool()
+    for n in range(STRING_POOL_CAP + 500):
+        assert pool(f"unique-{n}") == f"unique-{n}"
+    assert len(pool) == STRING_POOL_CAP
+    late = _fresh(f"unique-{STRING_POOL_CAP + 1}")
+    assert pool(late) is late
+    early = pool(_fresh("unique-1"))
+    assert pool(_fresh("unique-1")) is early
+
+
+def test_hostile_unique_values_do_not_grow_pools(make_record: Any) -> None:
+    pools = StringPools(cap=5)
+    for n in range(200):
+        record = make_record(
+            1,
+            n,
+            host=f"host-{n}",
+            ProcessGuid="{" + GUID + "}",
+            Image=f"C:\\x\\{n}.exe",
+            User=f"CORP\\u{n}",
+            Hashes=f"SHA256={n:064x}",
+            **{f"Odd{n}Key": "v"},
+        )
+        outcome = normalize_record(record, "in.jsonl", "0" * 64, n, pools=pools)
+        assert isinstance(outcome, Normalized)
+        assert outcome.event.image == f"C:\\x\\{n}.exe"
+        assert outcome.event.fields[f"odd{n}_key"] == "v"
+    for pool in (pools.hosts, pools.channels, pools.field_names, pools.image_paths, pools.users):
+        assert len(pool) <= 5
+    assert len(pools.hashes) <= 5
+
+
+def test_only_low_cardinality_fields_are_pooled(make_record: Any) -> None:
+    pools = StringPools()
+    fields = {
+        "ProcessGuid": "{" + GUID + "}",
+        "Image": "C:\\Tools\\a.exe",
+        "ParentImage": "C:\\Tools\\b.exe",
+        "User": "CORP\\jdoe",
+        "Hashes": "SHA256=" + "a" * 64,
+        "CommandLine": "a.exe --flag",
+    }
+    events = [
+        normalize_record(
+            json.loads(json.dumps(make_record(1, n, **fields))),
+            "in.jsonl",
+            "0" * 64,
+            n,
+            pools=pools,
+        )
+        for n in (1, 2)
+    ]
+    first, second = (e.event for e in events if isinstance(e, Normalized))
+    assert first.host is second.host and first.channel is second.channel
+    for key in ("image", "parent_image", "user", "hashes"):
+        assert first.fields[key] is second.fields[key]
+    assert first.image is first.fields["image"]
+    assert first.process_guid is first.fields["process_guid"]
+    for key in ("command_line", "process_guid", "utc_time"):
+        assert first.fields[key] is not second.fields[key]
+    assert [k for k in first.fields if k not in second.fields] == []
+    assert all(a is b for a, b in zip(first.fields, second.fields, strict=True))
+
+
+def test_slim_image_load_pools_paths_and_users(make_record: Any) -> None:
+    pools = StringPools()
+    loads = []
+    for n in (1, 2):
+        record = json.loads(
+            json.dumps(
+                make_record(
+                    7,
+                    n,
+                    ProcessGuid="{" + GUID + "}",
+                    Image="C:\\Tools\\a.exe",
+                    User="CORP\\jdoe",
+                    ImageLoaded="C:\\Windows\\x.dll",
+                    Signed="true",
+                )
+            )
+        )
+        outcome = normalize_record(record, "in.jsonl", "0" * 64, n, pools=pools)
+        assert isinstance(outcome, NormalizedImageLoad)
+        loads.append(outcome.event)
+    first, second = loads
+    for name in ("host", "channel", "image", "user", "image_loaded"):
+        assert getattr(first, name) is getattr(second, name)
+    assert first.process_guid == second.process_guid == GUID
+    assert first.process_guid is not second.process_guid

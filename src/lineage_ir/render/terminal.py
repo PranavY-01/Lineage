@@ -187,7 +187,11 @@ def render_validate(console: Console, result: ValidateResult, max_errors: int) -
     for warning in ingest.warnings:
         print_warning(console, warning)
     if ingest.record_cap_reached:
-        console.print("[red]Record cap reached: reading stopped before the end of the input.[/]")
+        # Reading stops exactly at the cap, so the records read are the cap.
+        console.print(
+            f"[red]Record cap of {counters.records_total:,} reached: reading stopped before "
+            "the end of the input. Raise the cap with --max-records.[/]"
+        )
 
     if result.valid:
         status = "[bold green]VALID[/]"

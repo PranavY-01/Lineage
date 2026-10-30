@@ -26,6 +26,18 @@ def construct_trusted(cls: type[M], /, **values: Any) -> M:
     return cls.model_construct(shared, **values)
 
 
+def trusted_event(file: str, file_sha256: str, index: int, **values: Any) -> "Event":
+    """Build an Event and its SourceRef from values normalize has just validated.
+
+    Only ``ingest/normalize.py`` calls this (enforced by a source test); a test checks that
+    every Event built here equals the same Event built through full validation.
+    """
+    source = construct_trusted(
+        SourceRef, file=file, file_sha256=file_sha256, index=index, record_id=values["record_id"]
+    )
+    return construct_trusted(Event, source=source, **values)
+
+
 class SourceRef(FrozenModel):
     """Provenance of one record: input base name, its SHA-256 and position."""
 

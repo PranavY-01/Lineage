@@ -113,6 +113,15 @@ def test_record_cap_reached(tmp_path: Path, make_record: Any) -> None:
     assert "record_cap_reached" in result.reasons
 
 
+def test_recursion_error_record_is_counted_as_too_deep(tmp_path: Path, make_record: Any) -> None:
+    nested = b"[" * 200_000 + b"]" * 200_000 + b"\n"
+    path = _write(tmp_path, "a.jsonl", _sysmon_lines(make_record, 1) + nested)
+    result = read_inputs([path])
+    assert result.counters.invalid_by_reason == {"too_deep": 1}
+    assert result.counters.sysmon == 1
+    assert [(s.index, s.reason) for s in result.invalid_samples] == [(1, "too_deep")]
+
+
 def test_record_cap_exactly_met_is_not_reached(tmp_path: Path, make_record: Any) -> None:
     path = _write(tmp_path, "a.jsonl", _sysmon_lines(make_record, 3))
     result = read_inputs([path], IngestOptions(max_records=3))

@@ -15,3 +15,8 @@ All notable changes to this project are documented here. The format follows
 - Per-host process graph: nodes from process creation, ghost nodes with recorded reasons,
   activity attached to acting and target processes, parent-loop breaking, iterative walks and
   the display collapse rule.
+
+### Changed
+
+- `--max-records` defaults to 2,000,000 so that peak memory stays under 6 GB for typical
+  logs; the cap message says how to raise it.

@@ -21,6 +21,7 @@ from lineage_ir.ingest.normalize import (
     Invalid,
     Irrelevant,
     Item,
+    StringPools,
     dedupe_and_sort,
     normalize_record,
 )
@@ -196,6 +197,7 @@ def read_inputs(paths: Sequence[Path], options: IngestOptions | None = None) -> 
     cap_reached = False
     accepted: list[tuple[int, Item]] = []
     hosts_seen: set[str] = set()
+    pools = StringPools()
 
     for file_order, item in enumerate(resolved):
         label = item.info.label
@@ -209,7 +211,9 @@ def read_inputs(paths: Sequence[Path], options: IngestOptions | None = None) -> 
                 if raw.reason is not None:
                     outcome: object = Invalid(raw.reason)
                 else:
-                    outcome = normalize_record(raw.record, label, item.info.sha256, raw.index)
+                    outcome = normalize_record(
+                        raw.record, label, item.info.sha256, raw.index, pools=pools
+                    )
                 if isinstance(outcome, Invalid):
                     invalid[outcome.reason] += 1
                     if len(samples) < options.max_error_samples:

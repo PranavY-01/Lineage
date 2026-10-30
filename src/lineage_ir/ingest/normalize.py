@@ -3,12 +3,11 @@
 import hashlib
 import json
 import re
-import sys
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
 
-from lineage_ir.config import SYSMON_CHANNEL, SYSMON_PROVIDER
+from lineage_ir.config import STRING_POOL_CAP, SYSMON_CHANNEL, SYSMON_PROVIDER
 from lineage_ir.ingest.field_aliases import TIME_CREATED_CANDIDATES, normalize_key, resolve_system
 from lineage_ir.ingest.shapes import detect_shape
 from lineage_ir.ingest.timeparse import NaiveTimestamp, parse_iso, parse_utc_time
@@ -18,6 +17,7 @@ from lineage_ir.models import (
     Event,
     ImageLoadRecord,
     SourceRef,
+    trusted_event,
 )
 
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
@@ -228,8 +228,64 @@ def _event_data(raw: Mapping[str, Any]) -> tuple[dict[str, str], list[str]]:
     return fields, unknown
 
 
-def _interned(value: str | None) -> str | None:
-    return None if value is None else sys.intern(value)
+class StringPool:
+    """One shared copy per distinct string, for at most ``cap`` distinct values.
+
+    Past the cap a string is returned as it is, so logs full of unique values cannot grow
+    the pool without bound.
+    """
+
+    __slots__ = ("_values", "cap")
+
+    def __init__(self, cap: int = STRING_POOL_CAP) -> None:
+        self._values: dict[str, str] = {}
+        self.cap = cap
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    def __call__(self, value: str) -> str:
+        kept = self._values.get(value)
+        if kept is not None:
+            return kept
+        if len(self._values) < self.cap:
+            self._values[value] = value
+        return value
+
+    def optional(self, value: str | None) -> str | None:
+        return None if value is None else self(value)
+
+
+_IMAGE_PATH_FIELDS = ("image", "parent_image", "source_image", "target_image", "image_loaded")
+_USER_FIELDS = ("user", "parent_user", "source_user", "target_user")
+
+
+class StringPools:
+    """The per-run pools for low-cardinality strings: host, channel, field names, image
+    paths, users and hashes. Nothing else is pooled."""
+
+    __slots__ = ("_by_field", "channels", "field_names", "hashes", "hosts", "image_paths", "users")
+
+    def __init__(self, cap: int = STRING_POOL_CAP) -> None:
+        self.hosts = StringPool(cap)
+        self.channels = StringPool(cap)
+        self.field_names = StringPool(cap)
+        self.image_paths = StringPool(cap)
+        self.users = StringPool(cap)
+        self.hashes = StringPool(cap)
+        self._by_field = {
+            **dict.fromkeys(_IMAGE_PATH_FIELDS, self.image_paths),
+            **dict.fromkeys(_USER_FIELDS, self.users),
+            "hashes": self.hashes,
+        }
+
+    def fields(self, fields: Mapping[str, str]) -> dict[str, str]:
+        """A copy of ``fields`` with pooled names and pooled image, user and hash values."""
+        pooled: dict[str, str] = {}
+        for key, value in fields.items():
+            pool = self._by_field.get(key)
+            pooled[self.field_names(key)] = value if pool is None else pool(value)
+        return pooled
 
 
 def normalize_record(
@@ -238,12 +294,15 @@ def normalize_record(
     file_sha256: str,
     index: int,
     *,
+    pools: StringPools | None = None,
     slim_image_loads: bool = True,
+    compact: bool = True,
 ) -> Outcome:
     """Classify one raw record and, for Sysmon records, build its Event.
 
-    Event 7 becomes a slim ImageLoadRecord unless ``slim_image_loads`` is false, which
-    exists so tests can compare the slim path with a full-Event build.
+    Event 7 becomes a slim ImageLoadRecord unless ``slim_image_loads`` is false. Other
+    events are built without re-validation and with pooled strings unless ``compact`` is
+    false. Both switches exist so tests can compare against the full-validation build.
     """
     shaped = detect_shape(record)
     if shaped is None:
@@ -270,12 +329,13 @@ def normalize_record(
     ts_us, ts_source = stamp
 
     bad_guids = 0
+    guids: dict[str, str] = {}
     for key in GUID_FIELDS:
         if key in fields:
             guid, bad = canonical_guid(fields[key])
             bad_guids += bad
             if guid is not None:
-                fields[key] = guid
+                fields[key] = guids[key] = guid
     for key in PID_FIELDS:
         if key in fields:
             pid = parse_pid(fields[key])
@@ -292,28 +352,50 @@ def normalize_record(
     host_value = _to_text(resolve_system(shaped.system, "host", shape_a=shape_a)[0])
     record_id = _record_id(resolve_system(shaped.system, "record_id", shape_a=shape_a)[0])
     host = (host_value or "unknown").strip().lower()
+    channel = channel or SYSMON_CHANNEL
+    if pools is None:
+        pools = StringPools()
 
     if event_id == IMAGE_LOAD_EVENT_ID and slim_image_loads:
         load = ImageLoadRecord(
-            host=sys.intern(host),
-            channel=sys.intern(channel or SYSMON_CHANNEL),
+            host=pools.hosts(host),
+            channel=pools.channels(channel),
             record_id=record_id,
             ts_us=ts_us,
-            process_guid=_interned(canonical_guid(fields.get("process_guid"))[0]),
+            process_guid=guids.get("process_guid"),
             pid=parse_pid(fields.get("pid")),
-            image=_interned(fields.get("image") or None),
-            user=_interned(fields.get("user")),
-            image_loaded=_interned(fields.get("image_loaded")),
-            signed=_interned(fields.get("signed")),
+            image=pools.image_paths.optional(fields.get("image") or None),
+            user=pools.users.optional(fields.get("user")),
+            image_loaded=pools.image_paths.optional(fields.get("image_loaded")),
+            signed=fields.get("signed"),
             file=file,
             file_sha256=file_sha256,
             index=index,
         )
         return NormalizedImageLoad(load, tuple(unknown), bad_guids)
 
+    if compact:
+        fields = pools.fields(fields)
+        event = trusted_event(
+            file,
+            file_sha256,
+            index,
+            host=pools.hosts(host),
+            channel=pools.channels(channel),
+            event_id=event_id,
+            ts_us=ts_us,
+            ts_source=ts_source,
+            record_id=record_id,
+            process_guid=guids.get(guid_key),
+            pid=parse_pid(fields.get(pid_key)),
+            image=fields.get(image_key) or None,
+            fields=fields,
+        )
+        return Normalized(event, tuple(unknown), bad_guids)
+
     event = Event(
         host=host,
-        channel=channel or SYSMON_CHANNEL,
+        channel=channel,
         event_id=event_id,
         ts_us=ts_us,
         ts_source=ts_source,

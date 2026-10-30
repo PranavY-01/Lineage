@@ -137,3 +137,25 @@ def test_graph_code_is_not_recursive(path: Path) -> None:
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
         }
         assert func.name not in calls, f"{_rel(path)}: {func.name} calls itself"
+
+
+# Construction without validation stays in the modules that were reviewed for it.
+TRUSTED_CONSTRUCTION = {
+    "construct_trusted": {"models.py", "graph/builder.py"},
+    "model_construct": {"models.py"},
+    "trusted_event": {"models.py", "ingest/normalize.py"},
+}
+
+
+@pytest.mark.parametrize("path", MODULES, ids=_rel)
+def test_trusted_construction_stays_in_reviewed_modules(path: Path) -> None:
+    names: set[str] = set()
+    for node in ast.walk(_tree(path)):
+        if isinstance(node, ast.Name):
+            names.add(node.id)
+        elif isinstance(node, ast.Attribute):
+            names.add(node.attr)
+        elif isinstance(node, ast.alias):
+            names.add(node.name)
+    for name, allowed in TRUSTED_CONSTRUCTION.items():
+        assert name not in names or _rel(path) in allowed, f"{_rel(path)} uses {name}"

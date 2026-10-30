@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 
 from lineage_ir import __version__
+from lineage_ir.config import DEFAULT_MAX_RECORDS, MAX_RECORDS_RANGE
+from lineage_ir.ingest.reader import IngestOptions
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -147,3 +149,17 @@ def test_validate_record_cap_exit_4() -> None:
     proc = run("validate", FIXTURES / "duplicates.jsonl", "--max-records", "2", "--format", "json")
     assert proc.returncode == 4
     assert json.loads(proc.stdout)["record_cap_reached"] is True
+
+
+def test_validate_record_cap_message_names_cap_and_flag() -> None:
+    proc = run("validate", FIXTURES / "duplicates.jsonl", "--max-records", "2")
+    assert proc.returncode == 4
+    text = " ".join(proc.stdout.split())
+    assert "Record cap of 2 reached" in text
+    assert "Raise the cap with --max-records." in text
+
+
+def test_default_record_cap() -> None:
+    assert DEFAULT_MAX_RECORDS == 2_000_000
+    assert MAX_RECORDS_RANGE == (1, 50_000_000)
+    assert IngestOptions().max_records == DEFAULT_MAX_RECORDS
