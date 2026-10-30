@@ -168,3 +168,35 @@ def test_temp_files_are_created_private(
     write_outputs([_report(target)], [evidence], force=False)
     assert len(seen) == 1 and Path(seen[0]).parent == tmp_path
     assert not Path(seen[0]).exists()
+
+
+def _csv_head() -> bytes:
+    from lineage_ir.config import CSV_COLUMNS
+
+    header = ",".join(f'"{c}"' for c in CSV_COLUMNS).encode()
+    return bytes([0xEF, 0xBB, 0xBF]) + header + bytes([13, 10])
+
+
+def test_force_replaces_a_lineage_csv(tmp_path: Path, evidence: Path) -> None:
+    target = tmp_path / "timeline.csv"
+    target.write_bytes(_csv_head() + b'"S1","1"' + bytes([13, 10]))
+    write_outputs([OutputRequest(target, _csv_head(), "csv")], [evidence], force=True)
+    assert target.read_bytes() == _csv_head()
+
+
+def test_force_never_replaces_a_foreign_csv(tmp_path: Path, evidence: Path) -> None:
+    head = _csv_head()
+    bom = bytes([0xEF, 0xBB, 0xBF])
+    foreign = {
+        "no-bom.csv": head[len(bom) :],
+        "lf.csv": head[:-2] + bytes([10]),
+        "other-header.csv": bom + b'"storyline","step"' + bytes([13, 10]),
+        "extra-column.csv": head[:-2] + b',"extra"' + bytes([13, 10]),
+        "empty.csv": b"",
+    }
+    for name, content in foreign.items():
+        target = tmp_path / name
+        target.write_bytes(content)
+        with pytest.raises(UsageError, match="never replaced"):
+            check_outputs([OutputRequest(target, head, "csv")], [evidence], force=True)
+        assert target.read_bytes() == content

@@ -17,10 +17,10 @@ def main() -> int:
     changed = []
     for name in GOLDEN:
         path = golden_path(name)
-        text = render(name)
-        old = path.read_text(encoding="utf-8") if path.exists() else None
-        if old != text:
-            path.write_text(text, encoding="utf-8", newline="\n")
+        data = render(name)
+        old = path.read_bytes() if path.exists() else None
+        if old != data:
+            path.write_bytes(data)
             changed.append(path.relative_to(ROOT).as_posix())
     for item in changed:
         print(f"updated {item}")
