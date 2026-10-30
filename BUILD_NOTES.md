@@ -218,6 +218,21 @@ Amendment 22 records the owner's answers to the S3 plan, given on 2026-10-30.
     become U+FFFD. Gaps and links get no rows; the report carries them. The golden file
     `phish_chain.timeline.csv` changes only through `scripts/update_golden.py`.
 
+Amendment 23 records the owner's ATT&CK verification for P7, given on 2026-10-30.
+
+23. **ATT&CK v20 (§8.4, §8.6, §8.7).** Mappings follow ATT&CK v20 (released 13 October
+    2026). ATT&CK v19 retired Defense Evasion and split it into Stealth (TA0005) and Defense
+    Impairment (TA0112), so the Enterprise matrix has 15 tactics and the loader's tactic
+    list replaces `defense-evasion` with `stealth` and `defense-impairment`. Rule tactics:
+    CMD-001 execution, stealth; CMD-003 command-and-control, stealth; CMD-004, CMD-005 and
+    LOC-002 stealth; CMD-007 defense-impairment, with T1070.001 (revoked in v19) replaced by
+    T1685.005 Disable or Modify Tools: Clear Windows Event Logs; INJ-001 stealth,
+    privilege-escalation; NET-001 stealth, command-and-control; GR-001 execution only;
+    GR-003 command-and-control (T1105 is a command-and-control technique). Every other ID
+    and name is unchanged. `ATTACK_VERSION` is `v20`. Golden files and the oracle changed
+    through `scripts/update_golden.py`; the oracle edits are hand-derived revisions applied
+    by that script and logged in the oracle's `revisions` list.
+
 ### P1 · Skeleton and ingest
 
 - **Development version.** `__version__` is `0.1.0` during the build and becomes `1.0.0`
@@ -529,6 +544,29 @@ Amendment 22 records the owner's answers to the S3 plan, given on 2026-10-30.
 - **Image names** lose leading spaces in normalization, so a name such as ` -x.exe` reaches
   the CSV as `-x.exe` (still prefixed). Leading whitespace is covered by unit tests.
 
+### P7 · Ship
+
+- **Release version.** `__version__` is `1.0.0` with a `[1.0.0]` CHANGELOG entry. Tests
+  check the CHANGELOG entry and `--version` against `__version__`; no test, golden file or
+  sample report hardcodes the string.
+- **`--html` removed** with the `html` extra (Jinja2). The HTML report is on the roadmap.
+- **Generated documents.** `scripts/build_docs.py` builds `docs/rules.md` (summary table,
+  per-rule conditions read from the rule files, v20 technique names with links, tactics,
+  known false positives and the MITRE attribution) and `examples/sample-report.json`
+  (`phish_chain.jsonl` with a fixed run ID and time; it carries the real version, option
+  (a)). Tests fail when either file differs from a fresh build.
+- **Screenshots.** `scripts/capture_screenshots.py` runs the real CLI with a recording
+  console and writes SVGs with Rich's `export_svg` to `docs/images/`. Without options it
+  uses the synthetic fixtures; `--hero`, `--secondary` and `--inspect` take real datasets,
+  which stay outside the repository. Output is byte-identical between runs.
+- **Demo scripts** (`examples/demo.sh`, `examples/demo.ps1`) follow §16.3 on the fixtures;
+  a test checks each command and option against the CLI.
+- **Real data.** `scripts/fetch_demo_data.md` names two EVTX-ATTACK-SAMPLES files and
+  mentions OTRF Security-Datasets as further reading only. No hand-written P0 chain exists;
+  the real-data check compares Lineage's output with what each sample records.
+- **Coverage** with `pytest --cov=lineage_ir`: 96% of lines overall; every module in
+  `ingest`, `graph`, `detect` and `analyze` is at 95% or more.
+
 ## Assumptions
 
 - `ASSUMPTION` Field aliases and shape rules are the §6.2–6.4 defaults; no real dataset has
@@ -554,7 +592,8 @@ Development environment, Windows 11, Python 3.12.0:
 | ruff | 0.17.3 |
 | jsonschema | 4.26.0 |
 
-Exact release versions are recorded at P7.
+These are the exact versions the 1.0.0 release was built and tested with. CI installs the
+latest versions allowed by the lower bounds in `pyproject.toml` (§3.1).
 
 ## Benchmarks
 
@@ -631,12 +670,13 @@ records the measured peak is 4.9 GB. Raising `--max-records` needs memory in pro
 
 ## ATT&CK verification
 
-Not started (P7).
+Verified by the owner against ATT&CK v20 on 2026-10-30. The checked table (technique IDs,
+names and tactics for all 24 rules and heuristics) is the v20 mapping in amendment 23 and
+`docs/rules.md`; `tests/unit/test_attack_mapping.py` pins it.
 
 ## Known gaps
 
-- EVTX reading is covered only by a mocked parser and an unopenable-file test until an EVTX
-  fixture is available.
+- EVTX reader tested with a mocked parser in CI; checked manually on real samples.
 - JSON documents (not JSONL) are loaded into memory whole.
 - Graph build time grows faster than record count: 29–31 s at 1M realistic records against
   79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
@@ -644,7 +684,6 @@ Not started (P7).
 - Peak memory is about 2.3 GiB per million records (published in the README, amendment 16).
 - Hero dataset check PENDING P0 data: the P4 gate used `phish_chain.jsonl` and its committed,
   hand-derived oracle instead (amendment 15).
-- `attack_version` in report parameters is `unpinned` until the P7 ATT&CK check pins it.
 - Suffix matches for %APPDATA%-style paths can link the wrong process (§9.8 matches any
   image ending with the text after the variable).
 - A `binPath=` value quoted inside the same token (`binPath="C:\a b\x.exe"`) is not
@@ -658,6 +697,8 @@ Not started (P7).
 
 Beyond v1.0, not planned for any current phase.
 
+- Self-contained HTML report (stretch S2, left out of v1.0 by the owner; `--html` was
+  removed in P7). `--csv` (S3) ships.
 - Streaming or spill-to-disk for very large logs. Rejected for v1.0 by the owner: it conflicts
   with §13.2 (no files except requested outputs), adds a temporary-file attack surface, and is
   out of proportion to the log sizes this tool targets.
