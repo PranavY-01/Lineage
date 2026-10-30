@@ -10,6 +10,7 @@ from lineage_ir.analyze.coverage import Result, Status, build_coverage, outcome
 from lineage_ir.analyze.decode import decode_command
 from lineage_ir.analyze.filters import AnalysisParams, keep_by_severity, select_rules
 from lineage_ir.analyze.focus import resolve_focus
+from lineage_ir.analyze.persistence_links import attach_links
 from lineage_ir.analyze.storyline import build_storylines
 from lineage_ir.config import READINESS_FAMILIES, STANDARD_EVENT_IDS
 from lineage_ir.detect.engine import run_detection
@@ -180,6 +181,7 @@ def run_analysis(
     detection = run_detection(ingest, graphs, rules, is_anchor=anchors, graph_rules=graph_rules)
     findings = keep_by_severity(detection.findings, params.min_severity)
     storylines = build_storylines(ingest, graphs, findings, anchors, params.gap_seconds)
+    storylines = attach_links(storylines, graphs, findings, ingest.events)
     coverage = build_coverage(
         ingest,
         graphs,

@@ -303,8 +303,24 @@ class StorylineLink(FrozenModel):
     evidence: tuple[SourceRef, ...]
 
 
+class UnlinkedTarget(FrozenModel):
+    """A persistence target that links to no other storyline (§9.8, amendment 21).
+
+    ``target_not_in_storyline``: a later process ran it (``guid``, ``start_us``) but that
+    process belongs to no storyline. ``not_seen_running``: no later process on the host ran it.
+    """
+
+    reason: Literal["target_not_in_storyline", "not_seen_running"]
+    rule_id: str
+    path: str
+    match: Literal["exact", "suffix"]
+    guid: str | None
+    start_us: int | None
+    source: SourceRef
+
+
 class Scope(FrozenModel):
-    """What a storyline touched (§5.7)."""
+    """What a storyline touched (§5.7, plus ``unlinked_targets`` from amendment 21)."""
 
     users: tuple[str, ...]
     process_count: int
@@ -317,6 +333,7 @@ class Scope(FrozenModel):
     dns_names: tuple[str, ...]
     decoded_payloads: int
     review: dict[str, int]
+    unlinked_targets: tuple[UnlinkedTarget, ...]
 
 
 class Storyline(FrozenModel):

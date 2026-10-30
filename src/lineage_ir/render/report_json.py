@@ -280,7 +280,21 @@ def storyline_document(story: Storyline) -> dict[str, Any]:
             for s in story.steps
         ],
         "gaps": [g.model_dump(mode="json") for g in story.gaps],
-        "scope": story.scope.model_dump(mode="json"),
+        "scope": {
+            **story.scope.model_dump(mode="json", exclude={"unlinked_targets"}),
+            "unlinked_targets": [
+                {
+                    "reason": u.reason,
+                    "rule_id": u.rule_id,
+                    "path": u.path,
+                    "match": u.match,
+                    "guid": u.guid,
+                    "start": _time(u.start_us),
+                    "source": source_ref(u.source),
+                }
+                for u in story.scope.unlinked_targets
+            ],
+        },
         "links": [
             {
                 "from_storyline": link.from_storyline,

