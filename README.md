@@ -308,6 +308,8 @@ Known limitations:
   before collection cannot be detected.
 - Persistence links match `%APPDATA%`-style targets by suffix, which can link the wrong
   process; shortcut (`.lnk`) targets are not resolved.
+- On the two public samples tested (see `scripts/fetch_demo_data.md`), the attack chains were
+  reconstructed but not flagged by the v1.0 rule set.
 - Findings are leads, not proof; a storyline is a hypothesis for an analyst to confirm.
 
 ## Privacy and responsible use
@@ -322,7 +324,7 @@ not proof of compromise or of innocence. It does not block, remediate or change 
 
 ## Tests and CI
 
-1,376 tests run offline on synthetic fixtures, with 96% line coverage. They cover every
+1,398 tests run offline on synthetic fixtures, with 96% line coverage. They cover every
 layer, shuffle invariance, byte-identical reports with a frozen clock, golden outputs, hostile
 strings in every output format and every exit code. CI runs ruff and pytest on Ubuntu and
 Windows with Python 3.11, 3.12 and 3.13.
@@ -334,8 +336,9 @@ ruff check . && ruff format --check . && pytest --cov=lineage_ir
 ## Roadmap
 
 - **v1.1:** merging AuthWatch and FileSift reports into one case, `explain`, `diff`, ATT&CK
-  Navigator layer export, zip and directory input, allow-lists, user-name redaction, and a
-  self-contained HTML report.
+  Navigator layer export, zip and directory input, allow-lists, user-name redaction, a
+  self-contained HTML report, and two rules: "installer spawned a shell" (with care for
+  legitimate MSI custom actions) and "PowerShell server-mode host ran discovery".
 - **v1.2:** a degraded mode for Security 4688 logs, Linux (Sysmon for Linux, then auditd) and
   AuthWatch sshd correlation.
 - **v2:** cross-host stitching, parent-to-child rarity scoring, a Sigma subset, STIX 2.1 and

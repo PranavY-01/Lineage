@@ -233,6 +233,20 @@ Amendment 23 records the owner's ATT&CK verification for P7, given on 2026-10-30
     through `scripts/update_golden.py`; the oracle edits are hand-derived revisions applied
     by that script and logged in the oracle's `revisions` list.
 
+Amendments 24 and 25 record the owner's decisions after the real-data check, given on
+2026-10-30.
+
+24. **GR-004 and system processes (§8.7).** GR-004 skips a ghost only when the anchor test
+    accepts it with a verified path, or when it is the path-less System or Registry entry
+    (`anchors.yaml` lists both with an empty path). A ghost that matches an anchor by name
+    alone, with no path, is still flagged. Before this, the System process (PID 4) was
+    flagged for its inbound SMB connection in the remote-shell sample.
+25. **Reference-only EventData keys (§6.4).** `FileVersion`, `PreviousCreationUtcTime`,
+    `SignatureStatus`, `TerminalSessionId`, `DestinationIsIpv6`, `DestinationPortName`,
+    `SourceIsIpv6`, `SourcePortName` and `SourceThreadId` map to snake_case keys, so
+    `validate` no longer lists them as unknown. No rule may use them: they are excluded from
+    the rule field set, so the loader rejects them.
+
 ### P1 · Skeleton and ingest
 
 - **Development version.** `__version__` is `0.1.0` during the build and becomes `1.0.0`
@@ -567,6 +581,32 @@ Amendment 23 records the owner's ATT&CK verification for P7, given on 2026-10-30
 - **Coverage** with `pytest --cov=lineage_ir`: 96% of lines overall; every module in
   `ingest`, `graph`, `detect` and `analyze` is at 95% or more.
 
+## Real-data check
+
+Run on 2026-10-30 with v1.0.0 on two EVTX-ATTACK-SAMPLES files (kept in the ignored `data/`
+folder, never committed):
+
+| File | SHA-256 | Records |
+| --- | --- | --- |
+| `Execution/Exec_sysmon_meterpreter_reversetcp_msipackage.evtx` | `328ec1b4b6c531af991a2de2221900ec93db1853f7446f61c7e3c9bf9bf052e3` | 8 |
+| `Lateral Movement/lm_sysmon_18_remshell_over_namedpipe.evtx` | `efdb2b2f2dd0864e82dabb693d38b44aea93e43c7df490ca3c94a4084da5c173` | 7 |
+
+- Both samples parse cleanly: no crash, no invalid record; `validate` exits 0.
+- Coverage is reported honestly: both runs are partial (exit 4). The Meterpreter sample has
+  no event 3, so the reverse shell's connection cannot be seen and NET-001 and GR-001 are
+  not evaluable.
+- Both chains are visible in the tree but not flagged by the v1.0 rules: msiexec.exe →
+  `C:\Windows\Installer\MSI4FFD.tmp` → cmd.exe → whoami.exe, and PowerShell →
+  `powershell -s -NoLogo -NoProfile` → `whoami /all`. Two rules for v1.1 are on the roadmap.
+- GR-004 flagged the System process for its inbound SMB connection; amendment 24 fixes this,
+  and the remote-shell sample now has no finding.
+- Nine EventData keys were unknown; amendment 25 maps them.
+- One event 10 in the remote-shell sample has `SourceImage`
+  `io\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`. The value is truncated in
+  the source data (checked in the raw EVTX record); it is not a Lineage bug.
+- There is no hand-written P0 chain; the outputs were compared with what each sample
+  records. This check replaces the pending hero-dataset check.
+
 ## Assumptions
 
 - `ASSUMPTION` Field aliases and shape rules are the §6.2–6.4 defaults; no real dataset has
@@ -682,8 +722,6 @@ names and tactics for all 24 rules and heuristics) is the v20 mapping in amendme
   79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
   under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
 - Peak memory is about 2.3 GiB per million records (published in the README, amendment 16).
-- Hero dataset check PENDING P0 data: the P4 gate used `phish_chain.jsonl` and its committed,
-  hand-derived oracle instead (amendment 15).
 - Suffix matches for %APPDATA%-style paths can link the wrong process (§9.8 matches any
   image ending with the text after the variable).
 - A `binPath=` value quoted inside the same token (`binPath="C:\a b\x.exe"`) is not
@@ -697,6 +735,10 @@ names and tactics for all 24 rules and heuristics) is the v20 mapping in amendme
 
 Beyond v1.0, not planned for any current phase.
 
+- Two rules seen as gaps in the real-data check: "installer spawned a shell" (msiexec.exe,
+  or a `.tmp` image under `\windows\installer\`, starting cmd or PowerShell) and "PowerShell
+  server-mode host ran discovery" (`powershell -s` starting discovery tools). The first risks
+  false positives from legitimate MSI custom actions, which run from the same place.
 - Self-contained HTML report (stretch S2, left out of v1.0 by the owner; `--html` was
   removed in P7). `--csv` (S3) ships.
 - Streaming or spill-to-disk for very large logs. Rejected for v1.0 by the owner: it conflicts

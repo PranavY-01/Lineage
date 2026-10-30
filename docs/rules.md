@@ -156,7 +156,7 @@ Technique and tactic mappings follow **MITRE ATT&CK v20 (Enterprise)** and are a
 - Kind: graph; severity: info; needs events: 1.
 - ATT&CK: none (context signal).
 - Tactics: none.
-- Logic: A process with no creation record (a ghost seen through its own activity) made network connections or created files. The finding is on the ghost.
+- Logic: A process with no creation record (a ghost seen through its own activity) made network connections or created files. The finding is on the ghost. Anchors with a verified path and the path-less System and Registry processes are skipped; a ghost that matches an anchor by name alone is still flagged.
 - Why it matters: A process used the network or created files, but its creation was never recorded, so its origin is unknown.
 - Known false positives: Logs that start after the process did, so its creation is missing.
 

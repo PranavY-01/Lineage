@@ -83,7 +83,9 @@ GRAPH_LOGIC = {
     ),
     "GR-004": (
         "A process with no creation record (a ghost seen through its own activity) made "
-        "network connections or created files. The finding is on the ghost."
+        "network connections or created files. The finding is on the ghost. Anchors with a "
+        "verified path and the path-less System and Registry processes are skipped; a "
+        "ghost that matches an anchor by name alone is still flagged."
     ),
 }
 FALSE_POSITIVES = {
