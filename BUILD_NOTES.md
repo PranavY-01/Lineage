@@ -67,6 +67,37 @@ specification text they amend.
    when the text holds more opening brackets than the nesting limit. Each §6.1 record rule has
    a test that fails when the rule is removed (checked by removing each rule in turn).
 
+Amendments 9–11 were approved on 2026-10-30.
+
+9. **Compact Event storage (§5.2, §6.5).**
+   - Events and their `SourceRef` are built without re-validation, from values normalize has
+     just validated, through `models.trusted_event`. Only `ingest/normalize.py` calls it;
+     `construct_trusted` stays limited to `models.py` and `graph/builder.py`, and
+     `model_construct` to `models.py`. A source test enforces all three.
+   - A test checks that every Event built this way equals the same Event built through full
+     pydantic validation (JSON text of `model_dump`), on every JSONL fixture and a generated
+     mix, both record by record and through the whole ingest.
+   - Shared field maps and strings are immutable by convention. A test takes deep copies of
+     all events before the downstream pipeline runs and checks that they still equal the
+     originals afterwards. Later phases add their stages to that test.
+   - Strings are reused through per-run dict pools, never `sys.intern`, and only for host,
+     channel, field names, image paths, users and hashes. Each pool keeps at most 100,000
+     distinct values; past the cap a string is stored as it is.
+   - Report output is unchanged; golden, determinism and shuffle tests pass without edits.
+10. **Memory target and default record cap (§11, §14.4).**
+    - The §14.4 memory target for the realistic mix is 2.5 GB at 1,000,000 records. The binding
+      memory guarantee is the default-cap rule: the default `--max-records` is the largest of
+      1, 2, 3 or 5 million records whose projected realistic-mix peak is 6.0 GB or less.
+    - With the measurements below, the default is 2,000,000 (measured peak 4.94 GB). The allowed
+      range stays 1 to 50,000,000.
+    - When the cap stops reading, the text view states the cap and says it can be raised with
+      `--max-records`.
+11. **No spill-to-disk in v1.0, and no further performance rounds.** A disk-backed store is
+    rejected for v1.0 (§13.2: no files except requested outputs; temporary-file attack surface;
+    out of proportion to the target log sizes) and is listed under Roadmap. Phases P3 to P5 do
+    not take on memory or speed work unless a test fails or the 6 GB rule is violated; anything
+    else goes under Known gaps.
+
 ## Decisions and deviations
 
 ### P1 · Skeleton and ingest
@@ -152,7 +183,15 @@ specification text they amend.
   `construct_trusted` from values normalization already typed: no re-validation, the event's
   `fields` mapping is shared rather than copied, and every instance of a class shares one
   pydantic fields-set (frozen models; pydantic copies the set before any update). A retained
-  image load costs about 590 bytes instead of 1,020.
+  image load costs about 590 bytes instead of 1,020. Events follow the same pattern through
+  `models.trusted_event` (amendment 9).
+- **String pools.** `read_inputs` creates one `StringPools` per run and passes it to every
+  `normalize_record` call. A field's value is pooled only when the field is one of `image`,
+  `parent_image`, `source_image`, `target_image`, `image_loaded`, `user`, `parent_user`,
+  `source_user`, `target_user` or `hashes`; every field name is pooled. The typed
+  `process_guid` and `image` reuse the strings already in `fields` instead of copies. GUIDs and
+  the event 7 `signed` value are no longer interned, since amendment 9 limits reuse to the
+  listed fields.
 - **Content hash of event 7** is taken over its slim form whether it arrives as a full Event or
   as an `ImageLoadRecord`, so both paths deduplicate and order identically.
 - **Conflict errors** use kind `duplicate_conflict`, the dropped record as subject
@@ -229,9 +268,42 @@ events 3, 11, 13 and 22; 140,000 processes; one host. Two runs: ingest 78.9 s an
 runs. A full `Event` costs 2,795 bytes, measured over 20,000 records that are not event 7,
 including the normalize outcome wrapper.
 
-**Projection at the default `--max-records` (5,000,000) with this mix:** peak memory scales
-roughly linearly with record count, so about 16,300 MiB (17.1 GB). That is above the 8 GB
-ceiling; a fix is awaiting the owner's decision. No default was changed.
+Projected at the then-default `--max-records` of 5,000,000: about 16,300 MiB (17.1 GB), above
+the 8 GB ceiling. This led to amendments 9 and 10.
+
+**P2 final measurement, 2026-10-30, after amendments 9 and 10.** Same machine. Memory is peak
+private bytes; GB is decimal.
+
+Realistic mix (the generator scales every count, so 2M has 280,000 processes):
+
+| Records | Ingest (runs 1, 2) | Graph (runs 1, 2) | Total (runs 1, 2) | Peak |
+| --- | --- | --- | --- | --- |
+| 1,000,000 | 67.0 s, 77.8 s | 29.1 s, 31.1 s | 96.1 s, 108.9 s | 2,366 MiB (2.48 GB) |
+| 2,000,000 | 204.1 s, 141.9 s | 78.7 s, 84.1 s | 282.9 s, 226.1 s | 4,711 MiB (4.94 GB) |
+
+- Peak memory doubles almost exactly: 2M is 1.99 times 1M, within the 10% linearity check.
+  The step from 1M to 2M is 2,345 MiB per million records, used for the projection below.
+- A full `Event` costs 1,519 bytes on both files, measured over 20,000 records that are not
+  event 7, parsed inside the traced window, with shared pools and the outcome wrapper. It was
+  2,795 bytes measured the same way before amendment 9.
+- Projected peaks: 3,000,000 records about 7,056 MiB (7.40 GB) and 5,000,000 about 11,700 MiB
+  (12.3 GB), both above 6.0 GB. The default `--max-records` is therefore 2,000,000.
+
+80% event 7 file, each mode twice, interleaved. Peak memory was 1,411 to 1,412 MiB (1.48 GB) in
+every run.
+
+| Mode | Ingest (runs 1, 2) | Graph (runs 1, 2) | Total mean |
+| --- | --- | --- | --- |
+| Neither speedup | 41.6 s, 39.8 s | 12.3 s, 12.4 s | 53.0 s |
+| Lazy content hash (8a) | 38.8 s, 36.6 s | 9.8 s, 12.1 s | 48.7 s |
+| 8a plus single-parse JSON checks (8b) | 34.9 s, 35.5 s | 12.1 s, 11.1 s | 46.8 s |
+
+These times are well below the earlier runs in every mode. Fewer allocations after amendment 9
+explain part of the drop and machine load the rest; these runs cannot separate the two.
+
+**README limitation (to publish in the README at P7):** peak memory grows by about 2.3 GiB
+(2.5 GB) per million records for a mix like the one above; at the default cap of 2,000,000
+records the measured peak is 4.9 GB. Raising `--max-records` needs memory in proportion.
 
 ## ATT&CK verification
 
@@ -242,3 +314,15 @@ Not started (P7).
 - EVTX reading is covered only by a mocked parser and an unopenable-file test until an EVTX
   fixture is available.
 - JSON documents (not JSONL) are loaded into memory whole.
+- Graph build time grows faster than record count: 29–31 s at 1M realistic records against
+  79–84 s at 2M (about 2.7 times). Ingest varies too much between runs to judge. Not addressed
+  under amendment 11; total time at the 2M default cap was 226–283 s on the benchmark machine.
+- Peak memory is about 2.3 GiB per million records (README limitation under Benchmarks).
+
+## Roadmap
+
+Beyond v1.0, not planned for any current phase.
+
+- Streaming or spill-to-disk for very large logs. Rejected for v1.0 by the owner: it conflicts
+  with §13.2 (no files except requested outputs), adds a temporary-file attack surface, and is
+  out of proportion to the log sizes this tool targets.
