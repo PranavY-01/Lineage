@@ -64,7 +64,7 @@ def test_terminal_views_are_inert(name: str, hostile: AnalysisResult) -> None:
     segments = list(console._record_buffer)
     text = "".join(s.text for s in segments)
     assert "\x1b" not in text, "a control sequence from the evidence reached the terminal"
-    assert "\x00" not in text and "‮" not in text
+    assert "\x00" not in text and "\u202e" not in text
     assert " " not in text and " " not in text, "a line separator reached the terminal"
     assert "http://" not in text and "https://" not in text
     assert not any(s.style is not None and s.style.link for s in segments), "evidence became a link"
@@ -96,7 +96,7 @@ def test_json_report_keeps_raw_values_ascii_escaped(hostile: AnalysisResult) -> 
     assert text.isascii()
     assert "\x1b" not in text and " " not in text and "<script>" in text
     flat = " ".join(_strings(report(hostile)))
-    assert "\x1b[31mRED" in flat and "‮" in flat and "http://evil.example/payload" in flat
+    assert "\x1b[31mRED" in flat and "\u202e" in flat and "http://evil.example/payload" in flat
 
 
 def _strings(value: Any) -> list[str]:
