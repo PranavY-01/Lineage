@@ -160,6 +160,32 @@ Amendment 16 records owner decisions given on 2026-10-30.
       "continue" the phase branch is merged into main locally and the full suite is run on main,
       but nothing is pushed; the owner pushes main after their own history scan.
 
+Amendments 17 and 18 record owner decisions given on 2026-10-30 after the P4 oracle
+comparison. Amendment 17 restates, as amendments, items the master document's Appendix A lists
+that were recorded above only as phase decisions; their meaning is unchanged.
+
+17. **Appendix A items recorded as amendments.**
+    - **Version (§3.3, §16).** `__version__` is `0.1.0` until P7, then `1.0.0`. No test,
+      golden file or sample hardcodes the version string.
+    - **JSON document or JSONL (§6.1).** A file whose first non-blank line is a bare `{` is one
+      JSON document; anything else starting with `{` is read as JSONL, so a bad first line is
+      counted invalid instead of failing the file.
+    - **Shape B recognition (§6.2).** Shape B is recognised by an event ID key plus an
+      EventData key or a channel, host or provider key, so non-Sysmon records count as
+      irrelevant, not invalid.
+    - **Anchor test argument (§8.7, §8.8).** The anchor test is passed into detection as a
+      required argument with no default.
+    - **Rule order (§8.8).** Rules are evaluated in ascending ID order.
+    - **§12.2 sample screen.** The sample is corrected to match the rule catalogue: LIN-001 and
+      CMD-001 on `cmd.exe`, and no LOC-001 on `rundll32.exe`.
+18. **GR-003 evidence (§8.7, §9.4).** GR-003 evidence holds only the execution record, the
+    event 1 of the executed process. The write is referenced in `details`: `creator_guid`,
+    `creator_image`, `write_file` and `write_index` (the event 11's input file and record
+    index), beside `target_filename`. Because §9.4 builds finding steps from evidence, the drop
+    is no longer a step of the executed process's storyline, so that storyline starts at the
+    execution and gains no gap from the earlier write. The committed oracle's S2 start was
+    re-derived under this amendment (the revision is recorded in the oracle file).
+
 ### P1 · Skeleton and ingest
 
 - **Development version.** `__version__` is `0.1.0` during the build and becomes `1.0.0`
@@ -293,7 +319,8 @@ Amendment 16 records owner decisions given on 2026-10-30.
   must be unique across all of them. Rules are evaluated in ascending ID order.
 - **`details`** follow §8.8 item 4 and are taken from the first matching event. Graph
   heuristics add: GR-001 `office_ancestor` and `destination`; GR-002 `binaries`; GR-003
-  `target_filename`, `creator_guid` and `creator_image`; GR-004 `activity`.
+  `target_filename`, `creator_guid`, `creator_image`, `write_file` and `write_index`
+  (amendment 18); GR-004 `activity`.
 - **GR-001** walks ancestors from the parent; an anchor ends the walk before it is checked.
 - **GR-002** counts every discovery child inside a qualifying window; evidence is their
   creation records.
@@ -339,8 +366,9 @@ Amendment 16 records owner decisions given on 2026-10-30.
   the merged rule IDs are appended to its text as ` [ID, ID]`. Decoded steps are never merged
   (§9.4 places them right after the creation step, which shares their record). Process-creation
   text truncates the command line at 80 characters; a node without a known parent reads
-  "unknown parent spawned …". A finding step names the event's acting process, so GR-003's
-  drop event appears in the executed process's storyline as the dropper's step.
+  "unknown parent spawned …". A finding step names the event's acting process. GR-003's
+  evidence is only the execution record (amendment 18), so the drop never appears as a step
+  of the executed process's storyline.
 - **Storyline start and end** are the first and last step times; only a storyline whose
   evidence resolves to no input record (crafted in tests) falls back to finding times.
 - **Scope.** Lists are de-duplicated case-insensitively, keeping the first spelling.
